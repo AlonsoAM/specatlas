@@ -61,6 +61,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm -r build
       - run: pnpm --filter specatlas-vscode build
       - name: Empaquetar .vsix
         run: pnpm --filter specatlas-vscode exec vsce package --no-dependencies
