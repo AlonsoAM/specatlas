@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 140" width="384" height="140" role="img" aria-label="SpecAtlas">
+  <defs>
+    <linearGradient id="atlas-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14B8A6"/>
+      <stop offset="0.55" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="atlas-grad-soft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#14B8A6" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#7C3AED" stop-opacity=".45"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="4" y="12" width="376" height="116" rx="26" fill="#0F172A"/>
+  <rect x="4" y="12" width="376" height="116" rx="26" fill="none" stroke="url(#atlas-grad)" stroke-width="1.5" opacity=".55"/>
+
+  <g transform="translate(28 40) scale(2.5)" fill="none" stroke="url(#atlas-grad)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" stroke="url(#atlas-grad-soft)"/>
+    <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"/>
+    <circle cx="7.2" cy="14.8" r="1.5" fill="url(#atlas-grad)" stroke="none"/>
+    <circle cx="16.6" cy="7.3" r="1.5" fill="url(#atlas-grad)" stroke="none"/>
+    <circle cx="12.4" cy="13.1" r="1.2" fill="url(#atlas-grad)" stroke="none" opacity=".8"/>
+  </g>
+
+  <text x="108" y="73" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="40" font-weight="700" fill="#F8FAFC" letter-spacing="-1">Spec<tspan fill="url(#atlas-grad)">Atlas</tspan></text>
+  <text x="110" y="97" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="12" fill="#94A3B8" textLength="240" lengthAdjust="spacing">SPEC-DRIVEN DEVELOPMENT</text>
+</svg>

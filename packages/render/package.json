@@ -1,0 +1,35 @@
+{
+  "name": "@specatlas/render",
+  "version": "0.1.0",
+  "description": "Renderizador de documentos de SpecAtlas: markdown, código resaltado, mermaid y tokens de diseño",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["markdown", "highlight", "mermaid", "renderer", "specs"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlonsoAM/specatlas.git",
+    "directory": "packages/render"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm --dts --clean"
+  },
+  "dependencies": {
+    "highlight.js": "^11.10.0"
+  }
+}

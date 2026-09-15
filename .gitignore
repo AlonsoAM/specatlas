@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.vsix
+*.tgz
+docs/tutorial/mermaid.min.js
+packages/vscode/media/mermaid.min.js
+*.tsbuildinfo
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+tmp/
+.tmp/

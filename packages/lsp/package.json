@@ -1,0 +1,40 @@
+{
+  "name": "@specatlas/lsp",
+  "version": "0.1.0",
+  "description": "Servidor de lenguaje de SpecAtlas: diagnósticos, CodeLens, navegación y quick fixes para specs",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "import": "./dist/server.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["lsp", "language-server", "specs", "sdd", "diagnostics"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlonsoAM/specatlas.git",
+    "directory": "packages/lsp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup"
+  },
+  "dependencies": {
+    "@specatlas/core": "workspace:*",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  }
+}

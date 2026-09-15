@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial de SpecAtlas</title>
+<meta name="description" content="Tutorial completo de SpecAtlas: Spec-Driven Development de principio a fin">
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+th, td { border: 1px solid var(--atlas-line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<nav class="atlas-toc"><h2>Índice</h2><ul><li class="toc-h1"><a href="#tutorial-de-specatlas">Tutorial de SpecAtlas</a></li><li class="toc-h2"><a href="#1-que-problema-resuelve">1. Qué problema resuelve</a></li><li class="toc-h2"><a href="#2-los-cinco-conceptos">2. Los cinco conceptos</a></li><li class="toc-h2"><a href="#3-instalacion">3. Instalación</a></li><li class="toc-h2"><a href="#4-tu-primer-proyecto-paso-a-paso">4. Tu primer proyecto, paso a paso</a></li><li class="toc-h2"><a href="#5-el-carril-express-fix">5. El carril express (<code>fix</code>)</a></li><li class="toc-h2"><a href="#6-adoptar-un-proyecto-que-ya-existe">6. Adoptar un proyecto que ya existe</a></li><li class="toc-h2"><a href="#7-trabajar-con-agentes">7. Trabajar con agentes</a></li><li class="toc-h2"><a href="#8-la-extension-de-vs-code">8. La extensión de VS Code</a></li><li class="toc-h2"><a href="#9-mockups-como-contrato-visual">9. Mockups como contrato visual</a></li><li class="toc-h2"><a href="#10-github-opcional-nunca-un-gate-obligatorio">10. GitHub (opcional, nunca un gate obligatorio)</a></li><li class="toc-h2"><a href="#11-packs-de-cumplimiento">11. Packs de cumplimiento</a></li><li class="toc-h2"><a href="#12-configuracion-de-referencia">12. Configuración de referencia</a></li><li class="toc-h2"><a href="#13-comandos-de-referencia">13. Comandos de referencia</a></li><li class="toc-h2"><a href="#14-codigos-de-diagnostico">14. Códigos de diagnóstico</a></li><li class="toc-h2"><a href="#15-preguntas-frecuentes">15. Preguntas frecuentes</a></li><li class="toc-h2"><a href="#16-glosario">16. Glosario</a></li><li class="toc-h2"><a href="#17-chuleta-cheat-sheet">17. Chuleta (cheat sheet)</a></li></ul></nav>
+<h1 id="tutorial-de-specatlas">Tutorial de SpecAtlas</h1>
+<p><strong>El kernel determinista del Spec-Driven Development.</strong> Specs vivas, trazabilidad ejecutable y gates reales para cualquier stack, cualquier agente y cualquier proyecto — incluido el que ya existe.</p>
+<blockquote><p>Este tutorial asume que <strong>no conoces la herramienta</strong>. Está pensado para leerse de arriba a abajo una vez, y después usarse como referencia por secciones. Tiempo de lectura: ~35 minutos. Tiempo hasta tu primer cambio archivado: ~15 minutos.</p></blockquote>
+<hr>
+<h2 id="1-que-problema-resuelve">1. Qué problema resuelve</h2>
+<p>Cuando un equipo desarrolla con IA pasan tres cosas:</p>
+<ol><li>El agente escribe código sin que nadie haya acordado <strong>qué</strong> se va a construir.</li><li>El acuerdo vive en un chat que nadie puede auditar, y la documentación se escribe (si se escribe) después.</li><li>“Está terminado” es una opinión: no hay evidencia de que el comportamiento pedido sea el comportamiento entregado.</li></ol>
+<p><strong>Spec-Driven Development (SDD)</strong> invierte el orden: primero se acuerda el comportamiento en lenguaje de negocio, esa especificación se <strong>aprueba</strong>, y recién entonces se planifica, se construye y se evidencia.</p>
+<p>SpecAtlas aporta la parte que casi ninguna herramienta resuelve: <strong>el proceso se verifica con código, no con buena voluntad</strong>.</p>
+<table><thead><tr><th>Sin SpecAtlas</th><th>Con SpecAtlas</th></tr></thead><tbody><tr><td>El prompt describe la feature</td><td>La spec funcional describe el comportamiento y se firma</td></tr><tr><td>Nadie sabe qué quedó por hacer</td><td>Las tareas son atómicas y trazables al requisito</td></tr><tr><td>“Ya funciona”</td><td>Cada escenario tiene evidencia registrada (comando + resultado + hash)</td></tr><tr><td>La documentación se pudre</td><td>La spec viva es la fuente de verdad; los cambios se pliegan al archivar</td></tr><tr><td>El bugfix entra por el flujo grande</td><td>Carril <code>fix</code>: un solo artefacto, sin ceremonia</td></tr></tbody></table>
+<p>Tres ideas guían todo el diseño:</p>
+<ul><li><strong>El kernel no sabe de IA.</strong> Todo lo verificable (esquemas, trazabilidad, dependencias, gates) es código determinista. El agente solo escribe contenido y ejecuta tareas.</li><li><strong>Las specs son de negocio.</strong> Lo que se aprueba no tiene una línea de tecnología. El plan técnico es otro artefacto, interno.</li><li><strong>Español por defecto.</strong> Todos los artefactos y mensajes salen en español; <code>language: en</code> para inglés.</li></ul>
+<hr>
+<h2 id="2-los-cinco-conceptos">2. Los cinco conceptos</h2>
+<div class="mermaid-block"><pre class="mermaid">flowchart LR
+  A[Spec viva&lt;br/&gt;qu&amp;eacute; hace el sistema hoy] --&gt;|delta de un cambio| B[Cambio&lt;br/&gt;una unidad de trabajo]
+  B --&gt; C[Tareas at&amp;oacute;micas&lt;br/&gt;con archivo y rollback]
+  C --&gt; D[Evidencia&lt;br/&gt;por escenario]
+  D --&gt;|al archivar se pliega| A</pre></div>
+<table><thead><tr><th>Concepto</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>El comportamiento acordado del sistema, por dominio. Es la fuente de verdad</td><td><code>.sdd/specs/&lt;dominio&gt;/spec.md</code></td></tr><tr><td><strong>Cambio</strong></td><td>Una unidad de trabajo con su spec (delta), plan, tareas y evidencia</td><td><code>.sdd/changes/&lt;slug&gt;/</code></td></tr><tr><td><strong>Delta</strong></td><td>Solo lo que cambia: <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code>, <code>RENAMED</code></td><td><code>changes/&lt;slug&gt;/spec.md</code></td></tr><tr><td><strong>Tarea</strong></td><td>Paso atómico: qué se hace, en qué archivo, qué requisito cubre, cómo se revierte</td><td><code>changes/&lt;slug&gt;/tasks.md</code></td></tr><tr><td><strong>Evidencia</strong></td><td>Prueba real de que un escenario funciona: comando, resultado, hash y fecha</td><td><code>changes/&lt;slug&gt;/verify.md</code></td></tr></tbody></table>
+<h3 id="la-cadena-de-trazabilidad">La cadena de trazabilidad</h3>
+<p>Todo cuelga de identificadores estables:</p>
+<div class="mermaid-block"><pre class="mermaid">flowchart LR
+  R[&quot;REQ-AUTH-001&lt;br/&gt;requisito&quot;] --&gt; S[&quot;REQ-AUTH-001-S1&lt;br/&gt;escenario&quot;]
+  S --&gt; T[&quot;T2.1&lt;br/&gt;tarea (Cubre:)&quot;]
+  T --&gt; E[&quot;evidence&lt;br/&gt;result: pass&quot;]</pre></div>
+<ul><li><code>REQ-&lt;DOMINIO&gt;-NNN</code> — requisito. <strong>Nunca se renumera.</strong></li><li><code>REQ-&lt;DOMINIO&gt;-NNN-S&lt;n&gt;</code> — escenario del requisito.</li><li><code>BR-&lt;DOMINIO&gt;-NNN</code> — regla de negocio.</li><li><code>T&lt;bloque&gt;.&lt;secuencia&gt;</code> — tarea (ej. <code>T2.1</code>).</li></ul>
+<p><code>satlas trace</code> recorre esa cadena y falla si hay huecos: un escenario sin tarea, una tarea que cubre algo inexistente, un escenario sin evidencia cuando ya se construyó.</p>
+<h3 id="carriles-el-proceso-se-adapta-al-tamano">Carriles: el proceso se adapta al tamaño</h3>
+<table><thead><tr><th>Carril</th><th>Para qué</th><th>Artefactos</th><th>Gates</th></tr></thead><tbody><tr><td><code>fix</code></td><td>Incidentes, hotfix, configuración</td><td><code>fix.md</code> (uno solo)</td><td>Evidencia (puede ser manual) + archivo</td></tr><tr><td><code>standard</code></td><td>Features normales</td><td>spec + plan + tasks + verify</td><td>Aprobación, trazabilidad, evidencia</td></tr><tr><td><code>full</code></td><td>Riesgo alto o regulado</td><td>Todo lo anterior + analyze + review + docs</td><td>Todo, más analyze y review bloqueantes</td></tr></tbody></table>
+<p>El carril se elige al crear el cambio y se puede <strong>promover</strong> (nunca degradar a ciegas).</p>
+<h3 id="gates-quien-decide-y-cuando">Gates: quién decide y cuándo</h3>
+<p>Un <em>gate</em> es una puerta que no se abre sola. En SpecAtlas son verificables:</p>
+<table><thead><tr><th>Gate</th><th>Qué comprueba</th><th>Cómo se satisface</th></tr></thead><tbody><tr><td>Aprobación</td><td>Que una persona firmó la spec</td><td><code>satlas approve</code> (o etiqueta en GitHub)</td></tr><tr><td>Trazabilidad</td><td>Que requisito → tarea → evidencia cierran</td><td><code>satlas trace --check</code></td></tr><tr><td>Verificación</td><td>Que cada escenario tiene evidencia <code>pass</code></td><td><code>satlas verify --record</code></td></tr><tr><td>Analyze / Review</td><td>Consistencia cruzada y calidad (carril <code>full</code>)</td><td><code>satlas analyze</code> / <code>/satlas-review</code></td></tr><tr><td>Packs</td><td>Controles de cumplimiento del dominio</td><td><code>satlas packs --check</code></td></tr><tr><td>CI</td><td>Todos los anteriores, sin agente</td><td><code>satlas ci</code></td></tr></tbody></table>
+<hr>
+<h2 id="3-instalacion">3. Instalación</h2>
+<p><strong>Requisitos:</strong> Node ≥ 20 y pnpm ≥ 9.</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Desde el repositorio (mientras el paquete no esté publicado)</span>
+pnpm install
+pnpm -r build
+
+<span class="hljs-comment"># Cuando esté publicado (ver RELEASING.md)</span>
+npx specatlas@latest version
+npm i -g specatlas        <span class="hljs-comment"># bins: specatlas y satlas</span></code></pre>
+<p>El binario se llama <code>specatlas</code> y tiene el alias corto <strong><code>satlas</code></strong>. En este tutorial usamos <code>satlas</code>.</p>
+<p><strong>Extensión de VS Code:</strong></p>
+<ul><li>Marketplace / Open VSX: busca <strong>SpecAtlas</strong> (publisher <code>specatlas</code>).</li><li><code>.vsix</code> local:</li></ul>
+<pre><code class="hljs language-bash">pnpm --filter specatlas-vscode build
+pnpm --filter specatlas-vscode <span class="hljs-built_in">exec</span> vsce package --no-dependencies
+code --install-extension packages/vscode/specatlas-vscode-&lt;versión&gt;.vsix</code></pre>
+<p><strong>Verifica tu entorno</strong> en cualquier momento:</p>
+<pre><code class="hljs language-bash">satlas doctor      <span class="hljs-comment"># salud del workspace</span>
+satlas version</code></pre>
+<hr>
+<h2 id="4-tu-primer-proyecto-paso-a-paso">4. Tu primer proyecto, paso a paso</h2>
+<h3 id="4-1-inicializar">4.1 Inicializar</h3>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">cd</span> mi-proyecto
+satlas init --name mi-proyecto</code></pre>
+<p>Salida esperada (resumida):</p>
+<pre><code class="hljs">Inicialización
+
+Workspace SDD creado.
+<span class="hljs-bullet">  +</span> .sdd/config.yaml
+<span class="hljs-bullet">  +</span> .sdd/constitution.md
+<span class="hljs-bullet">  +</span> .sdd/glossary.md
+<span class="hljs-bullet">  +</span> .sdd/profiles/detected.yaml
+<span class="hljs-bullet">  +</span> .sdd/INDEX.md
+<span class="hljs-bullet">  +</span> .opencode/command/satlas-specify.md   ← adaptadores del agente
+  ...
+
+NOTA  ATLAS-INIT-002 — Stack detectado: Node + TypeScript (7 puntos)</code></pre>
+<p>Qué acaba de pasar:</p>
+<ul><li>Se creó <code>.sdd/</code> con la configuración, la <strong>constitución</strong> (reglas inmutables del proyecto) y el <strong>glosario</strong> de negocio.</li><li>Se detectó tu stack y se escribió el perfil activo (el CLI usa scoring por archivos y manifiestos; si no reconoce el stack, usa <code>generic</code> y lo dice).</li><li>Se <strong>compilaron los adaptadores</strong> para que tu agente tenga los comandos <code>/satlas-*</code>.</li><li><code>.sdd/</code> se versiona con git (usa <code>--local</code> si prefieres ignorarlo).</li></ul>
+<h3 id="4-2-crear-un-cambio">4.2 Crear un cambio</h3>
+<pre><code class="hljs language-bash">satlas new reset-password --lane standard --domain auth --title <span class="hljs-string">&quot;Restablecer contraseña&quot;</span></code></pre>
+<p>Crea:</p>
+<pre><code class="hljs">.sdd/changes/reset-password/
+├── meta.yaml       ← carril, dominio, riesgo, pausas, overrides
+├── proposal.md     ← el porqué y <span class="hljs-type">el</span> <span class="hljs-title function_">alcance</span> <span class="hljs-params">(lenguaje de negocio)</span>
+└── spec.md         ← <span class="hljs-type">el</span> <span class="hljs-title function_">delta</span> <span class="hljs-params">(lo que cambia en la spec viva)</span></code></pre>
+<p><code>meta.yaml</code> guarda <strong>hechos</strong>; el estado del cambio (borrador, esperando aprobación, construyendo…) se <strong>deriva</strong> de los artefactos. Nunca tienes que mantener un “estado” a mano.</p>
+<h3 id="4-3-escribir-la-spec-funcional">4.3 Escribir la spec funcional</h3>
+<p>Aquí trabaja el agente (o tú mismo). La regla es tajante: <strong>cero tecnología</strong>.</p>
+<pre><code class="hljs language-markdown"><span class="hljs-section">## Requisitos agregados</span>
+
+<span class="hljs-section">### Requisito: REQ-AUTH-001 — Restablecer contraseña</span>
+El sistema DEBE permitir restablecer la contraseña por email.
+
+<span class="hljs-bullet">-</span> Regla BR-AUTH-001: El enlace es de un solo uso y vence a los 30 minutos.
+
+<span class="hljs-section">#### Escenario: REQ-AUTH-001-S1 — Solicitud con correo registrado</span>
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**CUANDO**</span> el usuario solicita restablecer con un correo registrado
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**ENTONCES**</span> recibe un enlace de un solo uso
+
+<span class="hljs-section">#### Escenario: REQ-AUTH-001-S2 — Correo no registrado</span>
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**CUANDO**</span> el usuario solicita restablecer con un correo no registrado
+<span class="hljs-bullet">-</span> <span class="hljs-strong">**ENTONCES**</span> el sistema responde el mismo mensaje sin revelar si existe</code></pre>
+<p>Valida siempre antes de seguir:</p>
+<pre><code class="hljs language-bash">satlas validate --change reset-password</code></pre>
+<p>El validador comprueba la estructura <strong>y</strong> el lenguaje: jerga técnica, palabras vagas (“rápido”, “varios”), criterios sin valor observable, escenarios sin <code>ENTONCES</code>, requisitos sin escenario. Si algo se sale del carril de negocio, te lo dice con código y ubicación.</p>
+<blockquote><p><strong>Consejo:</strong> incluye siempre escenarios de error, caso vacío, falta de permiso y límites. Son los que suelen romperse en producción.</p></blockquote>
+<h3 id="4-4-aprobar-y-presentar">4.4 Aprobar y presentar</h3>
+<p>La aprobación es un acto humano y nominal, con <strong>hash</strong> del artefacto:</p>
+<pre><code class="hljs language-bash">satlas present reset-password --by <span class="hljs-string">&quot;María Pérez&quot;</span>    <span class="hljs-comment"># 1. firma la spec (hash + autor)</span>
+satlas present reset-password                       <span class="hljs-comment"># 2. genera el paquete para el stakeholder</span></code></pre>
+<p><code>satlas present</code> produce <code>changes/&lt;slug&gt;/presentation/index.html</code>: una propuesta navegable con la spec de negocio, los criterios de aceptación (con su estado de evidencia), los mockups si los hay y el comando de aprobación. Se abre en cualquier navegador, sin red.</p>
+<p>Si la spec cambia después de firmarla, <strong>la firma queda obsoleta automáticamente</strong> (el hash deja de coincidir) y el gate vuelve a pendiente. Así, lo aprobado no se edita en silencio.</p>
+<p>Para ver dónde estás parado:</p>
+<pre><code class="hljs language-bash">satlas status</code></pre>
+<pre><code class="hljs">  <span class="hljs-built_in">reset-password</span>  auth       standard  esperando aprobación
+    tareas <span class="hljs-number">0</span>/<span class="hljs-number">0</span> · evidencia <span class="hljs-number">0</span>/<span class="hljs-number">2</span>
+    siguiente: satlas present <span class="hljs-built_in">reset-password</span> — Presentar la propuesta y firmar</code></pre>
+<p><code>satlas next</code> da la siguiente acción concreta (y la copia si requiere agente).</p>
+<h3 id="4-5-plan-tecnico-y-tareas">4.5 Plan técnico y tareas</h3>
+<p>Con la spec aprobada, el agente (o tú) escribe el <strong>plan técnico</strong> — aquí sí hablamos de tecnología y arquitectura — y las tareas.</p>
+<p>El plan tiene secciones canónicas e incluye <strong>diagramas</strong> cuando el cambio los necesita (<code>erDiagram</code> si toca datos, <code>sequenceDiagram</code> si hay integraciones, <code>flowchart</code> si hay procesos, etc.):</p>
+<pre><code class="hljs language-markdown"><span class="hljs-section"># Plan — Restablecer contraseña</span>
+
+<span class="hljs-section">## 1. Contexto AS-IS</span>
+<span class="hljs-section">## 2. Enfoque técnico</span>
+<span class="hljs-section">## 3. Diagramas        ← aquí van los bloques mermaid que el cambio necesite</span>
+<span class="hljs-section">## 4. Diseño por capa / módulos</span>
+<span class="hljs-section">## 5. Matriz de trazabilidad (REQ → tareas)</span>
+<span class="hljs-section">## 6. Matriz de paridad AS-IS → TO-BE (solo refactors)</span>
+<span class="hljs-section">## 7. Tareas (ver tasks.md)</span>
+<span class="hljs-section">## 8. Riesgos y mitigaciones</span>
+<span class="hljs-section">## 9. Rollback</span>
+<span class="hljs-section">## 10. Dependencias y supuestos</span></code></pre>
+<p>Y las tareas usan una gramática estricta, hecha para ser procesada:</p>
+<pre><code class="hljs language-markdown"><span class="hljs-section">## Bloque 1 — Base de datos</span>
+
+<span class="hljs-bullet">-</span> [ ] T1.1 Crear tabla de tokens · Archivos: db/migrations/003.sql · Cubre: REQ-AUTH-001-S1 · Reversión: DROP TABLE
+<span class="hljs-bullet">-</span> [ ] T1.2 Índice por usuario · Archivos: db/migrations/003.sql · Depende de: T1.1 · Infra
+
+<span class="hljs-section">## Bloque 2 — API</span>
+
+<span class="hljs-bullet">-</span> [ ] T2.1 Endpoint de solicitud · Archivos: src/auth/reset.ts · Cubre: REQ-AUTH-001-S1, REQ-AUTH-001-S2 · Depende de: T1.1</code></pre>
+<p>Claves (se aceptan con o sin acentos): <code>Archivos</code>/<code>Files</code>, <code>Cubre</code>/<code>Covers</code>, <code>Depende de</code>/<code>Depends</code>, <code>Reversión</code>/<code>Rollback</code>, e <code>Infra</code> para trabajo sin requisito.</p>
+<p>Qué chequea el kernel con esto:</p>
+<pre><code class="hljs language-bash">satlas trace --change reset-password    <span class="hljs-comment"># cobertura escenario → tarea</span>
+satlas waves --change reset-password    <span class="hljs-comment"># orden de construcción</span></code></pre>
+<p><code>trace</code> falla si algún escenario no está cubierto. <code>waves</code> calcula <strong>olas</strong>: grupos de tareas que pueden ir en paralelo — nunca dos que toquen el mismo archivo — y degrada las que chocan.</p>
+<pre><code class="hljs">  <span class="hljs-string">Bloque</span> <span class="hljs-number">1</span> <span class="hljs-string">—</span> <span class="hljs-string">Base</span> <span class="hljs-string">de</span> <span class="hljs-string">datos</span>
+    <span class="hljs-attr">ola 1:</span> <span class="hljs-string">T1.1</span>
+    <span class="hljs-attr">ola 2:</span> <span class="hljs-string">T1.2</span>
+  <span class="hljs-string">Bloque</span> <span class="hljs-number">2</span> <span class="hljs-string">—</span> <span class="hljs-string">API</span>
+    <span class="hljs-attr">ola 1:</span> <span class="hljs-string">T2.1</span>
+<span class="hljs-attr">Resumen:</span> <span class="hljs-number">2</span> <span class="hljs-string">bloque(s),</span> <span class="hljs-number">3</span> <span class="hljs-string">ola(s),</span> <span class="hljs-number">3</span> <span class="hljs-string">tarea(s),</span> <span class="hljs-string">máx.</span> <span class="hljs-string">paralelo</span> <span class="hljs-number">3</span></code></pre>
+<h3 id="4-6-construir">4.6 Construir</h3>
+<p>Con el agente:</p>
+<pre><code class="hljs">/satlas-build reset-password</code></pre>
+<p>El prompt compilado indica: ejecutar bloque por bloque y ola por ola, marcar <code>[x]</code> en <code>tasks.md</code>, no tocar la spec aprobada ni el plan, commitear solo código y detenerse ante fallos. Si no usas agente, implementa las tareas a mano y marca los checkboxes: el progreso vive en <code>tasks.md</code>.</p>
+<h3 id="4-7-verificar-con-evidencia">4.7 Verificar con evidencia</h3>
+<p>La verificación no es “corrí los tests”. Es <strong>evidencia por escenario</strong>:</p>
+<pre><code class="hljs language-bash">satlas verify reset-password --scenario REQ-AUTH-001-S1 --<span class="hljs-built_in">command</span> <span class="hljs-string">&quot;npm test -- reset&quot;</span> --by <span class="hljs-string">&quot;Ana&quot;</span></code></pre>
+<pre><code class="hljs"><span class="hljs-string">Evidencia</span> <span class="hljs-string">registrada</span> <span class="hljs-string">—</span> <span class="hljs-string">REQ-AUTH-001-S1</span>
+
+  <span class="hljs-string">método:</span>  <span class="hljs-string">executable</span>
+  <span class="hljs-attr">comando:</span> <span class="hljs-string">npm</span> <span class="hljs-string">test</span> <span class="hljs-string">--</span> <span class="hljs-string">reset</span>
+  <span class="hljs-attr">resultado:</span> <span class="hljs-string">pass</span>
+  <span class="hljs-attr">hash:</span>    <span class="hljs-string">sha256:9f2c1a4b…</span>
+  <span class="hljs-attr">archivo:</span> <span class="hljs-string">.sdd/changes/reset-password/verify.md</span></code></pre>
+<ul><li>El comando se ejecuta <strong>sin shell</strong> (metacaracteres rechazados) y solo se permiten comandos declarados en el perfil del stack (o <code>--allow-command</code>).</li><li><code>result</code> se deriva del código de salida; el <code>output_hash</code> deja rastro de lo que salió.</li><li>Para casos no automatizables: <code>--method manual --result pass --by &quot;…&quot; --notes &quot;…&quot;</code>. Queda registrado que fue manual: algunos packs de cumplimiento lo penalizan.</li><li><code>satlas verify reset-password</code> sin <code>--scenario</code> lista los huecos de evidencia y sale con código 1 si faltan.</li></ul>
+<h3 id="4-8-analizar-revisar-y-archivar">4.8 Analizar, revisar y archivar</h3>
+<pre><code class="hljs language-bash">satlas analyze reset-password     <span class="hljs-comment"># lint + trace + waves + mockups + packs → analyze.md</span>
+satlas ci                         <span class="hljs-comment"># el gate de pipeline completo (sin agente)</span></code></pre>
+<p><code>analyze</code> escribe <code>changes/&lt;slug&gt;/analyze.md</code> con estado <code>passed</code>, <code>passed_with_debt</code> o <code>blocked</code>. <code>ci</code> es lo que corres en el pipeline: specs vivas, cambios, doctor y adaptadores; exit 1 si algo bloquea.</p>
+<p>Cuando todo está verde:</p>
+<pre><code class="hljs language-bash">satlas archive reset-password --dry-run    <span class="hljs-comment"># revisa el plegado</span>
+satlas archive reset-password --<span class="hljs-built_in">yes</span>        <span class="hljs-comment"># pliega y archiva</span></code></pre>
+<p>El delta se <strong>pliega</strong> en la spec viva: los <code>ADDED</code> se agregan, los <code>MODIFIED</code> reemplazan el bloque completo, los <code>REMOVED</code> se eliminan (con motivo y migración) y los <code>RENAMED</code> se retitulan. El cambio se mueve a <code>changes/archive/AAAA-MM-&lt;slug&gt;/</code> y el <code>INDEX.md</code> se regenera. Todo el plegado es determinista y ocurre <strong>todo-o-nada</strong>: si algo no cuadra, no se escribe nada.</p>
+<h3 id="4-9-el-ciclo-completo">4.9 El ciclo completo</h3>
+<div class="mermaid-block"><pre class="mermaid">flowchart LR
+  S[Spec] --&gt; A[Aprobar]
+  A --&gt; P[Plan + Tareas]
+  P --&gt; B[Construir]
+  B --&gt; V[Verificar]
+  V --&gt; R[Revisar]
+  R --&gt; D[Documentar]
+  D --&gt; P2[PR]
+  P2 --&gt; AR[Archivar]
+  AR --&gt;|fold| S2[Spec viva actualizada]</pre></div>
+<p>En carril <code>standard</code> el flujo es <code>spec → aprobar → plan → construir → verificar → archivar</code>. En <code>full</code> se suman <code>analyze</code>, <code>review</code> y <code>docs</code>. En <code>fix</code> solo hay <code>fix.md</code> y evidencia.</p>
+<hr>
+<h2 id="5-el-carril-express-fix">5. El carril express (<code>fix</code>)</h2>
+<p>Para incidentes no hay ceremonia: un solo artefacto.</p>
+<pre><code class="hljs language-bash">satlas new hotfix-login --lane fix --domain auth
+satlas verify hotfix-login --file fix --scenario REQ-FIX-001-S1 --method manual --result pass --by <span class="hljs-string">&quot;Ana&quot;</span> --notes <span class="hljs-string">&quot;verificado en staging&quot;</span>
+satlas archive hotfix-login --<span class="hljs-built_in">yes</span></code></pre>
+<p><code>fix.md</code> tiene cinco secciones: <strong>Síntoma</strong>, <strong>Causa raíz</strong> (con <code>archivo:línea</code>), <strong>Cambio</strong> (mínimo), <strong>Rollback</strong> y <strong>Evidencia</strong>. Si el arreglo revela alcance de feature, <code>satlas new</code> normal y se pasa a especificación: el carril se promueve, nunca se fuerza.</p>
+<hr>
+<h2 id="6-adoptar-un-proyecto-que-ya-existe">6. Adoptar un proyecto que ya existe</h2>
+<p>No empiezas de cero: recuperas las specs del código.</p>
+<pre><code class="hljs language-bash">satlas adopt</code></pre>
+<pre><code class="hljs"><span class="hljs-string">Adopción</span> <span class="hljs-string">(brownfield)</span>
+
+  <span class="hljs-attr">stack detectado:</span> <span class="hljs-string">node-ts</span> <span class="hljs-string">(7</span> <span class="hljs-string">puntos)</span>
+
+  <span class="hljs-attr">Dominios:</span>
+    <span class="hljs-string">auth</span>                  <span class="hljs-number">12</span> <span class="hljs-string">archivos</span>  <span class="hljs-string">spec</span> <span class="hljs-string">creada</span>
+    <span class="hljs-string">billing</span>                <span class="hljs-number">8</span> <span class="hljs-string">archivos</span>  <span class="hljs-string">spec</span> <span class="hljs-string">creada</span>
+
+  <span class="hljs-attr">Informe:</span> <span class="hljs-string">.sdd/adopt-report.md</span></code></pre>
+<p>Qué hace:</p>
+<ol><li>Inventaría los archivos <strong>de código</strong> (no tests ni artefactos) y agrupa por dominio (<code>src/&lt;módulo&gt;</code>, <code>app/</code>, <code>packages/</code>…).</li><li>Crea <code>.sdd/specs/&lt;dominio&gt;/spec.md</code> como <strong>baseline</strong>, con su frontmatter y la sección <strong>Anclas de implementación</strong> (los archivos reales que respaldan cada dominio).</li><li>Escribe <code>.sdd/adopt-report.md</code> con el inventario y el plan sugerido.</li></ol>
+<p>Después, con el agente (<code>/satlas-adopt</code>), por cada dominio:</p>
+<pre><code class="hljs language-bash">satlas new adopt-auth --domain auth
+<span class="hljs-comment"># el agente lee las anclas, entrevista al usuario y redacta los requisitos AS-IS</span>
+satlas validate --change adopt-auth
+satlas archive adopt-auth --<span class="hljs-built_in">yes</span></code></pre>
+<p>La adopción <strong>documenta lo que existe</strong>: no requiere tareas ni verificación. A partir de ahí, cualquier cambio al sistema usa el ciclo normal y la spec viva va creciendo con deltas.</p>
+<hr>
+<h2 id="7-trabajar-con-agentes">7. Trabajar con agentes</h2>
+<p>SpecAtlas es agnóstico: los prompts viven una sola vez en <code>workflow/</code> y se <strong>compilan</strong> al formato de cada agente.</p>
+<pre><code class="hljs language-bash">satlas adapters                                    <span class="hljs-comment"># usa lo configurado (por defecto opencode + generic)</span>
+satlas adapters --targets cursor,copilot,gemini,codex
+satlas adapters --check                            <span class="hljs-comment"># falla si están desactualizados (para CI)</span></code></pre>
+<table><thead><tr><th>Agente</th><th>Artefactos</th><th>Invocación</th></tr></thead><tbody><tr><td>opencode</td><td><code>.opencode/command/satlas-<em>.md</code> + <code>.opencode/skills/satlas-</em>/SKILL.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Claude Code</td><td><code>.claude/commands/satlas/*.md</code> + skills</td><td><code>/satlas:specify</code></td></tr><tr><td>Cursor</td><td><code>.cursor/skills/satlas-<em>/SKILL.md</code> + <code>.cursor/commands/</em>.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Copilot</td><td><code>.github/prompts/satlas-*.prompt.md</code></td><td><code>/satlas-specify</code> en el chat</td></tr><tr><td>Gemini CLI</td><td><code>.gemini/commands/satlas/*.toml</code> + <code>GEMINI.md</code></td><td><code>/satlas:specify</code></td></tr><tr><td>Codex / genérico</td><td><code>prompts/satlas-*.md</code> + <code>AGENTS.md</code></td><td>chat o <code>/prompts:satlas-*</code></td></tr></tbody></table>
+<p>Fases disponibles (una por comando): <code>adopt</code>, <code>specify</code>, <code>plan</code>, <code>build</code>, <code>verify</code>, <code>review</code>, <code>mockup</code>, <code>docs</code>, <code>archive</code>, <code>fix</code>.</p>
+<p><strong>Higiene de contexto:</strong> usa <strong>una sesión por fase</strong>. El kernel guarda todo el estado en <code>.sdd/</code>, así que cada sesión empieza limpia y lee solo lo que necesita — es más barato y mucho más preciso que arrastrar un chat enorme.</p>
+<hr>
+<h2 id="8-la-extension-de-vs-code">8. La extensión de VS Code</h2>
+<p>El panel <strong>SpecAtlas</strong> (icono de libro en la barra de actividad) tiene:</p>
+<ul><li><strong>Árbol</strong>: proyecto → <em>Specs vivas</em> (expandibles en requisitos navegables: el clic abre el archivo en esa línea) y <em>Cambios</em> con su fase, progreso (<code>▓▓▓░░ 3/4</code>), evidencia y <strong>siguiente acción</strong>. Lo accionable va primero.</li><li><strong>Menú contextual</strong> por cambio: Aprobar · Analizar · Trazabilidad · Olas · Propuesta · Mockups · Copiar siguiente · Archivar.</li><li><strong>Badge rojo</strong> en el icono con el número de errores y <strong>Problems</strong> alimentado por el kernel (<code>LINT-<em></code>, <code>TRACE-</em></code>, <code>ATLAS-<em></code>, <code>PACK-</em></code>).</li><li><strong>Matriz de trazabilidad</strong>: cobertura en donut + tabla agrupada por requisito con barra de cobertura, chips de tareas, método de evidencia y huecos en rojo.</li><li><strong>Tablero</strong>: cambios agrupados por fase, con bloqueos y progreso.</li><li><strong>Métricas locales</strong>: KPIs, evidencia, throughput por mes, antigüedad, carriles, WIP y “Necesita atención”.</li><li><strong>LSP de specs</strong>: hover con detalle del requisito, CodeLens (<code>3 tarea(s) · evidencia 1/2</code>), ir a definición/referencias entre spec, tareas y verificación, símbolos, y <em>quick fixes</em> (añadir <code>Cubre:</code> con el escenario pendiente, copiar el bloque completo en un <code>MODIFIED</code>).</li><li><strong>Visor de mockups</strong> con selector de pantalla y <strong>visor de artefactos</strong> (los <code>.md</code> se abren con la vista previa de Markdown, mermaid incluido).</li></ul>
+<p>Todo lo determinista (validar, trazar, firmar, archivar) ocurre en la extensión; lo que necesita IA abre el agente con el prompt compilado. Nada sale de tu máquina.</p>
+<hr>
+<h2 id="9-mockups-como-contrato-visual">9. Mockups como contrato visual</h2>
+<p>Para cambios de interfaz (<code>frontend</code>, <code>mobile</code>), el mockup es parte de la propuesta <strong>y</strong> contrato de lo que se construirá.</p>
+<pre><code class="hljs language-bash">satlas mockup checkout            <span class="hljs-comment"># plan + manifiesto + validación</span>
+satlas mockup checkout --check    <span class="hljs-comment"># lint del mockup (banner, estados, a11y, sin red)</span>
+satlas mockup checkout --capture  <span class="hljs-comment"># capturas por breakpoint (requiere Playwright)</span></code></pre>
+<p>El pipeline:</p>
+<ol><li><strong>plan</strong> — pantallas derivadas de los requisitos, con los escenarios que cada una ilustra.</li><li><strong>generate</strong> — el agente produce HTML autocontenido de alta fidelidad: banner <code>MOCKUP · NO FUNCIONAL</code>, datos reales del dominio, estados (default/loading/vacío/error/offline), responsive y contraste AA.</li><li><strong>validate</strong> — lint determinista (<code>LINT-MKP-*</code>): sin <code>Lorem ipsum</code>, sin recursos externos, con estados y breakpoints; detecta si el mockup quedó <strong>obsoleto</strong> (<code>MKP-STALE</code>) comparando el hash de entradas (spec + tokens).</li><li><strong>approve</strong> — el mockup se firma como cualquier artefacto.</li><li><strong>compare</strong> — en carril <code>full</code>, <code>verify</code> pone lado a lado las capturas de la implementación y el mockup aprobado.</li></ol>
+<hr>
+<h2 id="10-github-opcional-nunca-un-gate-obligatorio">10. GitHub (opcional, nunca un gate obligatorio)</h2>
+<pre><code class="hljs language-bash">satlas issue <span class="hljs-built_in">sync</span> reset-password --labels specatlas   <span class="hljs-comment"># crea/actualiza el issue (idempotente)</span>
+satlas issue status reset-password                    <span class="hljs-comment"># issue vinculado y etiquetas</span>
+satlas approve reset-password --from-github           <span class="hljs-comment"># firma si el issue tiene la etiqueta</span></code></pre>
+<ul><li>El issue se vincula en <code>meta.yaml</code> (<code>tracker: { provider: github, id, url }</code>) y su cuerpo se regenera desde el cambio.</li><li>Aprobación por etiqueta: quien aprueba aplica <code>spec-approved</code> (configurable) y <code>satlas approve --from-github</code> registra la <strong>firma local con hash</strong> y canal <code>tracker</code>.</li><li>Sin <code>gh</code> o sin remoto, la herramienta lo dice claro y no bloquea nada más.</li></ul>
+<hr>
+<h2 id="11-packs-de-cumplimiento">11. Packs de cumplimiento</h2>
+<p>Controles deterministas por dominio regulatorio. Se activan en la configuración:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">packs:</span> [<span class="hljs-string">seguridad</span>, <span class="hljs-string">auditoria</span>]</code></pre>
+<pre><code class="hljs language-bash">satlas packs                          <span class="hljs-comment"># lista integrados y si están activos</span>
+satlas packs --check reset-password   <span class="hljs-comment"># evalúa (exit 1 si hay fallas)</span></code></pre>
+<table><thead><tr><th>Pack</th><th>Qué exige</th></tr></thead><tbody><tr><td><code>seguridad</code></td><td>Reversión por tarea, evidencia automatizable, una regla que nombre el control (sesión, permisos, token)</td></tr><tr><td><code>datos</code></td><td>Finalidad y ciclo de vida del dato, Reversión, escenario de eliminación/exportación</td></tr><tr><td><code>auditoria</code></td><td>Reversión, evidencia ejecutable/automática (sin manual), rastro de auditoría, aprobación nominal activa</td></tr><tr><td><code>accesibilidad</code></td><td>Escenarios con teclado/foco/contraste y un requisito no funcional medible</td></tr></tbody></table>
+<p>Puedes escribir packs propios en <code>.sdd/packs/&lt;id&gt;.yaml</code> con seis tipos de control: <code>task-rollback</code>, <code>evidence-strong</code>, <code>spec-terms</code>, <code>rule-terms</code>, <code>nfr-measurable</code>, <code>approval-provider</code>. Los hallazgos llevan código <code>PACK-&lt;PACK&gt;-&lt;CONTROL&gt;</code> y se integran en <code>analyze</code>, <code>ci</code> y el panel de Problems.</p>
+<hr>
+<h2 id="12-configuracion-de-referencia">12. Configuración de referencia</h2>
+<p><code>.sdd/config.yaml</code> (valores por defecto entre paréntesis):</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">project:</span>
+  <span class="hljs-attr">name:</span> <span class="hljs-string">mi-proyecto</span>
+  <span class="hljs-attr">language:</span> <span class="hljs-string">es</span>                      <span class="hljs-comment"># es | en  → idioma de TODOS los artefactos</span>
+
+<span class="hljs-attr">lanes:</span>
+  <span class="hljs-attr">default:</span> <span class="hljs-string">standard</span>                 <span class="hljs-comment"># fix | standard | full</span>
+  <span class="hljs-attr">allowed:</span> [<span class="hljs-string">fix</span>, <span class="hljs-string">standard</span>, <span class="hljs-string">full</span>]
+
+<span class="hljs-attr">gates:</span>
+  <span class="hljs-attr">approval:</span> <span class="hljs-string">file</span>                    <span class="hljs-comment"># file | none | github-label</span>
+  <span class="hljs-attr">approval_label:</span> <span class="hljs-string">spec-approved</span>     <span class="hljs-comment"># etiqueta de GitHub que aprueba</span>
+  <span class="hljs-attr">analyze:</span>
+    <span class="hljs-attr">mode:</span> <span class="hljs-string">blocking</span>                  <span class="hljs-comment"># off | advisory | blocking  (carril full)</span>
+    <span class="hljs-attr">min_severity:</span> <span class="hljs-string">medium</span>
+  <span class="hljs-attr">verify:</span>
+    <span class="hljs-attr">mode:</span> <span class="hljs-string">blocking</span>
+    <span class="hljs-attr">require_evidence:</span> <span class="hljs-literal">true</span>
+  <span class="hljs-attr">review:</span>
+    <span class="hljs-attr">mode:</span> <span class="hljs-string">advisory</span>                  <span class="hljs-comment"># en carril full suele ir blocking</span>
+  <span class="hljs-attr">mockup:</span>
+    <span class="hljs-attr">require_approval:</span> <span class="hljs-literal">false</span>
+    <span class="hljs-attr">compare_in_verify:</span> <span class="hljs-literal">false</span>
+
+<span class="hljs-attr">trace:</span>
+  <span class="hljs-attr">mode:</span> <span class="hljs-string">blocking</span>                    <span class="hljs-comment"># off | advisory | blocking</span>
+  <span class="hljs-attr">prefix:</span> <span class="hljs-string">REQ</span>
+
+<span class="hljs-attr">waves:</span>
+  <span class="hljs-attr">max_parallel:</span> <span class="hljs-number">3</span>                   <span class="hljs-comment"># tope duro de paralelismo de construcción</span>
+
+<span class="hljs-attr">ci:</span>
+  <span class="hljs-attr">drift:</span> <span class="hljs-string">advisory</span>                   <span class="hljs-comment"># advisory | strict (anclas de spec vs código)</span>
+
+<span class="hljs-attr">spec:</span>
+  <span class="hljs-attr">language:</span> <span class="hljs-string">es</span>
+  <span class="hljs-attr">business_only:</span> <span class="hljs-literal">true</span>               <span class="hljs-comment"># el linter impide tecnología en la spec</span>
+  <span class="hljs-attr">glossary:</span> <span class="hljs-string">.sdd/glossary.md</span>
+
+<span class="hljs-attr">mockups:</span>
+  <span class="hljs-attr">level:</span> <span class="hljs-string">hifi</span>                       <span class="hljs-comment"># sketch | hifi</span>
+  <span class="hljs-attr">platform:</span> <span class="hljs-string">auto</span>                    <span class="hljs-comment"># auto | web | mobile | desktop</span>
+  <span class="hljs-attr">a11y:</span> <span class="hljs-string">AA</span>
+
+<span class="hljs-attr">editor:</span>
+  <span class="hljs-attr">vscode:</span> <span class="hljs-literal">true</span>
+  <span class="hljs-attr">lsp:</span> <span class="hljs-literal">true</span>
+
+<span class="hljs-attr">adapters:</span>
+  <span class="hljs-attr">targets:</span> [<span class="hljs-string">opencode</span>, <span class="hljs-string">generic</span>]      <span class="hljs-comment"># qué agentes se compilan en `init`/`adapters`</span>
+
+<span class="hljs-attr">packs:</span> []                           <span class="hljs-comment"># p.ej. [seguridad, auditoria]</span>
+
+<span class="hljs-attr">integrations:</span>
+  <span class="hljs-attr">tracker:</span> <span class="hljs-string">none</span>                     <span class="hljs-comment"># none | github | jira | linear | clickup</span></code></pre>
+<hr>
+<h2 id="13-comandos-de-referencia">13. Comandos de referencia</h2>
+<table><thead><tr><th>Comando</th><th>Qué hace</th><th>¿Agente?</th></tr></thead><tbody><tr><td><code>satlas init</code></td><td>Crea <code>.sdd/</code>, detecta stack, compila adaptadores</td><td>No</td></tr><tr><td><code>satlas adopt</code></td><td>Inventario brownfield + specs baseline + informe</td><td>No</td></tr><tr><td><code>satlas new &lt;slug&gt;</code></td><td>Crea el cambio (meta + propuesta + delta)</td><td>No</td></tr><tr><td><code>satlas status</code> / <code>satlas next [slug]</code></td><td>Estado derivado y siguiente acción</td><td>No</td></tr><tr><td><code>satlas validate [--change] [--strict]</code></td><td>Estructura + linter de negocio</td><td>No</td></tr><tr><td><code>satlas trace [--change]</code></td><td>Grafo y huecos de trazabilidad (<code>TRACE-*</code>)</td><td>No</td></tr><tr><td><code>satlas waves [--change]</code></td><td>Olas paralelas con guarda de colisiones</td><td>No</td></tr><tr><td><code>satlas analyze &lt;slug&gt;</code></td><td>Chequeo cruzado completo → <code>analyze.md</code></td><td>No</td></tr><tr><td><code>satlas verify &lt;slug&gt;</code></td><td>Lista huecos o registra evidencia (<code>--scenario</code>, <code>--command</code>)</td><td>No</td></tr><tr><td>`satlas approve &lt;slug</td><td>ruta&gt;`</td><td>Firma con hash y autor (<code>--from-github</code> para etiqueta)</td><td>No</td></tr><tr><td><code>satlas present &lt;slug&gt;</code></td><td>Paquete HTML para el stakeholder</td><td>No</td></tr><tr><td><code>satlas mockup &lt;slug&gt;</code></td><td>Plan, <code>--check</code>, <code>--capture</code> de mockups</td><td>Parcial</td></tr><tr><td><code>satlas packs</code></td><td>Lista/evalúa packs de cumplimiento</td><td>No</td></tr><tr><td><code>satlas ci [--strict]</code></td><td>Gate de pipeline completo</td><td>No</td></tr><tr><td><code>satlas metrics</code></td><td>Métricas locales (progreso, WIP, throughput)</td><td>No</td></tr><tr><td><code>satlas run …</code></td><td>Runs y eventos (auditoría, reanudación)</td><td>No</td></tr><tr><td>`satlas issue sync</td><td>status`</td><td>Tracker GitHub idempotente</td><td>No</td></tr><tr><td>`satlas profile detect</td><td>list</td><td>create`</td><td>Perfiles de stack</td><td>No</td></tr><tr><td><code>satlas adapters [--targets] [--check]</code></td><td>Compila prompts a agentes</td><td>No</td></tr><tr><td>`satlas hash &lt;archivo&gt;</td><td>--text`</td><td>sha256 para evidencia</td><td>No</td></tr><tr><td><code>satlas archive &lt;slug&gt;</code></td><td>Pliega el delta y archiva (<code>--dry-run</code>, <code>--yes</code>)</td><td>No</td></tr><tr><td><code>satlas doctor</code></td><td>Salud del workspace y drift</td><td>No</td></tr><tr><td><code>satlas help</code></td><td>Ayuda completa</td><td>No</td></tr></tbody></table>
+<p><strong>Exit codes:</strong> <code>0</code> ok (puede haber avisos) · <code>1</code> hallazgos bloqueantes · <code>2</code> uso/configuración · <code>3</code> E/S. <strong>JSON:</strong> todos los comandos aceptan <code>--json</code> con un envelope estable (<code>schemaVersion</code>, <code>ok</code>, <code>data</code>, <code>warnings</code>, <code>errors</code>).</p>
+<hr>
+<h2 id="14-codigos-de-diagnostico">14. Códigos de diagnóstico</h2>
+<table><thead><tr><th>Prefijo</th><th>Familia</th><th>Ejemplos</th></tr></thead><tbody><tr><td><code>LINT-STR-*</code></td><td>Estructura</td><td>id mal formado, encabezados faltantes</td></tr><tr><td><code>LINT-BIZ-*</code></td><td>Lenguaje de negocio</td><td>jerga técnica, palabra vaga, escenario sin <code>ENTONCES</code></td></tr><tr><td><code>LINT-DLT-*</code></td><td>Deltas</td><td><code>MODIFIED</code> incompleto (perderías escenarios), <code>REMOVED</code> sin motivo/migración</td></tr><tr><td><code>LINT-EVD-*</code></td><td>Evidencia</td><td>bloque mal formado, hash con formato raro</td></tr><tr><td><code>LINT-TSK-*</code></td><td>Tareas</td><td>tarea sin archivo</td></tr><tr><td><code>LINT-PLN-*</code></td><td>Plan</td><td>falta un diagrama requerido, mermaid inválido</td></tr><tr><td><code>LINT-MKP-*</code> / <code>MKP-STALE</code></td><td>Mockups</td><td>sin estados, sin breakpoints, recursos externos, obsoleto</td></tr><tr><td><code>TRACE-*</code></td><td>Trazabilidad</td><td>escenario sin tarea, <code>Cubre:</code> inexistente, ciclo de dependencias</td></tr><tr><td><code>ATLAS-*</code></td><td>Workspace</td><td>config inválida, cambio sin <code>meta.yaml</code>, plan sin firma vigente</td></tr><tr><td><code>PACK-*</code></td><td>Cumplimiento</td><td>control de pack incumplido</td></tr></tbody></table>
+<p>Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en <strong>Problems</strong>; en CLI, con <code>--json</code> puedes consumirlos desde cualquier CI.</p>
+<hr>
+<h2 id="15-preguntas-frecuentes">15. Preguntas frecuentes</h2>
+<p><strong>¿<code>satlas</code> y <code>specatlas</code> son lo mismo?</strong> Sí: el paquete publica el bin <code>specatlas</code> y el alias <code>satlas</code>. Internamente no usamos <code>sdd</code> como comando porque ese nombre ya pertenece a otro paquete npm.</p>
+<p><strong>¿Puedo usar la herramienta sin IA?</strong> Sí. El kernel es 100% determinista: puedes escribir specs, planes, tareas y evidencia a mano y aun así tener validación, trazabilidad y gates.</p>
+<p><strong>¿Qué pasa si la spec cambia después de aprobarla?</strong> La firma se invalida (hash) y el cambio vuelve a “esperando aprobación”. Para cambios de alcance formales existe <code>satlas amend</code> (revisión firmada) en la hoja de ruta; mientras tanto, se re-aprueba.</p>
+<p><strong>¿Cómo evito que la documentación se desactualice?</strong> La spec no es documentación: es la fuente de verdad. Los cambios se expresan como deltas y al archivar se pliegan. Además, <code>ci.drift</code> avisa cuando las anclas de una spec ya no existen en el código.</p>
+<p><strong>¿Tengo que usar ClickUp/Jira?</strong> No. La aprobación por defecto es un archivo firmado. GitHub Issues es un adaptador opcional, y siempre declarado como tracker (nunca requisito para cerrar el ciclo).</p>
+<p>**El comando <code>/satlas-<em></code> no aparece en mi agente.<strong> Ejecuta <code>satlas adapters</code>, revisa la tabla de la sección 7 para la sintaxis exacta de tu agente y </strong>reinicia la sesión</em>* (los comandos se cargan al iniciar).</p>
+<p><strong><code>satlas ci</code> me bloquea por un aviso.</strong> Usa modo estricto solo si lo quieres: por defecto los avisos no bloquean. <code>ci --strict</code> convierte cualquier aviso en falla.</p>
+<p><strong>La evidencia manual, ¿vale?</strong> Vale para el carril <code>fix</code> y para cambios no automatizables. En carril <code>full</code> o con pack <code>auditoria</code> activo, la evidencia manual se penaliza (y en <code>auditoria</code> directamente falla).</p>
+<p><strong>¿Cómo personalizo las reglas de mi equipo?</strong> <code>.sdd/constitution.md</code> (principios), <code>.sdd/glossary.md</code> (lenguaje), <code>.sdd/profiles/custom/<em>.yaml</code> (stack) y <code>.sdd/packs/</em>.yaml</code> (cumplimiento). Todo es texto versionado.</p>
+<hr>
+<h2 id="16-glosario">16. Glosario</h2>
+<table><thead><tr><th>Término</th><th>Significado</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>Comportamiento acordado del sistema, por dominio; se actualiza al archivar cada cambio</td></tr><tr><td><strong>Delta</strong></td><td>Cambio relativo a la spec viva: <code>ADDED</code> / <code>MODIFIED</code> / <code>REMOVED</code> / <code>RENAMED</code></td></tr><tr><td><strong>Escenario</strong></td><td>Ejemplo concreto y verificable: <code>CUANDO … ENTONCES …</code></td></tr><tr><td><strong>Regla de negocio</strong></td><td>Restricción estable que aplica siempre (<code>BR-*</code>)</td></tr><tr><td><strong>Evidencia</strong></td><td>Comando, resultado, hash y fecha que prueban un escenario</td></tr><tr><td><strong>Ola</strong></td><td>Grupo de tareas paralelizables (sin dependencias ni archivos compartidos)</td></tr><tr><td><strong>Carril</strong></td><td>Tamaño de proceso: <code>fix</code>, <code>standard</code>, <code>full</code></td></tr><tr><td><strong>Gate</strong></td><td>Puerta verificable que debe abrirse para avanzar</td></tr><tr><td><strong>Fold</strong></td><td>Plegado del delta en la spec viva al archivar</td></tr><tr><td><strong>Ancla</strong></td><td>Archivo o símbolo del código que respalda un requisito (para detectar drift)</td></tr><tr><td><strong>Perfil</strong></td><td>Reglas del stack (comandos, estructura, anti-patrones, validaciones)</td></tr><tr><td><strong>Pack</strong></td><td>Conjunto de controles de cumplimiento activables</td></tr></tbody></table>
+<hr>
+<h2 id="17-chuleta-cheat-sheet">17. Chuleta (cheat sheet)</h2>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Preparar</span>
+satlas init --name mi-proyecto
+satlas adopt                                    <span class="hljs-comment"># si el proyecto ya existe</span>
+
+<span class="hljs-comment"># Un cambio normal</span>
+satlas new reset-password --lane standard --domain auth
+satlas validate --change reset-password
+satlas approve reset-password --by <span class="hljs-string">&quot;Nombre Apellido&quot;</span>
+satlas present reset-password                   <span class="hljs-comment"># paquete para el stakeholder</span>
+satlas trace --change reset-password            <span class="hljs-comment"># ¿cubre todo?</span>
+satlas waves --change reset-password            <span class="hljs-comment"># orden de construcción</span>
+<span class="hljs-comment">#   → construir (agente o a mano) y marcar tareas</span>
+satlas verify reset-password --scenario REQ-AUTH-001-S1 --<span class="hljs-built_in">command</span> <span class="hljs-string">&quot;npm test -- reset&quot;</span> --by <span class="hljs-string">&quot;Ana&quot;</span>
+satlas analyze reset-password
+satlas ci
+satlas archive reset-password --<span class="hljs-built_in">yes</span>
+
+<span class="hljs-comment"># Un incidente</span>
+satlas new hotfix-login --lane fix --domain auth
+<span class="hljs-comment">#   → fix.md y evidencia</span>
+satlas archive hotfix-login --<span class="hljs-built_in">yes</span>
+
+<span class="hljs-comment"># Día a día</span>
+satlas status &amp;&amp; satlas next
+satlas validate &amp;&amp; satlas trace                  <span class="hljs-comment"># antes de cada PR</span>
+satlas metrics                                   <span class="hljs-comment"># salud del proceso</span>
+satlas doctor                                    <span class="hljs-comment"># algo huele mal</span></code></pre>
+<p><strong>Reglas de oro</strong></p>
+<ol><li>La spec es de negocio; la tecnología vive en el plan.</li><li>Un requisito sin escenario no existe.</li><li>Sin evidencia no hay “terminado”.</li><li>Lo aprobado no se edita en silencio: se re-aprueba.</li><li>El carril se elige por riesgo, no por costumbre.</li></ol>
+</article>
+<script nonce="" src="mermaid.min.js"></script>
+<script nonce="">
+  const theme = 'default';
+  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme }); }
+</script>
+</body>
+</html>

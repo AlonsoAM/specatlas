@@ -1,0 +1,48 @@
+# Configuración de SpecAtlas
+# language: es por defecto; en solo si el equipo trabaja en inglés.
+# Los gates aceptan: off | advisory | blocking
+
+schema_version: 1
+project:
+  name: SpecAtlas
+  language: es
+lanes:
+  default: standard
+  allowed:
+    - fix
+    - standard
+    - full
+gates:
+  approval: file
+  analyze:
+    mode: blocking
+    min_severity: medium
+  verify:
+    mode: blocking
+    require_evidence: true
+  review:
+    mode: advisory
+  mockup:
+    require_approval: false
+    compare_in_verify: false
+trace:
+  mode: blocking
+  prefix: REQ
+waves:
+  max_parallel: 3
+ci:
+  drift: advisory
+spec:
+  language: es
+  business_only: true
+  glossary: .sdd/glossary.md
+syntax: {}
+mockups:
+  level: hifi
+  platform: auto
+  a11y: AA
+editor:
+  vscode: true
+  lsp: true
+integrations:
+  tracker: none

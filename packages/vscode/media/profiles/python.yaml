@@ -1,0 +1,36 @@
+name: python
+display_name: Python
+detection:
+  files:
+    - '**/*.py'
+    - pyproject.toml
+    - requirements.txt
+  manifests:
+    - file: pyproject.toml
+      contains: []
+    - file: requirements.txt
+      contains: []
+  priority: 10
+domains:
+  - backend
+  - other
+commands:
+  build: ''
+  lint: ruff check .
+  test: pytest
+  format: ruff format .
+verify:
+  executable:
+    - pytest
+    - ruff check .
+  automatic:
+    - Revisión de imports y efectos colaterales
+  manual:
+    - Ejecución manual del flujo principal
+rollback: Revierte el commit; si hay migraciones, aplica el downgrade correspondiente.
+antipatterns:
+  - Excepciones silenciadas sin log
+  - Credenciales en el código
+assumptions:
+  - Python 3.11+
+  - El proyecto declara dependencias (pyproject o requirements)

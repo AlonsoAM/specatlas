@@ -1,0 +1,19 @@
+name: generic
+display_name: Genérico (cualquier stack)
+detection:
+  files: []
+  manifests: []
+  priority: 0
+domains:
+  - other
+commands: {}
+verify:
+  executable: []
+  automatic: []
+  manual:
+    - Confirmación humana explícita del resultado observado
+rollback: Revierte los archivos tocados al estado anterior (git revert o restaurar backup).
+antipatterns:
+  - Inventar comandos de build/test que el proyecto no tiene
+assumptions:
+  - El stack no está cubierto por un perfil específico

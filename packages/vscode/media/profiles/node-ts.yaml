@@ -1,0 +1,38 @@
+name: node-ts
+display_name: Node + TypeScript
+detection:
+  files:
+    - '**/*.ts'
+    - '**/*.tsx'
+    - package.json
+  manifests:
+    - file: package.json
+      contains:
+        - typescript
+  priority: 10
+domains:
+  - backend
+  - frontend
+  - fullstack
+  - testing
+commands:
+  build: npm run build
+  lint: npm run lint
+  test: npm test
+  format: npm run format
+verify:
+  executable:
+    - npm test
+    - npm run lint
+  automatic:
+    - Búsqueda de efectos colaterales con grep
+  manual:
+    - Prueba manual del flujo principal en desarrollo
+rollback: Revierte el commit y deshaz migraciones si el cambio las incluye.
+antipatterns:
+  - SQL concatenado en lugar de consultas parametrizadas
+  - Secretos versionados o logueados
+  - console.log olvidados en producción
+assumptions:
+  - Node LTS
+  - El proyecto declara sus scripts en package.json

@@ -1,0 +1,36 @@
+{
+  "name": "@specatlas/adapters",
+  "version": "0.1.0",
+  "description": "Compilador de prompts de SpecAtlas a artefactos de agente (opencode, Claude Code, Cursor, Copilot, Gemini, Codex)",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["sdd", "agents", "opencode", "claude-code", "cursor", "copilot", "gemini", "codex"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlonsoAM/specatlas.git",
+    "directory": "packages/adapters"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm --dts --clean"
+  },
+  "dependencies": {
+    "@specatlas/core": "workspace:*",
+    "yaml": "^2.6.1"
+  }
+}

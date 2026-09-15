@@ -1,0 +1,37 @@
+{
+  "name": "@specatlas/core",
+  "version": "0.1.0",
+  "description": "Kernel determinista de SpecAtlas: parsing, validación, trazabilidad, olas y ciclo de vida",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["sdd", "spec-driven-development", "traceability", "kernel", "specs"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AlonsoAM/specatlas.git",
+    "directory": "packages/core"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsup src/index.ts --format esm --dts --clean"
+  },
+  "dependencies": {
+    "@specatlas/render": "workspace:*",
+    "yaml": "^2.6.1",
+    "zod": "^3.24.1"
+  }
+}

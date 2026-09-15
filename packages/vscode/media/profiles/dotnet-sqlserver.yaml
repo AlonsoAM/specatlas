@@ -1,0 +1,36 @@
+name: dotnet-sqlserver
+display_name: .NET + SQL Server
+detection:
+  files:
+    - '**/*.cs'
+    - '**/*.csproj'
+    - '**/*.sln'
+  manifests:
+    - file: '*.sln'
+      contains: []
+    - file: '*.csproj'
+      contains: []
+  priority: 20
+domains:
+  - backend
+  - database
+commands:
+  build: dotnet build
+  test: dotnet test
+  lint: dotnet format --verify-no-changes
+  format: dotnet format
+verify:
+  executable:
+    - dotnet test
+  automatic:
+    - dotnet build
+  manual:
+    - Ejecución del flujo contra la base de datos de desarrollo
+rollback: Script SQL de rollback por objeto afectado + revertir el commit.
+antipatterns:
+  - DML directo sobre tablas históricas
+  - Endpoints sin autenticación
+  - Cambios de base de datos sin script de rollback
+assumptions:
+  - .NET LTS
+  - SQL Server accesible en desarrollo

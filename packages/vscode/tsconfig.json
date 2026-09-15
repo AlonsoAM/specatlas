@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node", "vscode"],
+    "paths": {
+      "vscode-languageclient/node": ["./node_modules/vscode-languageclient/node.d.ts"],
+      "vscode-languageserver/node": ["./node_modules/vscode-languageserver/node.d.ts"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

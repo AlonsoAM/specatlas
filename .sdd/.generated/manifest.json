@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-09-15T21:29:28.511Z",
+  "sourceHash": "sha256:f2c48b2128b80eea7f9548fcde1c32d0b3dc9b36b533f5b2de6f7ae59c447967",
+  "language": "es",
+  "targets": {
+    "opencode": [
+      {
+        "path": ".opencode/command/satlas-adopt.md",
+        "hash": "sha256:844ebd43b3cad4aa6212cbcf015f997b348d8e474a05cdeb139d644e4c9997c2"
+      },
+      {
+        "path": ".opencode/skills/satlas-adopt/SKILL.md",
+        "hash": "sha256:ac01d94c41cdd57ada3f81bc0d589b3707ce86ce532042de56d4851a45c70a34"
+      },
+      {
+        "path": ".opencode/command/satlas-archive.md",
+        "hash": "sha256:f6bfc3136734405c7a011e67312abbb52ac74292a9f827a78652aff3be7da8e9"
+      },
+      {
+        "path": ".opencode/skills/satlas-archive/SKILL.md",
+        "hash": "sha256:6d0508eaa3b6af39cf5832342ee24ea0807158553e7733add5ecdc23758c5ec7"
+      },
+      {
+        "path": ".opencode/command/satlas-build.md",
+        "hash": "sha256:33c377b0dc3fa2e0437148c3add2d08d8532606f0039880073dc7880cd231463"
+      },
+      {
+        "path": ".opencode/skills/satlas-build/SKILL.md",
+        "hash": "sha256:96e28c4e69fe7be1dbddd0b7c85bb2b44405e4197e179288ea399ad7e7f883f4"
+      },
+      {
+        "path": ".opencode/command/satlas-fix.md",
+        "hash": "sha256:27673ce7084c788fac62dc6a6a0d13fe9c38ca82675a92cfd539d6a127122ab0"
+      },
+      {
+        "path": ".opencode/skills/satlas-fix/SKILL.md",
+        "hash": "sha256:a67cf67e399fb23e168baf89cc4dd9aba5f06147d594aeed14046c902fdc4f86"
+      },
+      {
+        "path": ".opencode/command/satlas-mockup.md",
+        "hash": "sha256:5a65708c709498d9dd641a00adcfa59ef0ab3713b28fce92b30b4d14494b70dd"
+      },
+      {
+        "path": ".opencode/skills/satlas-mockup/SKILL.md",
+        "hash": "sha256:1c63d81c9552fbf69815ac474fe37af657c71902972cdb30d78d1ebc8abf2e75"
+      },
+      {
+        "path": ".opencode/command/satlas-plan.md",
+        "hash": "sha256:c789be80bcfa77b940805ee43fcd81d9f3704a9d00d7100f8cd7c40d91727136"
+      },
+      {
+        "path": ".opencode/skills/satlas-plan/SKILL.md",
+        "hash": "sha256:dc3fca5d62b58b3647cbc3378a298e9f4bcee4434a87fc01f38df069543a0d9d"
+      },
+      {
+        "path": ".opencode/command/satlas-review.md",
+        "hash": "sha256:cef18493a1656f138feae97f987c35604b12e76ada18f69efb17167411fc279a"
+      },
+      {
+        "path": ".opencode/skills/satlas-review/SKILL.md",
+        "hash": "sha256:f258fe44b2b891aec42b4e69b5bb956b73f4ad814c802de94f4eb74fb5b44bbb"
+      },
+      {
+        "path": ".opencode/command/satlas-specify.md",
+        "hash": "sha256:b5dd14072edf09d588d327a06e209d827f1a962c34719716a9657190b198fd30"
+      },
+      {
+        "path": ".opencode/skills/satlas-specify/SKILL.md",
+        "hash": "sha256:7db8caaeac94f0b0bdd6795fdcdd8abe9fb6efe6cf3d52f4f972d80bbc9ca283"
+      },
+      {
+        "path": ".opencode/command/satlas-verify.md",
+        "hash": "sha256:3ea921b03c1e64e5ff3e21c823addb48e0571f9910b473151fca5748a1f1d727"
+      },
+      {
+        "path": ".opencode/skills/satlas-verify/SKILL.md",
+        "hash": "sha256:6bd0e4ca8b269d1ecc170f174c1a7a976c06701b3e133d9fcb64cec38f266281"
+      }
+    ],
+    "generic": [
+      {
+        "path": "prompts/satlas-adopt.md",
+        "hash": "sha256:60c58426f5f18669c0b0753554e68e8f87c5209dfb45573b4752cccb6d2ee82a"
+      },
+      {
+        "path": "prompts/satlas-archive.md",
+        "hash": "sha256:1001765fd3077a72729f694ed1f3fb8a453a650f430f3e0534e4f7496b98ef21"
+      },
+      {
+        "path": "prompts/satlas-build.md",
+        "hash": "sha256:2af02e4355906e992e28ae694ad6715af860e92f396539bfeca07fc69981e7e1"
+      },
+      {
+        "path": "prompts/satlas-fix.md",
+        "hash": "sha256:95c37ce954bd1dc0d5eb6d30695f9fa70a6fc3a6851bff4f393e10715a24c0a5"
+      },
+      {
+        "path": "prompts/satlas-mockup.md",
+        "hash": "sha256:76e9d314d7f1e7e2fea8212696e6544ac2812e2f7558b1fb6646362d0f7a4fa1"
+      },
+      {
+        "path": "prompts/satlas-plan.md",
+        "hash": "sha256:1f7f40336f07f61a140f3ac6710799df78a65fd5921351d36c1eabcc759e6846"
+      },
+      {
+        "path": "prompts/satlas-review.md",
+        "hash": "sha256:e370e4fc74c8d50e13fbd3569b4d7997566da7f51119eacd889b103d65cfabee"
+      },
+      {
+        "path": "prompts/satlas-specify.md",
+        "hash": "sha256:3ccea353ccbef8a396a1a9f1f1237f0deede2fc69631214329e6ce99aaeee7ec"
+      },
+      {
+        "path": "prompts/satlas-verify.md",
+        "hash": "sha256:4ff0ada30c9139ae4c6ca0aaee89daf397d426cbd599f6e73d1d2bb178fb07a7"
+      },
+      {
+        "path": "AGENTS.md",
+        "hash": "sha256:27cec060e26a814261f28ee8c61b443adefd3cfdf237786d1b2bdb04529de13b"
+      }
+    ]
+  }
+}
