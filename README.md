@@ -54,7 +54,7 @@ npm i -g specatlas        # bins: specatlas y satlas
 # Extensión
 code --install-extension specatlas.specatlas-vscode
 #  - VS Code Marketplace → https://marketplace.visualstudio.com/items?itemName=specatlas.specatlas-vscode
-#  - Open VSX → https://open-vsx.org/extension/specatlas/specatlas-vscode
+#  - Open VSX → pendiente de publicación (mismo .vsix del release)
 #  - .vsix → descárgalo del release: https://github.com/AlonsoAM/specatlas/releases
 ```
 
