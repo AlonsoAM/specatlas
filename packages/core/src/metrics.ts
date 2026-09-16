@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localIso } from './time.js'
+import { localStamp } from './time.js'
 import { countBySeverity } from './diagnostics.js'
 import { listDirs } from './fsx.js'
 import { lintDelta } from './lint.js'
@@ -181,7 +181,7 @@ export async function collectMetrics(root: string, now: Date = new Date()): Prom
   }
 
   return {
-    generatedAt: localIso(now),
+    generatedAt: localStamp(now),
     project: config.project.name,
     root: resolved,
     changes,

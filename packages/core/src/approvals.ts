@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localIso } from './time.js'
+import { localStamp } from './time.js'
 import { stringify as stringifyYaml } from 'yaml'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
@@ -61,7 +61,7 @@ export async function signApproval(opts: SignApprovalOptions): Promise<SignAppro
     artifact: rel,
     artifactHash: artifactHash(content),
     approvedBy: opts.by.trim(),
-    approvedAt: localIso(now),
+    approvedAt: localStamp(now),
     channel: opts.channel ?? 'cli',
   }
   if (opts.note) approval.note = opts.note

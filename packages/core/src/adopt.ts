@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localDate, localIso } from './time.js'
+import { localDate, localStamp } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { exists, readTextIfExists, toPosix, walkFiles, writeText } from './fsx.js'
@@ -213,7 +213,7 @@ function adoptReport(input: {
   lines.push(es ? '# Adopción (brownfield)' : '# Adoption (brownfield)')
   lines.push('')
   lines.push(es ? `- Proyecto: ${input.config.project.name}` : `- Project: ${input.config.project.name}`)
-  lines.push(es ? `- Generado: ${localIso(input.now)}` : `- Generated: ${localIso(input.now)}`)
+  lines.push(es ? `- Generado: ${localStamp(input.now)}` : `- Generated: ${localStamp(input.now)}`)
   lines.push(es ? `- Archivos de código inventariados: ${input.files} (de ${input.inventoried} archivos totales)` : `- Inventoried source files: ${input.files} (of ${input.inventoried} total files)`)
   if (input.detection) lines.push(es ? `- Stack detectado: ${input.detection.name} (${input.detection.score} puntos)` : `- Detected stack: ${input.detection.name} (${input.detection.score})`)
   lines.push('')

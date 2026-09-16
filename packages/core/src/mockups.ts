@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localIso } from './time.js'
+import { localStamp } from './time.js'
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { z } from 'zod'
 import type { Diagnostic } from './diagnostics.js'
@@ -225,7 +225,7 @@ export async function writeMockupPlan(root: string, slug: string, plan: MockupPl
   if (await exists(file)) return file
   const doc = {
     schema_version: 1,
-    generated_at: localIso(now),
+    generated_at: localStamp(now),
     platform: plan.platform,
     screens: plan.screens.map((s) => ({ id: s.id, title: s.title, file: s.file, illustrates: s.illustrates, states: s.states, breakpoints: s.breakpoints })),
   }
@@ -242,7 +242,7 @@ export async function writeMockupManifest(root: string, slug: string, plan: Mock
     level: 'hifi',
     platform: plan.platform,
     inputs_hash: inputsHash,
-    generated_at: localIso(now),
+    generated_at: localStamp(now),
     screens: plan.screens.map((s) => ({ id: s.id, title: s.title, file: s.file, illustrates: s.illustrates, states: s.states, breakpoints: s.breakpoints })),
     screenshots: [],
   }

@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localIso } from './time.js'
+import { localStamp } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { exists, readTextIfExists, writeText } from './fsx.js'
@@ -55,7 +55,7 @@ export async function initWorkspace(opts: InitOptions): Promise<InitResult> {
 
   const detected = await detectIfPossible(root, opts.profilesDir)
   if (detected) {
-    const yaml = detectionToYaml(detected, localIso(opts.now))
+    const yaml = detectionToYaml(detected, localStamp(opts.now))
     await writeText(path.join(sddDir, 'profiles', 'detected.yaml'), yaml)
     created.push(path.join(sddDir, 'profiles', 'detected.yaml'))
     if (detected.best) {

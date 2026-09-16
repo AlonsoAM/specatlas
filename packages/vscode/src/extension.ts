@@ -11,7 +11,7 @@ import {
   loadActiveProfile,
   loadChange,
   loadConfig,
-  localIso,
+  localStamp,
   mockupsReady,
   packFindings,
   parseDelta,
@@ -654,7 +654,7 @@ export function activate(context: vscode.ExtensionContext): void {
     await refresh()
     const snapshot = provider.snapshotOf(0)
     if (!snapshot) return
-    output.appendLine(`[validate] ${localIso()} — ${snapshot.summary.errors} errores, ${snapshot.summary.warnings} avisos`)
+    output.appendLine(`[validate] ${localStamp()} — ${snapshot.summary.errors} errores, ${snapshot.summary.warnings} avisos`)
     for (const flat of snapshot.diagnostics) output.appendLine(`  ${flat.severity.toUpperCase()} ${flat.code} ${flat.file}:${flat.line} — ${flat.message}`)
     output.show(true)
     void vscode.window.showInformationMessage(`SpecAtlas: ${snapshot.summary.errors} errores, ${snapshot.summary.warnings} avisos`)
@@ -664,7 +664,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const root = workspaceRoot()
     if (!root) return
     const report = await runDoctor(root)
-    output.appendLine(`[doctor] ${localIso()}`)
+    output.appendLine(`[doctor] ${localStamp()}`)
     for (const finding of report.findings) output.appendLine(`  ${finding.severity.toUpperCase()} ${finding.code} — ${finding.message}`)
     output.show(true)
     publishExtraDiagnostics(problems, report.findings)

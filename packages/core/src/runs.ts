@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { localIso } from './time.js'
+import { localCompact, localStamp } from './time.js'
 import { randomBytes } from 'node:crypto'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
@@ -52,7 +52,7 @@ export interface RunRecord {
 }
 
 export function generateRunId(now: Date = new Date()): string {
-  const iso = localIso(now).replace(/[-+:.Z]/g, "").slice(0, 15)
+  const iso = localCompact(now)
   return `${iso.slice(0, 8)}-${iso.slice(8, 14)}-${randomBytes(3).toString('hex')}`
 }
 
@@ -67,8 +67,8 @@ export async function createRun(root: string, slug: string, phase: string, input
     slug,
     phase,
     status: 'active',
-    startedAt: localIso(now),
-    updatedAt: localIso(now),
+    startedAt: localStamp(now),
+    updatedAt: localStamp(now),
   }
   if (inputs) state.inputs = inputs
   const dir = path.join(runsDir(root), runId)
@@ -80,7 +80,7 @@ export async function createRun(root: string, slug: string, phase: string, input
 }
 
 export async function appendRunEvent(root: string, runId: string, type: string, data?: Record<string, unknown>, now: Date = new Date()): Promise<RunEvent> {
-  const event: RunEvent = { eventId: randomBytes(4).toString('hex'), at: localIso(now), type }
+  const event: RunEvent = { eventId: randomBytes(4).toString('hex'), at: localStamp(now), type }
   if (data) event.data = data
   const file = path.join(runsDir(root), runId, 'events.jsonl')
   const previous = (await readTextIfExists(file)) ?? ''
@@ -94,7 +94,7 @@ export async function updateRunStatus(root: string, runId: string, status: RunSt
   if (raw === undefined) return
   const state = JSON.parse(raw) as RunState
   state.status = status
-  state.updatedAt = localIso(now)
+  state.updatedAt = localStamp(now)
   await writeText(file, `${JSON.stringify(state, null, 2)}\n`)
 }
 
