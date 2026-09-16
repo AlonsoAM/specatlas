@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { localIso } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { copyFile, ensureDir, exists, readTextIfExists, writeText } from './fsx.js'
@@ -63,7 +64,7 @@ export async function generatePresentation(opts: PresentOptions): Promise<Presen
     project: config.project.name,
     version: change.delta.sectionsFound.length,
     hash,
-    generatedAt: now.toISOString(),
+    generatedAt: localIso(now),
     proposalHtml: proposalBody ? renderMarkdown(proposalBody) : `<p><em>${labels.noProposal}</em></p>`,
     requirements: change.delta ? [...change.delta.added.map((r) => ({ req: r, kind: 'added' as const })), ...change.delta.modified.map((r) => ({ req: r, kind: 'modified' as const }))] : [],
     evidence: new Map((change.verify?.evidence ?? []).map((e) => [e.scenario, e.result])),

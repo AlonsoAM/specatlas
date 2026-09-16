@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { localDate } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { ensureDir, exists, writeText } from './fsx.js'
@@ -59,7 +60,7 @@ export async function createChange(opts: NewChangeOptions): Promise<NewChangeRes
     title,
     domain,
     lane,
-    created: (opts.now ?? new Date()).toISOString().slice(0, 10),
+    created: localDate(opts.now),
   }
 
   await ensureDir(dir)

@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs'
+import { localDate, localMonth } from './time.js'
 import path from 'node:path'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
@@ -129,7 +130,7 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
       return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: opts.dryRun ?? false }
     }
     const nowFix = opts.now ?? new Date()
-    const targetFix = path.join(root, '.sdd', 'changes', 'archive', `${nowFix.toISOString().slice(0, 7)}-${opts.slug}`)
+    const targetFix = path.join(root, '.sdd', 'changes', 'archive', `${localMonth(nowFix)}-${opts.slug}`)
     if (await exists(targetFix)) {
       diagnostics.push(diag('ATLAS-ARCH-002', 'error', `Ya existe un cambio archivado en ${targetFix}`, { path: targetFix }))
       return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: opts.dryRun ?? false }
@@ -166,7 +167,7 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
     title: fm.data['title'] ?? change.meta.title ?? domain,
     owner: fm.data['owner'],
     version: version + 1,
-    updated: now.toISOString().slice(0, 10),
+    updated: localDate(now),
   }
   for (const key of Object.keys(nextFm)) if (nextFm[key] === undefined) delete nextFm[key]
   const body = fold.content.replace(/^[\r\n]+/, '').trimEnd() + '\n'
@@ -174,7 +175,7 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
     .map(([k, v]) => `${k}: ${String(v)}`)
     .join('\n')}\n---\n\n${body}`
 
-  const month = now.toISOString().slice(0, 7)
+  const month = localMonth(now)
   const archiveDir = path.join(root, '.sdd', 'changes', 'archive')
   const target = path.join(archiveDir, `${month}-${opts.slug}`)
   if (await exists(target)) {

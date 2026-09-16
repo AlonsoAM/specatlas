@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { localIso } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { readTextIfExists, writeText } from './fsx.js'
@@ -137,7 +138,7 @@ export async function recordEvidence(opts: RecordEvidenceOptions): Promise<Recor
     scenario,
     method,
     result,
-    date: (opts.now ?? new Date()).toISOString(),
+    date: localIso(opts.now),
     by: opts.by.trim(),
     line: 0,
   }

@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { localIso } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { countBySeverity, diag } from './diagnostics.js'
 import { writeText } from './fsx.js'
@@ -115,7 +116,7 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<AnalyzeResult> {
 
   if (opts.write !== false) {
     const file = path.join(change.dir, 'analyze.md')
-    await writeText(file, renderAnalyze(change, result, (opts.now ?? new Date()).toISOString()))
+    await writeText(file, renderAnalyze(change, result, localIso(opts.now)))
     result.path = file
   }
 
