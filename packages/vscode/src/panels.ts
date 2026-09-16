@@ -176,6 +176,9 @@ tr.row-gap td { background: color-mix(in srgb, ${TONES.red} 7%, transparent); }
 .filters input[type="search"] { flex: 1 1 220px; min-width: 170px; background: var(--vscode-input-background, #3c3c3c); color: var(--vscode-input-foreground, #ccc); border: 1px solid var(--vscode-input-border, transparent); border-radius: 6px; padding: 5px 10px; font: inherit; }
 .filters select { background: var(--vscode-dropdown-background, #3c3c3c); color: var(--vscode-dropdown-foreground, #ccc); border: 1px solid var(--vscode-dropdown-border, transparent); border-radius: 6px; padding: 5px 8px; font: inherit; }
 .filters .fcount { margin-left: auto; color: var(--atlas-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.filters .fclear { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 80%, transparent); border-radius: 6px; padding: 4px 10px; font: inherit; cursor: pointer; }
+.filters .fclear:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+mark.hit { background: color-mix(in srgb, var(--vscode-charts-yellow, #cca700) 45%, transparent); color: var(--atlas-ink); border-radius: 3px; padding: 0 1px; }
 tbody tr[hidden], article.ticket[hidden] { display: none; }
 a { color: var(--atlas-accent); text-decoration: none; border-bottom: 1px dotted color-mix(in srgb, var(--atlas-accent) 50%, transparent); }
 a:hover { border-bottom-style: solid; }
@@ -348,7 +351,17 @@ const MATRIX_FILTERS_SCRIPT = `
   var dom = document.getElementById('mdomain');
   var ch = document.getElementById('mchange');
   var out = document.getElementById('mcount');
+  var clear = document.getElementById('mclear');
   function norm(value) { return (value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase(); }
+  function escapeHtml(value) { return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function highlight(cell, text) {
+    var original = cell.getAttribute('data-title') || '';
+    if (!text) { cell.textContent = original; return; }
+    var index = norm(original).indexOf(text);
+    if (index < 0) { cell.textContent = original; return; }
+    var hit = original.slice(index, index + text.length);
+    cell.innerHTML = escapeHtml(original.slice(0, index)) + '<mark class="hit">' + escapeHtml(hit) + '</mark>' + escapeHtml(original.slice(index + hit.length));
+  }
   function apply() {
     var text = norm(q && q.value ? q.value : '').trim();
     var status = st ? st.value : 'all';
@@ -364,9 +377,20 @@ const MATRIX_FILTERS_SCRIPT = `
       if (show) visible += 1;
       rows.forEach(function (row) { if (row.getAttribute('data-group') === key) row.hidden = !show; });
     });
+    Array.prototype.slice.call(document.querySelectorAll('td.scenario-title')).forEach(function (cell) {
+      var row = cell.closest('tr');
+      highlight(cell, row && !row.hidden ? text : '');
+    });
     if (out) out.textContent = visible + ' de ' + heads.size + ' requisito(s)';
   }
   [q, st, dom, ch].forEach(function (el) { if (el) el.addEventListener('input', apply); });
+  if (clear) clear.addEventListener('click', function () {
+    if (q) q.value = '';
+    if (st) st.value = 'all';
+    if (dom) dom.value = '';
+    if (ch) ch.value = '';
+    apply();
+  });
   apply();
 })()
 `
@@ -422,6 +446,7 @@ export function matrixHtml(model: MatrixModel, nonce?: string): string {
     <div class="group-line">
       <span class="group-title">${commandLink('specatlas.openAt', [requirement.file, requirement.line], `${requirement.id} — ${requirement.title}`)}</span>
       ${pillHtml(requirement.living ? 'viva' : 'delta', 'blue', '◈')}
+      ${requirement.living && (requirement.changes ?? []).length > 0 ? pillHtml(`modificado por ${(requirement.changes ?? []).join(', ')}`, 'purple', '⌥') : ''}
       <span class="group-spacer"></span>
       <span class="group-coverage" style="--tone:${tone(requirementTone(requirement))}">
         <span class="gc-track"><span class="gc-fill" style="width:${Math.round(requirementPercent)}%"></span></span>
@@ -446,7 +471,7 @@ export function matrixHtml(model: MatrixModel, nonce?: string): string {
                 : pillHtml('pendiente', 'orange', '⋯')
           return `<tr class="scenario-row${gap ? ' row-gap' : ''}" data-group="${escapeHtml(requirement.id)}">
   <td class="mono">${commandLink('specatlas.openAt', [scenario.file, scenario.line], scenario.id)}</td>
-  <td>${escapeHtml(scenario.title)}</td>
+  <td class="scenario-title" data-title="${escapeHtml(scenario.title)}">${escapeHtml(scenario.title)}</td>
   <td>${taskChips}</td>
   <td class="evidence-cell">${evidence}</td>
 </tr>`
@@ -488,6 +513,7 @@ export function matrixHtml(model: MatrixModel, nonce?: string): string {
   ${domains.length > 1 ? `<select id="mdomain" aria-label="Dominio"><option value="">Todos los dominios</option>${domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('')}</select>` : ''}
   ${changeSlugs.length > 0 ? `<select id="mchange" aria-label="Cambio"><option value="">Todos los cambios</option><option value="__none">Sin cambio activo</option>${changeSlugs.map((slug) => `<option value="${escapeHtml(slug)}">${escapeHtml(slug)}</option>`).join('')}</select>` : ''}
   <span class="fcount" id="mcount"></span>
+  <button type="button" class="fclear" id="mclear" aria-label="Limpiar filtros">Limpiar</button>
 </div>`
 
   const body = `

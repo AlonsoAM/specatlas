@@ -768,10 +768,44 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!title) return
     const slug = await vscode.window.showInputBox({ title: 'Nuevo cambio — slug', prompt: 'Identificador del cambio (carpeta)', value: slugify(title), ignoreFocusOut: true })
     if (!slug) return
-    const domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio (p. ej. tareas, auth, facturación)', value: 'general', ignoreFocusOut: true })
+    const workspaceSnapshot = provider.snapshotOf(0)
+    const knownDomains = [
+      ...new Set([
+        ...(workspaceSnapshot?.specs.map((spec) => spec.domain) ?? []),
+        ...(workspaceSnapshot?.changes.map((change) => change.domain).filter((domain): domain is string => Boolean(domain)) ?? []),
+      ]),
+    ].sort()
+    let domain: string | undefined
+    if (knownDomains.length > 0) {
+      const pick = await vscode.window.showQuickPick(
+        [
+          ...knownDomains.map((value) => ({ label: value, description: 'dominio existente', value })),
+          { label: '$(edit) Otro dominio…', description: 'Escribe uno nuevo', value: '__new' },
+        ],
+        { title: 'Nuevo cambio — dominio', placeHolder: 'Dominio de negocio (reutilízalo para no dividir las specs)', ignoreFocusOut: true },
+      )
+      if (!pick) return
+      if (pick.value === '__new') {
+        domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio nuevo', value: 'general', ignoreFocusOut: true })
+      } else {
+        domain = pick.value
+      }
+    } else {
+      domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio', value: 'general', ignoreFocusOut: true })
+    }
     if (!domain) return
+    let chosenDomain: string = domain
+    const similar = knownDomains.find((known) => known !== chosenDomain && (known.replace(/s$/, '') === chosenDomain.replace(/s$/, '') || known.startsWith(chosenDomain) || chosenDomain.startsWith(known)))
+    if (similar) {
+      const choice = await vscode.window.showWarningMessage(
+        `Existe un dominio similar: "${similar}". Usar dominios distintos divide las specs vivas.`,
+        { modal: true },
+        `Usar "${similar}"`,
+      )
+      if (choice === `Usar "${similar}"`) chosenDomain = similar
+    }
 
-    const result = await createChange({ root, slug, lane: lanePick.lane, domain, title })
+    const result = await createChange({ root, slug, lane: lanePick.lane, domain: chosenDomain, title })
     const errors = result.diagnostics.filter((d) => d.severity === 'error')
     if (errors.length > 0) {
       void vscode.window.showErrorMessage(`SpecAtlas: ${errors.map((d) => d.message).join('; ')}`)
