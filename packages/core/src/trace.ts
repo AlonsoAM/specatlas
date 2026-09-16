@@ -123,7 +123,7 @@ export function checkTrace(input: TraceInput): TraceResult {
   }
 
   for (const sc of deltaScenarios) {
-    if (!coversExpanded.has(sc)) {
+    if (taskById.size > 0 && !coversExpanded.has(sc)) {
       findings.push(
         diag('TRACE-002', 'error', `El escenario ${sc} no está cubierto por ninguna tarea`, {
           path: change.tasks?.path ?? change.delta?.path,

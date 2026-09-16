@@ -100,6 +100,12 @@ Prosa.
     'changes/reset-password/spec.md',
   )
 
+  it('sin plan (sin tareas), no reporta TRACE-002: la cobertura se exige al planificar', () => {
+    const change = makeChange({ delta })
+    const result = checkTrace({ specs, change, requireEvidence: false })
+    expect(result.findings.filter((f) => f.severity === 'error')).toHaveLength(0)
+  })
+
   it('TRACE-002: escenario sin tarea', () => {
     const tasks = parseTasksFile('## Bloque 1 — X\n- [ ] T1.1 Otra cosa · Infra\n', 'tasks.md')
     const change = makeChange({ delta, tasks })
