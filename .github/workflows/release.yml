@@ -73,9 +73,15 @@ jobs:
           version=$(node -p "require('./package.json').version")
           if ./node_modules/.bin/vsce show specatlas.specatlas-vscode --json 2>/dev/null | grep -q "\"$version\""; then
             echo "specatlas-vscode $version ya está publicado, se omite"
-          else
-            ./node_modules/.bin/vsce publish --packagePath "specatlas-vscode-$version.vsix" -p "$VSCE_PAT"
+            exit 0
           fi
+          output=$(./node_modules/.bin/vsce publish --packagePath "specatlas-vscode-$version.vsix" -p "$VSCE_PAT" 2>&1) && { echo "$output"; exit 0; }
+          echo "$output"
+          if echo "$output" | grep -qi "already exists"; then
+            echo "specatlas-vscode $version ya existía en el Marketplace (propagación pendiente), se omite"
+            exit 0
+          fi
+          exit 1
       - name: Publicar en Open VSX (idempotente)
         if: ${{ env.OVSX_PAT != '' }}
         working-directory: packages/vscode
@@ -84,9 +90,15 @@ jobs:
           version=$(node -p "require('./package.json').version")
           if ./node_modules/.bin/ovsx get specatlas.specatlas-vscode --version "$version" >/dev/null 2>&1; then
             echo "specatlas-vscode $version ya está en Open VSX, se omite"
-          else
-            ./node_modules/.bin/ovsx publish "specatlas-vscode-$version.vsix" -p "$OVSX_PAT"
+            exit 0
           fi
+          output=$(./node_modules/.bin/ovsx publish "specatlas-vscode-$version.vsix" -p "$OVSX_PAT" 2>&1) && { echo "$output"; exit 0; }
+          echo "$output"
+          if echo "$output" | grep -qiE "already (exists|published|present)"; then
+            echo "specatlas-vscode $version ya existía en Open VSX (propagación pendiente), se omite"
+            exit 0
+          fi
+          exit 1
       - uses: actions/upload-artifact@v4
         with:
           name: specatlas-vscode-vsix
