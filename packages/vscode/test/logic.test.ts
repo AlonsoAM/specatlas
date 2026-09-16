@@ -161,8 +161,10 @@ describe('matriz, tablero y métricas', () => {
     expect(html).toContain('reset-password')
     expect(html).toContain('col-head')
     expect(html).toContain('progress')
-    expect(html).toContain('fill="color-mix(in srgb, var(--atlas-ink) 4%, transparent)"')
-    expect(html).toContain('stroke="color-mix(in srgb, var(--atlas-ink) 14%, transparent)"')
+    expect(html).toContain('fill="color-mix(in srgb, var(--atlas-ink) 6%, transparent)"')
+    expect(html).toContain('stroke="color-mix(in srgb, var(--atlas-ink) 16%, transparent)"')
+    expect(html).toContain('class="donut-chart"')
+    expect(html).toContain('url(#atlas-donut-')
   })
 
   it('metricsHtml resume totales, WIP y evidencia', async () => {

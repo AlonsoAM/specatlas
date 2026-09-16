@@ -13,7 +13,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
-- **Donas de métricas legibles en tema oscuro**: el interior era transparente y se veía como un agujero negro. Ahora llevan un disco interior con tinte neutro + el color de la métrica, y la pista del anillo es visible en temas claros y oscuros.
+- **Donas de métricas legibles en tema oscuro**: el interior ahora es un **degradado radial del color de la métrica** (no un agujero negro), la pista del anillo se ve en temas claros y oscuros, y el texto central usa su estilo correcto también en la cabecera de los paneles (antes quedaba negro y a 13px porque el selector `.donut` no aplicaba en el hero).
 - Los adaptadores serializan el frontmatter como YAML válido: las descripciones con `:` (p. ej. «Adoptar (brownfield): …») ya no rompen el parseo en opencode ni en el preview de VS Code.
 - El paquete npm del CLI ahora incluye `workflow/` y `profiles/` (vía `prepack`): al instalar desde npm, `satlas init` y `satlas adapters` ya generan los comandos y skills del agente.
 - `satlas init` ahora falla con `ATLAS-ADAPTERS-003` si no encuentra las fuentes de prompts, en lugar de omitir los adaptadores en silencio.

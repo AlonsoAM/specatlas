@@ -139,8 +139,8 @@ tr.row-gap td { background: color-mix(in srgb, ${TONES.red} 7%, transparent); }
 
 .donut { display: flex; align-items: center; gap: 14px; }
 .donut svg { flex: 0 0 auto; }
-.donut .center { font-size: 20px; font-weight: 700; fill: var(--atlas-ink); }
-.donut .center-sub { font-size: 9.5px; fill: var(--atlas-muted); letter-spacing: .06em; text-transform: uppercase; }
+.donut-chart .center { font-size: 20px; font-weight: 700; fill: var(--atlas-ink); }
+.donut-chart .center-sub { font-size: 9.5px; fill: var(--atlas-muted); letter-spacing: .06em; text-transform: uppercase; }
 .donut .legend { display: flex; flex-direction: column; gap: 6px; }
 .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--atlas-muted); }
 .legend-item i { width: 9px; height: 9px; border-radius: 3px; background: var(--tone); display: inline-block; }
@@ -178,6 +178,8 @@ function tone(t: Tone): string {
   return TONES[t]
 }
 
+let donutSeq = 0
+
 function kpi(value: string | number, label: string, opts: { tone?: Tone; icon?: string; hint?: string } = {}): string {
   const style = ` style="--tone:${tone(opts.tone ?? 'blue')}"`
   return `<div class="kpi"${style}>
@@ -201,11 +203,20 @@ function donut(percent: number, center: string, subtitle: string, t: Tone): stri
   const innerRadius = radius - 5.5
   const circumference = 2 * Math.PI * radius
   const dash = (clamped / 100) * circumference
-  return `<svg width="132" height="132" viewBox="0 0 120 120" role="img" aria-label="${clamped}%">
-  <circle cx="60" cy="60" r="${innerRadius}" fill="color-mix(in srgb, var(--atlas-ink) 4%, transparent)"></circle>
-  <circle cx="60" cy="60" r="${innerRadius}" fill="color-mix(in srgb, ${tone(t)} 9%, transparent)"></circle>
-  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="color-mix(in srgb, var(--atlas-ink) 14%, transparent)" stroke-width="11"></circle>
-  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="${tone(t)}" stroke-width="11" stroke-linecap="round"
+  const uid = `atlas-donut-${(donutSeq += 1)}`
+  const color = tone(t)
+  return `<svg class="donut-chart" width="132" height="132" viewBox="0 0 120 120" role="img" aria-label="${clamped}%">
+  <defs>
+    <radialGradient id="${uid}" cx="50%" cy="34%" r="78%">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.5"></stop>
+      <stop offset="62%" stop-color="${color}" stop-opacity="0.22"></stop>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0.08"></stop>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="${innerRadius}" fill="color-mix(in srgb, var(--atlas-ink) 6%, transparent)"></circle>
+  <circle cx="60" cy="60" r="${innerRadius}" fill="url(#${uid})"></circle>
+  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="color-mix(in srgb, var(--atlas-ink) 16%, transparent)" stroke-width="11"></circle>
+  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="${color}" stroke-width="11" stroke-linecap="round"
           stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" transform="rotate(-90 60 60)"></circle>
   <text x="60" y="58" text-anchor="middle" class="center" dominant-baseline="middle">${center}</text>
   <text x="60" y="78" text-anchor="middle" class="center-sub">${escapeHtml(subtitle)}</text>
