@@ -198,10 +198,13 @@ function commandLink(command: string, args: unknown[], label: string): string {
 function donut(percent: number, center: string, subtitle: string, t: Tone): string {
   const clamped = Math.max(0, Math.min(100, Math.round(percent)))
   const radius = 46
+  const innerRadius = radius - 5.5
   const circumference = 2 * Math.PI * radius
   const dash = (clamped / 100) * circumference
   return `<svg width="132" height="132" viewBox="0 0 120 120" role="img" aria-label="${clamped}%">
-  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="color-mix(in srgb, var(--atlas-line) 80%, transparent)" stroke-width="11"></circle>
+  <circle cx="60" cy="60" r="${innerRadius}" fill="color-mix(in srgb, var(--atlas-ink) 4%, transparent)"></circle>
+  <circle cx="60" cy="60" r="${innerRadius}" fill="color-mix(in srgb, ${tone(t)} 9%, transparent)"></circle>
+  <circle cx="60" cy="60" r="${radius}" fill="none" stroke="color-mix(in srgb, var(--atlas-ink) 14%, transparent)" stroke-width="11"></circle>
   <circle cx="60" cy="60" r="${radius}" fill="none" stroke="${tone(t)}" stroke-width="11" stroke-linecap="round"
           stroke-dasharray="${dash.toFixed(2)} ${(circumference - dash).toFixed(2)}" transform="rotate(-90 60 60)"></circle>
   <text x="60" y="58" text-anchor="middle" class="center" dominant-baseline="middle">${center}</text>

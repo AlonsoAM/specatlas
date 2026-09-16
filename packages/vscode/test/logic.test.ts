@@ -161,6 +161,8 @@ describe('matriz, tablero y métricas', () => {
     expect(html).toContain('reset-password')
     expect(html).toContain('col-head')
     expect(html).toContain('progress')
+    expect(html).toContain('fill="color-mix(in srgb, var(--atlas-ink) 4%, transparent)"')
+    expect(html).toContain('stroke="color-mix(in srgb, var(--atlas-ink) 14%, transparent)"')
   })
 
   it('metricsHtml resume totales, WIP y evidencia', async () => {
