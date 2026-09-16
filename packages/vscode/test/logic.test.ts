@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
-import { buildMatrix, buildSnapshot, escapeHtml, mockupHtmlPage, previewHtml, sortChanges, toFlat, type SnapshotChange } from '../src/logic'
+import { buildMatrix, buildSnapshot, escapeHtml, mockupHtmlPage, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
 import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
 
 const DELTA = `# Delta — Restablecer contraseña
@@ -213,5 +213,27 @@ describe('presentación y diagnósticos', () => {
     expect(html).toContain('<iframe id="frame" src="vscode-webview://abc/a.html"')
     expect(html).toContain('<option value="vscode-webview://abc/a.html">Pantalla A</option>')
     expect(escapeHtml('<a "x">')).toBe('&lt;a &quot;x&quot;&gt;')
+  })
+})
+
+describe('paneles y acciones del sidebar', () => {
+  it('con workspace inicializado lista los paneles con icono y comando', () => {
+    const items = toolItems(true)
+    expect(items.map((item) => item.command)).toEqual([
+      'specatlas.matrix',
+      'specatlas.board',
+      'specatlas.metrics',
+      'specatlas.validate',
+      'specatlas.doctor',
+      'specatlas.adapters',
+    ])
+    for (const item of items) {
+      expect(item.icon.length, `${item.id} con icono`).toBeGreaterThan(0)
+      expect(item.label.length, `${item.id} con etiqueta`).toBeGreaterThan(0)
+    }
+  })
+
+  it('sin workspace ofrece inicializar y compilar adaptadores', () => {
+    expect(toolItems(false).map((item) => item.command)).toEqual(['specatlas.init', 'specatlas.adapters'])
   })
 })

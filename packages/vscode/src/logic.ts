@@ -440,3 +440,28 @@ export async function buildMatrix(root: string): Promise<MatrixModel> {
 
   return { requirements, uncoveredScenarios, pendingEvidence, requirementsWithoutTasks }
 }
+
+export interface ToolItem {
+  id: string
+  label: string
+  description: string
+  icon: string
+  command: string
+}
+
+export function toolItems(initialized: boolean): ToolItem[] {
+  if (!initialized) {
+    return [
+      { id: 'init', label: 'Inicializar SpecAtlas', description: 'crea .sdd/ y los comandos del agente', icon: 'rocket', command: 'specatlas.init' },
+      { id: 'adapters', label: 'Compilar adaptadores', description: 'comandos y skills del agente', icon: 'plug', command: 'specatlas.adapters' },
+    ]
+  }
+  return [
+    { id: 'matrix', label: 'Matriz de trazabilidad', description: 'requisito → escenario → tarea → evidencia', icon: 'list-tree', command: 'specatlas.matrix' },
+    { id: 'board', label: 'Tablero de cambios', description: 'flujo por fase', icon: 'project', command: 'specatlas.board' },
+    { id: 'metrics', label: 'Métricas locales', description: 'sin telemetría', icon: 'graph', command: 'specatlas.metrics' },
+    { id: 'validate', label: 'Validar specs y deltas', description: 'estructura y lenguaje de negocio', icon: 'check', command: 'specatlas.validate' },
+    { id: 'doctor', label: 'Diagnóstico del workspace', description: 'salud de .sdd/ y gates', icon: 'pulse', command: 'specatlas.doctor' },
+    { id: 'adapters', label: 'Compilar adaptadores', description: 'comandos y skills del agente', icon: 'plug', command: 'specatlas.adapters' },
+  ]
+}

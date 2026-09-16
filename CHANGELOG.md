@@ -6,6 +6,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Sección «Paneles y acciones» en el sidebar**: lanza Matriz de trazabilidad, Tablero, Métricas, Validar, Diagnóstico y Compilar adaptadores desde la vista (con icono y descripción), sin ensanchar el título de la vista (que queda solo con Refrescar e Inicializar). Al inicializar, la sección muestra las acciones disponibles.
+- **Icono propio en las pestañas de los paneles**: Matriz, Tablero, Métricas, vista previa y mockups usan el icono de SpecAtlas en lugar de la hoja genérica.
 - **Compilar adaptadores desde el editor**: botón «Compilar adaptadores» en el sidebar de la extensión (y acción en la paleta), que genera los comandos/skills del agente sin salir de VS Code. `Inicializar workspace` ahora compila los adaptadores automáticamente.
 - **Packs de cumplimiento**: `satlas packs` (listar) y `satlas packs --check <slug>` (evaluar). Packs integrados `seguridad`, `datos`, `auditoria` y `accesibilidad`, más packs propios en `.sdd/packs/*.yaml`. Los hallazgos (`PACK-<PACK>-<CONTROL>`) se integran en `satlas analyze`, en `satlas ci` y en el panel de Problems de la extensión.
 

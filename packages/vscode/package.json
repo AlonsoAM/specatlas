@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -33,6 +33,10 @@
         {
           "id": "specatlas.explorer",
           "name": "Workspace SDD"
+        },
+        {
+          "id": "specatlas.tools",
+          "name": "Paneles y acciones"
         }
       ]
     },
@@ -59,12 +63,6 @@
     "menus": {
       "view/title": [
         { "command": "specatlas.refresh", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.validate", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.doctor", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.matrix", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.board", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.metrics", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.adapters", "when": "view == specatlas.explorer", "group": "navigation" },
         { "command": "specatlas.init", "when": "view == specatlas.explorer && !specatlas.initialized", "group": "navigation" }
       ],
       "view/item/context": [

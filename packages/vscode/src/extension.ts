@@ -21,11 +21,13 @@ import {
   buildSnapshot,
   mockupHtmlPage,
   previewHtml,
+  toolItems,
   type Snapshot,
   type SnapshotChange,
   type SnapshotFile,
   type SnapshotSpec,
   type SnapshotSpecItem,
+  type ToolItem,
 } from './logic.js'
 import { boardHtml, matrixHtml, metricsHtml } from './panels.js'
 import { startLanguageClient } from './client.js'
@@ -252,14 +254,42 @@ function fileIcon(kind: SnapshotFile['kind']): vscode.ThemeIcon {
   }
 }
 
+class ToolsProvider implements vscode.TreeDataProvider<ToolItem> {
+  private initialized = false
+  private readonly emitter = new vscode.EventEmitter<void>()
+  readonly onDidChangeTreeData = this.emitter.event
+
+  setInitialized(value: boolean): void {
+    if (this.initialized === value) return
+    this.initialized = value
+    this.emitter.fire()
+  }
+
+  getChildren(): ToolItem[] {
+    return toolItems(this.initialized)
+  }
+
+  getTreeItem(item: ToolItem): vscode.TreeItem {
+    const node = new vscode.TreeItem(item.label, vscode.TreeItemCollapsibleState.None)
+    node.description = item.description
+    node.iconPath = new vscode.ThemeIcon(item.icon)
+    node.command = { command: item.command, title: item.label }
+    node.contextValue = 'tool'
+    return node
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   const provider = new AtlasTreeProvider()
   const treeView = vscode.window.createTreeView(VIEW_ID, { treeDataProvider: provider, showCollapseAll: true })
+  const tools = new ToolsProvider()
+  vscode.window.createTreeView('specatlas.tools', { treeDataProvider: tools })
   const problems = vscode.languages.createDiagnosticCollection('specatlas')
   const output = vscode.window.createOutputChannel('SpecAtlas')
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 40)
   status.command = 'specatlas.refresh'
   status.show()
+  const panelIcon = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.png')
 
   treeView.onDidChangeSelection((event) => {
     const node = event.selection[0]
@@ -276,6 +306,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     provider.update(snapshots)
     void vscode.commands.executeCommand('setContext', 'specatlas.initialized', snapshots.length > 0)
+    tools.setInitialized(snapshots.length > 0)
 
     const diagnostics = new Map<string, vscode.Diagnostic[]>()
     for (const snapshot of snapshots) {
@@ -546,6 +577,7 @@ export function activate(context: vscode.ExtensionContext): void {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.file(dir)],
     })
+    panel.iconPath = panelIcon
     const nonce = String(Date.now())
     panel.webview.html = mockupHtmlPage({
       title: `Mockups — ${change.slug}`,
@@ -600,6 +632,7 @@ export function activate(context: vscode.ExtensionContext): void {
           enableScripts: true,
           localResourceRoots: [mediaRoot],
         })
+        panel.iconPath = panelIcon
         const mermaidAsset = vscode.Uri.joinPath(mediaRoot, 'mermaid.min.js')
         let mermaidUri: string | undefined
         try {
@@ -668,6 +701,7 @@ export function activate(context: vscode.ExtensionContext): void {
       enableScripts: false,
       enableCommandUris: true,
     })
+    panel.iconPath = panelIcon
     panel.webview.html = matrixHtml(model)
   })
 
@@ -679,6 +713,7 @@ export function activate(context: vscode.ExtensionContext): void {
       enableScripts: false,
       enableCommandUris: true,
     })
+    panel.iconPath = panelIcon
     panel.webview.html = boardHtml(snapshot)
   })
 
@@ -690,6 +725,7 @@ export function activate(context: vscode.ExtensionContext): void {
       enableScripts: false,
       enableCommandUris: true,
     })
+    panel.iconPath = panelIcon
     panel.webview.html = metricsHtml(metrics)
   })
 
