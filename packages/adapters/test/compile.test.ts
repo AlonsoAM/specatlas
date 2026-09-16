@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { artifactHash, defaultConfig, detectProfiles, loadProfilesFromDir, parseConfig } from '@specatlas/core'
+import { artifactHash, defaultConfig, detectProfiles, loadProfilesFromDir, parseConfig, parseFrontmatter } from '@specatlas/core'
 import { checkAdapters, compileTargets, loadWorkflow } from '../src/index'
 
 async function write(file: string, content: string): Promise<void> {
@@ -160,6 +160,35 @@ describe('targets adicionales (cursor, copilot, gemini, codex)', () => {
     const paths = report.files.map((f) => f.path)
     expect(paths.filter((p) => p === 'AGENTS.md')).toHaveLength(1)
     expect(paths.filter((p) => p === 'prompts/satlas-specify.md')).toHaveLength(1)
+  })
+})
+
+describe('frontmatter YAML de los artefactos', () => {
+  it('las descripciones con dos puntos se serializan como YAML válido', async () => {
+    const workflowDir = path.resolve(__dirname, '..', '..', '..', 'workflow')
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-fm-'))
+    const report = await compileTargets({ root, workflowDir, targets: ['opencode', 'claude-code', 'cursor', 'copilot'] })
+    const sources = await loadWorkflow(workflowDir)
+
+    const withFrontmatter = report.files.filter((f) => f.content.startsWith('---\n'))
+    expect(withFrontmatter.length).toBeGreaterThan(0)
+    for (const file of withFrontmatter) {
+      const fm = parseFrontmatter(file.content, file.path)
+      expect(fm.diagnostics.filter((d) => d.severity === 'error'), `${file.path} con frontmatter válido`).toHaveLength(0)
+      expect(typeof fm.data['description'], `${file.path} con description`).toBe('string')
+      expect((fm.data['description'] as string).length, `${file.path} description no vacía`).toBeGreaterThan(10)
+    }
+
+    const adopt = sources.phases.find((p) => p.id === 'adopt')
+    expect(adopt).toBeDefined()
+    const skill = await fs.readFile(path.join(root, '.opencode/skills/satlas-adopt/SKILL.md'), 'utf8')
+    const fm = parseFrontmatter(skill, 'SKILL.md')
+    expect(fm.data['name']).toBe('satlas-adopt')
+    expect(fm.data['description']).toBe(adopt!.description)
+    expect(fm.data['description']).toContain(': ')
+
+    const command = await fs.readFile(path.join(root, '.opencode/command/satlas-adopt.md'), 'utf8')
+    expect(parseFrontmatter(command, 'satlas-adopt.md').data['description']).toBe(adopt!.description)
   })
 })
 

@@ -16,5 +16,6 @@ tmp/
 .tmp/
 packages/cli/workflow/
 packages/cli/profiles/
+packages/vscode/workflow/
 fixtures/**/obj/
 fixtures/**/bin/

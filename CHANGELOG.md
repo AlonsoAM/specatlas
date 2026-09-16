@@ -6,10 +6,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Compilar adaptadores desde el editor**: botón «Compilar adaptadores» en el sidebar de la extensión (y acción en la paleta), que genera los comandos/skills del agente sin salir de VS Code. `Inicializar workspace` ahora compila los adaptadores automáticamente.
 - **Packs de cumplimiento**: `satlas packs` (listar) y `satlas packs --check <slug>` (evaluar). Packs integrados `seguridad`, `datos`, `auditoria` y `accesibilidad`, más packs propios en `.sdd/packs/*.yaml`. Los hallazgos (`PACK-<PACK>-<CONTROL>`) se integran en `satlas analyze`, en `satlas ci` y en el panel de Problems de la extensión.
 
 ### Corregido
 
+- Los adaptadores serializan el frontmatter como YAML válido: las descripciones con `:` (p. ej. «Adoptar (brownfield): …») ya no rompen el parseo en opencode ni en el preview de VS Code.
 - El paquete npm del CLI ahora incluye `workflow/` y `profiles/` (vía `prepack`): al instalar desde npm, `satlas init` y `satlas adapters` ya generan los comandos y skills del agente.
 - `satlas init` ahora falla con `ATLAS-ADAPTERS-003` si no encuentra las fuentes de prompts, en lugar de omitir los adaptadores en silencio.
 - Las claves de tarea aceptan variantes sin acentos (`Reversion` ≡ `Reversión`).

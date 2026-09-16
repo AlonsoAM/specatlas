@@ -1,6 +1,6 @@
 {
   "name": "@specatlas/adapters",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Compilador de prompts de SpecAtlas a artefactos de agente (opencode, Claude Code, Cursor, Copilot, Gemini, Codex)",
   "license": "MIT",
   "type": "module",

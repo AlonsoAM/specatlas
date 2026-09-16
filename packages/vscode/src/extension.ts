@@ -6,6 +6,7 @@ import {
   collectMetrics,
   generatePresentation,
   initWorkspace,
+  loadConfig,
   planWaves,
   readMockupManifest,
   readTextIfExists,
@@ -14,6 +15,7 @@ import {
   signApproval,
   type Diagnostic as CoreDiagnostic,
 } from '@specatlas/core'
+import { compileTargets, type AgentTarget } from '@specatlas/adapters'
 import {
   buildMatrix,
   buildSnapshot,
@@ -336,6 +338,26 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 
+  const compileAdapters = async (root: string): Promise<{ written: string[]; error?: string }> => {
+    const fs = await import('node:fs')
+    const workflowDir = context.asAbsolutePath('workflow')
+    if (!fs.existsSync(path.join(workflowDir, 'phases'))) {
+      return { written: [], error: 'no se encontró workflow/phases en la extensión; ejecuta `satlas adapters` en la terminal' }
+    }
+    const sddDir = path.join(root, '.sdd')
+    if (!fs.existsSync(path.join(sddDir, 'config.yaml'))) {
+      return { written: [], error: 'no hay .sdd/config.yaml; inicializa el workspace primero' }
+    }
+    const loaded = await loadConfig(sddDir)
+    const report = await compileTargets({
+      root,
+      workflowDir,
+      targets: loaded.config.adapters.targets as AgentTarget[],
+      language: loaded.config.project.language,
+    })
+    return { written: report.written }
+  }
+
   const resolveArgSlug = (arg: unknown): string | undefined => {
     if (typeof arg === 'string') return arg
     if (arg && typeof arg === 'object') {
@@ -372,6 +394,27 @@ export function activate(context: vscode.ExtensionContext): void {
     await refresh()
   })
 
+  register('specatlas.adapters', async () => {
+    const root = workspaceRoot()
+    if (!root) {
+      void vscode.window.showWarningMessage('SpecAtlas: abre una carpeta de proyecto para compilar los adaptadores.')
+      return
+    }
+    const result = await compileAdapters(root)
+    if (result.error) {
+      void vscode.window.showErrorMessage(`SpecAtlas: ${result.error}.`)
+      return
+    }
+    if (result.written.length === 0) {
+      void vscode.window.showInformationMessage('SpecAtlas: los adaptadores ya están actualizados.')
+    } else {
+      void vscode.window.showInformationMessage(
+        `SpecAtlas: adaptadores compilados (${result.written.length} archivos). Reinicia la sesión de tu agente para ver los comandos.`,
+      )
+    }
+    await refresh()
+  })
+
   register('specatlas.init', async () => {
     let root = workspaceRoot()
     if (!root) {
@@ -393,9 +436,13 @@ export function activate(context: vscode.ExtensionContext): void {
       return
     }
     const best = result.detected?.best?.name
-    void vscode.window.showInformationMessage(
-      `SpecAtlas: workspace inicializado${best ? ` (stack detectado: ${best})` : ''}. Ejecuta \`satlas adapters\` en la terminal para los comandos del agente.`,
-    )
+    const adapters = await compileAdapters(root)
+    const suffix = adapters.error
+      ? ` Ejecuta \`satlas adapters\` en la terminal (${adapters.error}).`
+      : adapters.written.length > 0
+        ? ` Adaptadores compilados (${adapters.written.length} archivos): reinicia la sesión de tu agente para ver los comandos.`
+        : ' Adaptadores ya actualizados.'
+    void vscode.window.showInformationMessage(`SpecAtlas: workspace inicializado${best ? ` (stack detectado: ${best})` : ''}.${suffix}`)
     await refresh()
   })
 

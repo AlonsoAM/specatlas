@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, stat } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -42,5 +42,19 @@ async function copyProfiles() {
   console.log(`${copied} perfil(es) copiados a media/profiles/`)
 }
 
+async function copyWorkflow() {
+  const source = path.resolve(packageRoot, '..', '..', 'workflow')
+  const target = path.join(packageRoot, 'workflow')
+  try {
+    await stat(path.join(source, 'phases'))
+  } catch {
+    console.log('workflow/ no encontrado: la extensión no podrá compilar adaptadores')
+    return
+  }
+  await cp(source, target, { recursive: true, force: true })
+  console.log('workflow/ copiado a la extensión')
+}
+
 await copyMermaid()
 await copyProfiles()
+await copyWorkflow()

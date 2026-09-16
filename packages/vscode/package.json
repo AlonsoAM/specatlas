@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -53,7 +53,8 @@
       { "command": "specatlas.openAt", "title": "SpecAtlas: Abrir en la línea" },
       { "command": "specatlas.matrix", "title": "SpecAtlas: Matriz de trazabilidad", "icon": "$(list-tree)" },
       { "command": "specatlas.board", "title": "SpecAtlas: Tablero de cambios", "icon": "$(project)" },
-      { "command": "specatlas.metrics", "title": "SpecAtlas: Métricas locales", "icon": "$(graph)" }
+      { "command": "specatlas.metrics", "title": "SpecAtlas: Métricas locales", "icon": "$(graph)" },
+      { "command": "specatlas.adapters", "title": "SpecAtlas: Compilar adaptadores (comandos del agente)", "icon": "$(plug)" }
     ],
     "menus": {
       "view/title": [
@@ -63,6 +64,7 @@
         { "command": "specatlas.matrix", "when": "view == specatlas.explorer", "group": "navigation" },
         { "command": "specatlas.board", "when": "view == specatlas.explorer", "group": "navigation" },
         { "command": "specatlas.metrics", "when": "view == specatlas.explorer", "group": "navigation" },
+        { "command": "specatlas.adapters", "when": "view == specatlas.explorer", "group": "navigation" },
         { "command": "specatlas.init", "when": "view == specatlas.explorer && !specatlas.initialized", "group": "navigation" }
       ],
       "view/item/context": [
@@ -85,7 +87,7 @@
     "viewsWelcome": [
       {
         "view": "specatlas.explorer",
-        "contents": "SpecAtlas no está inicializado en este workspace.\n[Inicializar SpecAtlas](command:specatlas.init)\n[Refrescar](command:specatlas.refresh)\n\nTambién puedes ejecutar `satlas init` y `satlas adapters` en la terminal.\n\nMás información en la [documentación](https://github.com/specatlas)."
+        "contents": "SpecAtlas no está inicializado en este workspace.\n[Inicializar SpecAtlas](command:specatlas.init)\n[Compilar adaptadores](command:specatlas.adapters)\n[Refrescar](command:specatlas.refresh)\n\nTambién puedes ejecutar `satlas init` y `satlas adapters` en la terminal.\n\nMás información en la [documentación](https://github.com/specatlas)."
       }
     ],
     "configuration": {
@@ -118,6 +120,7 @@
     "publish:ovsx": "ovsx publish"
   },
   "dependencies": {
+    "@specatlas/adapters": "workspace:*",
     "@specatlas/core": "workspace:*",
     "@specatlas/lsp": "workspace:*",
     "vscode-languageclient": "^9.0.1"

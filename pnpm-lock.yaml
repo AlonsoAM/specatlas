@@ -81,6 +81,9 @@ importers:
 
   packages/vscode:
     dependencies:
+      '@specatlas/adapters':
+        specifier: workspace:*
+        version: link:../adapters
       '@specatlas/core':
         specifier: workspace:*
         version: link:../core

@@ -1,4 +1,5 @@
 import type { Language } from '@specatlas/core'
+import { stringify as stringifyYaml } from 'yaml'
 import type { PhaseSource, WorkflowSources } from './workflow.js'
 import { renderPhase } from './workflow.js'
 
@@ -28,6 +29,11 @@ const NO_SUBSTITUTION_NOTE = '<!-- Si al invocar indicaste un slug, úsalo; si n
 
 function vars(language: Language, slugToken: string, commandPrefix: string): Parameters<typeof renderPhase>[2] {
   return { SLUG: slugToken, LANGUAGE: language, LANGUAGE_NAME: LANGUAGE_NAMES[language], SDD_DIR: '.sdd', COMMAND_PREFIX: commandPrefix }
+}
+
+function frontmatter(data: Record<string, unknown>, body: string): string {
+  const yaml = stringifyYaml(data, { lineWidth: 0 }).trimEnd()
+  return `---\n${yaml}\n---\n\n${body}\n`
 }
 
 export function renderFor(ctx: TargetContext, phase: PhaseSource, slugToken: string): string {
@@ -60,12 +66,12 @@ function compileOpencode(ctx: TargetContext): CompiledFile[] {
     files.push({
       target: 'opencode',
       path: `.opencode/command/satlas-${phase.id}.md`,
-      content: `---\ndescription: ${phase.description}\n---\n\n${commandBody}\n`,
+      content: frontmatter({ description: phase.description }, commandBody),
     })
     files.push({
       target: 'opencode',
       path: `.opencode/skills/satlas-${phase.id}/SKILL.md`,
-      content: `---\nname: satlas-${phase.id}\ndescription: ${phase.description}\n---\n\n${skillBody}\n`,
+      content: frontmatter({ name: `satlas-${phase.id}`, description: phase.description }, skillBody),
     })
   }
   return files
@@ -79,12 +85,12 @@ function compileClaudeCode(ctx: TargetContext): CompiledFile[] {
     files.push({
       target: 'claude-code',
       path: `.claude/commands/satlas/${phase.id}.md`,
-      content: `---\ndescription: ${phase.description}\n---\n\n${commandBody}\n`,
+      content: frontmatter({ description: phase.description }, commandBody),
     })
     files.push({
       target: 'claude-code',
       path: `.claude/skills/satlas-${phase.id}/SKILL.md`,
-      content: `---\nname: satlas-${phase.id}\ndescription: ${phase.description}\n---\n\n${skillBody}\n`,
+      content: frontmatter({ name: `satlas-${phase.id}`, description: phase.description }, skillBody),
     })
   }
   return files
@@ -97,7 +103,7 @@ function compileCursor(ctx: TargetContext): CompiledFile[] {
     files.push({
       target: 'cursor',
       path: `.cursor/skills/satlas-${phase.id}/SKILL.md`,
-      content: `---\nname: satlas-${phase.id}\ndescription: ${phase.description}\ndisable-model-invocation: true\n---\n\n${body}\n`,
+      content: frontmatter({ name: `satlas-${phase.id}`, description: phase.description, 'disable-model-invocation': true }, body),
     })
     files.push({
       target: 'cursor',
@@ -115,7 +121,7 @@ function compileCopilot(ctx: TargetContext): CompiledFile[] {
     files.push({
       target: 'copilot',
       path: `.github/prompts/satlas-${phase.id}.prompt.md`,
-      content: `---\ndescription: ${phase.description}\nname: satlas-${phase.id}\nagent: agent\n---\n\n${NO_SUBSTITUTION_NOTE}\n\n${body}\n`,
+      content: frontmatter({ description: phase.description, name: `satlas-${phase.id}`, agent: 'agent' }, `${NO_SUBSTITUTION_NOTE}\n\n${body}`),
     })
   }
   files.push({ target: 'copilot', path: '.github/copilot-instructions.md', content: agentsBlock(ctx, 'copilot') })
