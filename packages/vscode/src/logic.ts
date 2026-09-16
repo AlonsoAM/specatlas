@@ -221,12 +221,12 @@ async function changeFiles(change: Change): Promise<SnapshotFile[]> {
   const candidates: Array<{ label: string; rel: string; kind: FileKind; description?: string }> = [
     { label: 'Propuesta', rel: 'proposal.md', kind: 'proposal' },
     { label: 'Spec (delta)', rel: 'spec.md', kind: 'spec' },
-    { label: 'Plan tÃ©cnico', rel: 'plan.md', kind: 'plan', description: 'incluye diagramas mermaid' },
+    { label: 'Plan técnico', rel: 'plan.md', kind: 'plan', description: 'incluye diagramas mermaid' },
     { label: 'Tareas', rel: 'tasks.md', kind: 'tasks' },
-    { label: 'VerificaciÃ³n', rel: 'verify.md', kind: 'verify' },
+    { label: 'Verificación', rel: 'verify.md', kind: 'verify' },
     { label: 'Fix', rel: 'fix.md', kind: 'fix' },
-    { label: 'AnÃ¡lisis', rel: 'analyze.md', kind: 'analyze' },
-    { label: 'PresentaciÃ³n', rel: path.join('presentation', 'index.html'), kind: 'presentation' },
+    { label: 'Análisis', rel: 'analyze.md', kind: 'analyze' },
+    { label: 'Presentación', rel: path.join('presentation', 'index.html'), kind: 'presentation' },
     { label: 'Mockups', rel: path.join('mockups', 'manifest.yaml'), kind: 'mockup' },
   ]
   const out: SnapshotFile[] = []
@@ -312,9 +312,9 @@ export function mockupHtmlPage(input: { title: string; screens: MockupScreenView
 <div class="toolbar">
   <strong>${escapeHtml(input.title)}</strong>
   ${options ? `<select id="screen" aria-label="Pantalla">${options}</select>` : '<small>Sin pantallas</small>'}
-  <small>MOCKUP Â· contrato visual (no interactivo)</small>
+  <small>MOCKUP · contrato visual (no interactivo)</small>
 </div>
-${first ? `<iframe id="frame" src="${escapeHtml(first)}" title="Mockup"></iframe>` : '<p><small>No hay mockups generados todavÃ­a.</small></p>'}
+${first ? `<iframe id="frame" src="${escapeHtml(first)}" title="Mockup"></iframe>` : '<p><small>No hay mockups generados todavía.</small></p>'}
 <script nonce="${input.nonce}">
   const select = document.getElementById('screen');
   const frame = document.getElementById('frame');

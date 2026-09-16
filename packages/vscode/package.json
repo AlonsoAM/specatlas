@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -46,18 +46,18 @@
       { "command": "specatlas.trace", "title": "SpecAtlas: Verificar trazabilidad" },
       { "command": "specatlas.waves", "title": "SpecAtlas: Calcular olas" },
       { "command": "specatlas.analyze", "title": "SpecAtlas: Analizar un cambio" },
-      { "command": "specatlas.doctor", "title": "SpecAtlas: DiagnÃ³stico del workspace" },
+      { "command": "specatlas.doctor", "title": "SpecAtlas: Diagnóstico del workspace" },
       { "command": "specatlas.present", "title": "SpecAtlas: Generar propuesta para el stakeholder" },
       { "command": "specatlas.mockup.open", "title": "SpecAtlas: Abrir mockups" },
       { "command": "specatlas.approve", "title": "SpecAtlas: Aprobar (firmar) la spec" },
       { "command": "specatlas.archive", "title": "SpecAtlas: Archivar el cambio" },
       { "command": "specatlas.openPreview", "title": "SpecAtlas: Abrir vista previa" },
-      { "command": "specatlas.copyNext", "title": "SpecAtlas: Copiar la siguiente acciÃ³n" },
+      { "command": "specatlas.copyNext", "title": "SpecAtlas: Copiar la siguiente acción" },
       { "command": "specatlas.init", "title": "SpecAtlas: Inicializar workspace", "icon": "$(rocket)" },
-      { "command": "specatlas.openAt", "title": "SpecAtlas: Abrir en la lÃ­nea" },
+      { "command": "specatlas.openAt", "title": "SpecAtlas: Abrir en la línea" },
       { "command": "specatlas.matrix", "title": "SpecAtlas: Matriz de trazabilidad", "icon": "$(list-tree)" },
       { "command": "specatlas.board", "title": "SpecAtlas: Tablero de cambios", "icon": "$(project)" },
-      { "command": "specatlas.metrics", "title": "SpecAtlas: MÃ©tricas locales", "icon": "$(graph)" },
+      { "command": "specatlas.metrics", "title": "SpecAtlas: Métricas locales", "icon": "$(graph)" },
       { "command": "specatlas.adapters", "title": "SpecAtlas: Compilar adaptadores (comandos del agente)", "icon": "$(plug)" }
     ],
     "menus": {
@@ -85,7 +85,7 @@
     "viewsWelcome": [
       {
         "view": "specatlas.explorer",
-        "contents": "SpecAtlas no estÃ¡ inicializado en este workspace.\n[Inicializar SpecAtlas](command:specatlas.init)\n[Compilar adaptadores](command:specatlas.adapters)\n[Refrescar](command:specatlas.refresh)\n\nTambiÃ©n puedes ejecutar `satlas init` y `satlas adapters` en la terminal.\n\nMÃ¡s informaciÃ³n en la [documentaciÃ³n](https://github.com/specatlas)."
+        "contents": "SpecAtlas no está inicializado en este workspace.\n[Inicializar SpecAtlas](command:specatlas.init)\n[Compilar adaptadores](command:specatlas.adapters)\n[Refrescar](command:specatlas.refresh)\n\nTambién puedes ejecutar `satlas init` y `satlas adapters` en la terminal.\n\nMás información en la [documentación](https://github.com/specatlas)."
       }
     ],
     "configuration": {
@@ -94,18 +94,18 @@
         "specatlas.autoValidate": {
           "type": "boolean",
           "default": true,
-          "description": "Validar y actualizar Problems automÃ¡ticamente al guardar archivos del repo."
+          "description": "Validar y actualizar Problems automáticamente al guardar archivos del repo."
         },
         "specatlas.language": {
           "type": "string",
           "enum": ["es", "en"],
           "default": "es",
-          "description": "Idioma de la interfaz de la extensiÃ³n (los artefactos usan .sdd/config.yaml)."
+          "description": "Idioma de la interfaz de la extensión (los artefactos usan .sdd/config.yaml)."
         },
         "specatlas.lsp": {
           "type": "boolean",
           "default": true,
-          "description": "Activar el servidor de lenguaje de SpecAtlas (diagnÃ³sticos, CodeLens, navegaciÃ³n y quick fixes en .sdd/)."
+          "description": "Activar el servidor de lenguaje de SpecAtlas (diagnósticos, CodeLens, navegación y quick fixes en .sdd/)."
         }
       }
     }

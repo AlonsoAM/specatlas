@@ -1,7 +1,7 @@
 {
   "name": "@specatlas/core",
-  "version": "0.1.1",
-  "description": "Kernel determinista de SpecAtlas: parsing, validaciÃ³n, trazabilidad, olas y ciclo de vida",
+  "version": "0.1.2",
+  "description": "Kernel determinista de SpecAtlas: parsing, validación, trazabilidad, olas y ciclo de vida",
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",

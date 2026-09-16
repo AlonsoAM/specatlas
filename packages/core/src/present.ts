@@ -54,7 +54,7 @@ export async function generatePresentation(opts: PresentOptions): Promise<Presen
     language,
     labels,
     title: change.meta?.title ?? change.slug,
-    domain: change.meta?.domain ?? 'â€”',
+    domain: change.meta?.domain ?? '—',
     lane: change.meta?.lane ?? config.lanes.default,
     project: config.project.name,
     version: change.delta.sectionsFound.length,
@@ -90,7 +90,7 @@ async function copyMockups(root: string, change: Change, destDir: string): Promi
   for (const screen of manifest.screens) {
     const src = path.join(dir, screen.file)
     if (!(await exists(src))) {
-      diagnostics.push(diag('ATLAS-PRESENT-002', 'warning', `El mockup ${screen.file} no existe y no se incluirÃ¡`, { path: src }))
+      diagnostics.push(diag('ATLAS-PRESENT-002', 'warning', `El mockup ${screen.file} no existe y no se incluirá`, { path: src }))
       continue
     }
     await copyFile(src, path.join(destDir, screen.file))
@@ -163,15 +163,15 @@ function labelsFor(language: Language): Labels {
   return {
     kicker: 'Propuesta',
     summary: 'Resumen de negocio',
-    criteria: 'Criterios de aceptaciÃ³n',
+    criteria: 'Criterios de aceptación',
     requirements: 'Requisitos y escenarios',
     mockups: 'Mockups',
-    approve: 'AprobaciÃ³n',
+    approve: 'Aprobación',
     approveText: 'Esta propuesta se aprueba firmando la spec (hash + autor). Cualquier cambio posterior invalida la firma.',
     command: 'Comando',
     hash: 'Hash',
     generated: 'Generado',
-    noProposal: 'La propuesta estÃ¡ vacÃ­a.',
+    noProposal: 'La propuesta está vacía.',
     added: 'agregado',
     modified: 'modificado',
     scenario: 'Escenario',
@@ -245,15 +245,15 @@ function page(input: {
   const l = input.labels
   const reqHtml = input.requirements
     .map(({ req, kind }) => {
-      const rules = req.rules.map((r) => `<li><code>${esc(r.id)}</code> â€” ${inline(r.text)}</li>`).join('')
+      const rules = req.rules.map((r) => `<li><code>${esc(r.id)}</code> — ${inline(r.text)}</li>`).join('')
       const scenarios = req.scenarios
         .map((s) => {
           const when = s.when.map((w) => `<div class="when">CUANDO ${inline(w)}</div>`).join('')
           const then = s.then.map((t) => `<div class="then">ENTONCES ${inline(t)}</div>`).join('')
-          return `<div class="scenario"><h4>${esc(s.id)} â€” ${esc(s.title)}</h4>${when}${then}</div>`
+          return `<div class="scenario"><h4>${esc(s.id)} — ${esc(s.title)}</h4>${when}${then}</div>`
         })
         .join('')
-      return `<div class="req"><h3>${esc(req.id)} â€” ${esc(req.title)}<span class="badge">${kind === 'added' ? l.added : l.modified}</span></h3><p>${inline(req.prose)}</p>${rules ? `<ul class="rules">${rules}</ul>` : ''}${scenarios}</div>`
+      return `<div class="req"><h3>${esc(req.id)} — ${esc(req.title)}<span class="badge">${kind === 'added' ? l.added : l.modified}</span></h3><p>${inline(req.prose)}</p>${rules ? `<ul class="rules">${rules}</ul>` : ''}${scenarios}</div>`
     })
     .join('')
 
@@ -273,7 +273,7 @@ function page(input: {
       : `<div class="mockups">${input.mockups
           .map(
             (m) =>
-              `<div class="mockup ${m.platform === 'mobile' ? 'phone' : ''}"><header>${esc(m.title)} â€” ${esc(m.file)}</header><iframe src="${esc(m.file)}" loading="lazy" title="${esc(m.title)}"></iframe></div>`,
+              `<div class="mockup ${m.platform === 'mobile' ? 'phone' : ''}"><header>${esc(m.title)} — ${esc(m.file)}</header><iframe src="${esc(m.file)}" loading="lazy" title="${esc(m.title)}"></iframe></div>`,
           )
           .join('')}</div>`
 
@@ -287,15 +287,15 @@ function page(input: {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(l.kicker)} â€” ${esc(input.title)}</title>
+<title>${esc(l.kicker)} — ${esc(input.title)}</title>
 <style>${CSS}</style>
 </head>
 <body>
 <div class="wrap">
   <header class="hero">
-    <p class="kicker">${esc(l.kicker)} Â· ${esc(input.domain)} Â· ${esc(input.lane)}</p>
+    <p class="kicker">${esc(l.kicker)} · ${esc(input.domain)} · ${esc(input.lane)}</p>
     <h1>${esc(input.title)}</h1>
-    <p class="meta">${esc(input.project)} Â· ${esc(l.hash)} ${esc(shortHash(input.hash))} Â· ${esc(l.generated)} ${esc(input.generatedAt)}</p>
+    <p class="meta">${esc(input.project)} · ${esc(l.hash)} ${esc(shortHash(input.hash))} · ${esc(l.generated)} ${esc(input.generatedAt)}</p>
   </header>
 
   <section>
@@ -325,7 +325,7 @@ function page(input: {
     <p>${esc(l.command)}: <code>${esc(input.approveHint)}</code></p>
   </section>
 
-  <footer>SpecAtlas Â· ${esc(input.project)} Â· ${esc(input.generatedAt)}</footer>
+  <footer>SpecAtlas · ${esc(input.project)} · ${esc(input.generatedAt)}</footer>
 </div>
 </body>
 </html>

@@ -112,7 +112,7 @@ async function revalidateAll(): Promise<void> {
 
 function toLspDiagnostic(diagnostic: Diagnostic): LspDiagnostic {
   const line = Math.max(0, (diagnostic.line ?? 1) - 1)
-  const message = diagnostic.suggestion ? `${diagnostic.message} â€” ${diagnostic.suggestion}` : diagnostic.message
+  const message = diagnostic.suggestion ? `${diagnostic.message} — ${diagnostic.suggestion}` : diagnostic.message
   return {
     range: { start: { line, character: 0 }, end: { line, character: 200 } },
     severity: diagnostic.severity === 'error' ? 1 : diagnostic.severity === 'warning' ? 2 : 3,
@@ -234,7 +234,7 @@ connection.onWorkspaceSymbol(async (params): Promise<SymbolInformation[]> => {
   for (const requirement of current.requirements.values()) {
     if (query && !requirement.id.toLowerCase().includes(query) && !requirement.title.toLowerCase().includes(query)) continue
     out.push({
-      name: `${requirement.id} â€” ${requirement.title}`,
+      name: `${requirement.id} — ${requirement.title}`,
       kind: SymbolKind.Interface,
       location: { uri: pathToUri(requirement.file), range: lineRange(requirement.line - 1, current.files.get(requirement.file) ?? '') },
     })
@@ -242,7 +242,7 @@ connection.onWorkspaceSymbol(async (params): Promise<SymbolInformation[]> => {
   for (const task of current.tasks.values()) {
     if (query && !task.id.toLowerCase().includes(query) && !task.text.toLowerCase().includes(query)) continue
     out.push({
-      name: `${task.id} â€” ${task.text}`,
+      name: `${task.id} — ${task.text}`,
       kind: SymbolKind.Boolean,
       location: { uri: pathToUri(task.file), range: lineRange(task.line - 1, current.files.get(task.file) ?? '') },
     })
