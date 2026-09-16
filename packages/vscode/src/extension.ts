@@ -161,6 +161,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             `**${c.title ?? c.slug}**`,
             '',
             `Estado: ${c.stateLabel} · carril \`${c.lane}\`${c.domain ? ` · dominio \`${c.domain}\`` : ''}`,
+            c.approval ? `Aprobación: **${c.approval.by}** · ${c.approval.at}` : '',
             `Tareas: ${c.progress.tasksDone}/${c.progress.tasksTotal} · evidencia: ${c.progress.scenariosDone}/${c.progress.scenariosTotal}`,
             c.blocking > 0 ? `Hallazgos bloqueantes: ${c.blocking}` : '',
             c.blockedBy.length > 0 ? `Bloqueado: ${c.blockedBy.join('; ')}` : '',
@@ -889,7 +890,13 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!name) return
     const result = await signApproval({ root, artifact: path.posix.join('changes', change.slug, 'spec.md'), by: name, channel: 'editor' })
     if (result.approval) {
-      void vscode.window.showInformationMessage(`SpecAtlas: spec de ${change.slug} aprobada por ${name}.`)
+      const hasPresentation = change.files.some((file) => file.kind === 'presentation' && file.exists)
+      let extra = ''
+      if (hasPresentation) {
+        const regenerated = await generatePresentation({ root, slug: change.slug })
+        extra = regenerated.path ? ' La presentación se regeneró con la firma.' : ''
+      }
+      void vscode.window.showInformationMessage(`SpecAtlas: spec de ${change.slug} aprobada por ${name}.${extra}`)
     } else {
       void vscode.window.showErrorMessage(result.diagnostics.map((d) => d.message).join('; '))
     }

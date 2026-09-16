@@ -79,6 +79,7 @@ export interface SnapshotChange {
   nextDescription: string
   requiresAgent: boolean
   blockedBy: string[]
+  approval?: { by: string; at: string }
   progress: { tasksDone: number; tasksTotal: number; scenariosDone: number; scenariosTotal: number }
   blocking: number
   files: SnapshotFile[]
@@ -180,6 +181,9 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       nextDescription: state.nextAction.description,
       requiresAgent: state.nextAction.requiresAgent,
       blockedBy: state.blockedBy,
+      ...(approval.status === 'valid' && approval.approvedBy
+        ? { approval: { by: approval.approvedBy, at: approval.approvedAt ?? '' } }
+        : {}),
       progress: {
         tasksDone: state.progress.tasksDone,
         tasksTotal: state.progress.tasksTotal,

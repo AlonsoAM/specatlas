@@ -64,6 +64,7 @@ describe('buildSnapshot', () => {
     expect(change.state).toBe('ready')
     expect(change.next).toContain('satlas archive')
     expect(change.progress).toEqual({ tasksDone: 1, tasksTotal: 1, scenariosDone: 1, scenariosTotal: 1 })
+    expect(change.approval?.by).toBe('Maria Perez')
 
     const byKind = new Map(change.files.map((f) => [f.kind, f.exists]))
     expect(byKind.get('spec')).toBe(true)

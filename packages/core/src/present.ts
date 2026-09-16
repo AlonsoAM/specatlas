@@ -7,7 +7,8 @@ import { artifactHash, shortHash } from './hash.js'
 import { escapeHtml, inlineMarkdown, renderMarkdown as renderRich } from '@specatlas/render'
 
 export { defaultTokens, renderDocument, renderStyles } from '@specatlas/render'
-import { loadWorkspace } from './workspace.js'
+import { loadApprovals, loadWorkspace } from './workspace.js'
+import { verifyApproval } from './lifecycle.js'
 import { readMockupManifest, mockupsDir } from './mockups.js'
 import type { Change, Language, Requirement } from './model.js'
 
@@ -49,6 +50,9 @@ export async function generatePresentation(opts: PresentOptions): Promise<Presen
   const proposalRaw = await readTextIfExists(path.join(change.dir, 'proposal.md'))
   const proposalBody = proposalRaw ? parseFrontmatter(proposalRaw).body : ''
 
+  const approvals = await loadApprovals(path.join(root, '.sdd'))
+  const approval = verifyApproval(change, approvals.byArtifact, config, deltaContent)
+
   const labels = labelsFor(language)
   const html = page({
     language,
@@ -66,6 +70,9 @@ export async function generatePresentation(opts: PresentOptions): Promise<Presen
     mockups: mockupInfo.screens,
     screenshots: mockupInfo.screenshots,
     approveHint: `satlas approve ${change.slug} --by "<nombre>" --channel presentation`,
+    ...(approval.status === 'valid' && approval.approvedBy
+      ? { approval: { by: approval.approvedBy, at: approval.approvedAt ?? '' } }
+      : {}),
   })
 
   const outFile = path.join(presentationDir, 'index.html')
@@ -124,6 +131,7 @@ interface Labels {
   mockups: string
   approve: string
   approveText: string
+  approveDone: string
   command: string
   hash: string
   generated: string
@@ -147,6 +155,7 @@ function labelsFor(language: Language): Labels {
       mockups: 'Mockups',
       approve: 'Approval',
       approveText: 'This proposal is approved by signing the spec (hash + author). Any later change invalidates the signature.',
+      approveDone: 'Approved by {by} on {at}. Any later change invalidates the signature.',
       command: 'Command',
       hash: 'Hash',
       generated: 'Generated',
@@ -168,6 +177,7 @@ function labelsFor(language: Language): Labels {
     mockups: 'Mockups',
     approve: 'Aprobación',
     approveText: 'Esta propuesta se aprueba firmando la spec (hash + autor). Cualquier cambio posterior invalida la firma.',
+    approveDone: 'Aprobada por {by} el {at}. Cualquier cambio posterior invalida la firma.',
     command: 'Comando',
     hash: 'Hash',
     generated: 'Generado',
@@ -241,6 +251,7 @@ function page(input: {
   mockups: MockupCopy['screens']
   screenshots: string[]
   approveHint: string
+  approval?: { by: string; at: string }
 }): string {
   const l = input.labels
   const reqHtml = input.requirements
@@ -321,8 +332,10 @@ function page(input: {
 
   <section>
     <h2>${esc(l.approve)}</h2>
-    <div class="callout">${esc(l.approveText)}</div>
-    <p>${esc(l.command)}: <code>${esc(input.approveHint)}</code></p>
+    ${input.approval
+      ? `<div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ ${esc(l.approveDone.replace('{by}', input.approval.by).replace('{at}', input.approval.at))}</div>`
+      : `<div class="callout">${esc(l.approveText)}</div>
+    <p>${esc(l.command)}: <code>${esc(input.approveHint)}</code></p>`}
   </section>
 
   <footer>SpecAtlas · ${esc(input.project)} · ${esc(input.generatedAt)}</footer>
