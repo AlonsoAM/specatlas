@@ -135,3 +135,24 @@ describe('encabezados con etiquetas en negrita', () => {
     expect(html).toContain('<p>Los artefactos aprobados no se editan.</p>')
   })
 })
+
+describe('tablas y diagramas', () => {
+  it('alinea la cabecera al ancho de las filas y las envuelve para scroll', () => {
+    const html = renderMarkdown('| A | B | C |\n|---|---|---|\n| 1 | 2 | 3 | 4 |')
+    expect(html).toContain('table-wrap')
+    const header = html.slice(html.indexOf('<thead>'), html.indexOf('</thead>'))
+    expect((header.match(/<th>/g) ?? []).length).toBe(4)
+    const body = html.slice(html.indexOf('<tbody>'), html.indexOf('</tbody>'))
+    expect((body.match(/<td>/g) ?? []).length).toBe(4)
+  })
+
+  it('el bloque mermaid trae herramientas (zoom, pantalla completa, descarga)', () => {
+    const html = renderDocument('```mermaid\nflowchart TD\n  A-->B\n```', { mermaid: 'script', mermaidScriptUri: 'vscode-webview://x/mermaid.min.js', nonce: 'n1' })
+    expect(html).toContain('diagram-tools')
+    expect(html).toContain('data-diagram-zoom="in"')
+    expect(html).toContain('data-diagram-fullscreen')
+    expect(html).toContain('data-diagram-download')
+    expect(html).toContain('diagram-canvas')
+    expect(html).toContain('data-wired')
+  })
+})

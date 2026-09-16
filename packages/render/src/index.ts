@@ -154,8 +154,13 @@ pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
 pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
 pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
-th, td { border: 1px solid var(--atlas-line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
 th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
 blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
 .callout p { margin: .3em 0; }
 hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
@@ -172,6 +177,14 @@ ul.checklist > li.task-item.done { opacity: .72; }
 .meta-chip b { color: var(--atlas-ink); font-weight: 600; }
 small, .muted { color: var(--atlas-muted); }
 .mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-canvas { overflow: auto; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 10px; }
+.diagram-canvas pre.mermaid { margin: 0; background: transparent; }
+.diagram-canvas svg { max-width: 100%; height: auto; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
 .atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
 .atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
 .atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
@@ -266,7 +279,16 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
       const source = code.join('\n')
       if (lang === 'mermaid') {
         if (mermaidMode === 'script' && opts.mermaidScriptUri) {
-          out.push(`<div class="mermaid-block"><pre class="mermaid">${escapeHtml(source)}</pre></div>`)
+          out.push(`<div class="mermaid-block">
+  <div class="diagram-tools" role="toolbar" aria-label="Herramientas del diagrama">
+    <button type="button" data-diagram-zoom="out" title="Alejar" aria-label="Alejar">−</button>
+    <button type="button" data-diagram-zoom="in" title="Acercar" aria-label="Acercar">＋</button>
+    <button type="button" data-diagram-zoom="reset" title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-fullscreen title="Pantalla completa (Esc para salir)" aria-label="Pantalla completa">⛶</button>
+    <button type="button" data-diagram-download title="Descargar SVG" aria-label="Descargar SVG">⤓</button>
+  </div>
+  <div class="diagram-canvas"><pre class="mermaid">${escapeHtml(source)}</pre></div>
+</div>`)
         } else {
           out.push(
             `<div class="mermaid-block callout"><pre class="mermaid">${escapeHtml(source)}</pre><p><small>Diagrama mermaid — visible con la vista previa de Markdown del editor.</small></p></div>`,
@@ -375,10 +397,14 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
         rows.push(splitRow(lines[i] ?? ''))
         i += 1
       }
+      const width = Math.max(header.length, ...rows.map((row) => row.length))
+      const pad = (cells: string[]): string[] => [...cells, ...Array.from({ length: Math.max(0, width - cells.length) }, () => '')]
+      const paddedHeader = pad(header)
+      const paddedRows = rows.map((row) => pad(row))
       out.push(
-        `<table><thead><tr>${header.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join('')}</tr></thead><tbody>${rows
+        `<div class="table-wrap"><table><thead><tr>${paddedHeader.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join('')}</tr></thead><tbody>${paddedRows
           .map((row) => `<tr>${row.map((cell) => `<td>${inlineMarkdown(cell)}</td>`).join('')}</tr>`)
-          .join('')}</tbody></table>`,
+          .join('')}</tbody></table></div>`,
       )
       continue
     }
@@ -444,6 +470,62 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
   return html
 }
 
+const DIAGRAM_TOOLS_SCRIPT = `
+(function () {
+  var attempts = 0;
+  function wire() {
+    var blocks = Array.prototype.slice.call(document.querySelectorAll('.mermaid-block'));
+    var pending = false;
+    blocks.forEach(function (block) {
+      var canvas = block.querySelector('.diagram-canvas');
+      var svg = canvas ? canvas.querySelector('svg') : null;
+      if (!canvas) return;
+      if (!svg) { pending = true; return; }
+      if (block.getAttribute('data-wired') === '1') return;
+      block.setAttribute('data-wired', '1');
+      block.setAttribute('data-zoom', '1');
+      function applyZoom() {
+        var z = Number(block.getAttribute('data-zoom') || '1');
+        svg.style.zoom = z === 1 ? '' : String(z);
+      }
+      Array.prototype.slice.call(block.querySelectorAll('[data-diagram-zoom]')).forEach(function (button) {
+        button.addEventListener('click', function () {
+          var action = button.getAttribute('data-diagram-zoom');
+          var z = Number(block.getAttribute('data-zoom') || '1');
+          if (action === 'in') z = Math.min(3, z + 0.25);
+          else if (action === 'out') z = Math.max(0.5, z - 0.25);
+          else z = 1;
+          block.setAttribute('data-zoom', String(z));
+          applyZoom();
+        });
+      });
+      var fullscreen = block.querySelector('[data-diagram-fullscreen]');
+      if (fullscreen) fullscreen.addEventListener('click', function () {
+        var active = block.classList.toggle('diagram-fullscreen');
+        document.body.style.overflow = active ? 'hidden' : '';
+      });
+      var download = block.querySelector('[data-diagram-download]');
+      if (download) download.addEventListener('click', function () {
+        var clone = svg.cloneNode(true);
+        clone.style.zoom = '';
+        var data = new XMLSerializer().serializeToString(clone);
+        var link = document.createElement('a');
+        link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+        link.download = 'diagrama.svg';
+        link.click();
+      });
+    });
+    if (pending && attempts < 40) { attempts += 1; setTimeout(wire, 250); }
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    Array.prototype.slice.call(document.querySelectorAll('.diagram-fullscreen')).forEach(function (block) { block.classList.remove('diagram-fullscreen'); });
+    document.body.style.overflow = '';
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})()
+`
+
 export function renderDocument(markdown: string, opts: RenderOptions = {}): string {
   const theme = opts.theme ?? 'auto'
   const body = renderMarkdown(markdown, opts)
@@ -459,7 +541,7 @@ export function renderDocument(markdown: string, opts: RenderOptions = {}): stri
         : "'default'"
   const mermaidScript =
     opts.mermaid === 'script' && opts.mermaidScriptUri
-      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${mermaidTheme};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : undefined }); }\n</script>\n`
+      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${mermaidTheme};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : undefined }); }\n${DIAGRAM_TOOLS_SCRIPT}\n</script>\n`
       : ''
   const title = opts.title ? `<title>${escapeHtml(opts.title)}</title>\n` : ''
   const description = opts.description ? `<meta name="description" content="${escapeHtml(opts.description)}">\n` : ''
