@@ -35,8 +35,8 @@ F0 (fundaciones) en desarrollo:
 | F2: integración GitHub: `satlas issue sync` (tracker idempotente) y `satlas approve --from-github` (aprobación por etiqueta, firmada con hash) | ✅ |
 | F3: matriz de trazabilidad, tablero y panel de métricas en la extensión + `satlas metrics` (local, sin telemetría) | ✅ |
 | F3: packs de cumplimiento (`seguridad`, `datos`, `auditoria`, `accesibilidad` + packs de proyecto) con `satlas packs --check` y gate en `ci`/`analyze` | ✅ |
-| Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** + GitHub Release v0.1.0 | ✅ |
-| F3 restante: Open VSX, contract testing y multi-repo | 🔲 pendiente |
+| Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
+| F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
 ## Requisitos
 
@@ -44,7 +44,7 @@ F0 (fundaciones) en desarrollo:
 
 ## Instalación
 
-Los paquetes están listos para publicar (ver [`RELEASING.md`](RELEASING.md)); hasta que el release esté en el registro, usa la vía del repositorio.
+Los paquetes se publican en npm y la extensión en ambos mercados (ver [`RELEASING.md`](RELEASING.md)).
 
 ```bash
 # CLI (publicado en npm)
@@ -54,7 +54,7 @@ npm i -g specatlas        # bins: specatlas y satlas
 # Extensión
 code --install-extension specatlas.specatlas-vscode
 #  - VS Code Marketplace → https://marketplace.visualstudio.com/items?itemName=specatlas.specatlas-vscode
-#  - Open VSX → pendiente de publicación (mismo .vsix del release)
+#  - Open VSX → https://open-vsx.org/extension/specatlas/specatlas-vscode
 #  - .vsix → descárgalo del release: https://github.com/AlonsoAM/specatlas/releases
 ```
 
