@@ -1,12 +1,13 @@
 import path from 'node:path'
 import type { Diagnostic } from './diagnostics.js'
-import { lintDelta, lintSpec } from './lint.js'
+import { lintDelta, lintPlan, lintSpec } from './lint.js'
 import { checkMockups } from './mockups.js'
 import { evaluatePacks, packFindings, resolvePacks } from './packs.js'
 import { checkTrace } from './trace.js'
 import { planWaves } from './waves.js'
 import { runDoctor } from './doctor.js'
 import { loadWorkspace } from './workspace.js'
+import { readTextIfExists } from './fsx.js'
 import type { Requirement } from './model.js'
 
 const UI_DOMAINS = new Set(['frontend', 'mobile', 'fullstack'])
@@ -73,6 +74,10 @@ export async function runCiGate(opts: CiOptions): Promise<CiResult> {
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
     })
     const changeDiags: Diagnostic[] = [...lintFindings, ...trace.findings]
+    if (change.planPath) {
+      const planText = (await readTextIfExists(change.planPath)) ?? ''
+      changeDiags.push(...lintPlan(planText, change.planPath))
+    }
     if (change.tasks && change.tasks.counts.total > 0) {
       const plan = planWaves(change.tasks, { maxParallel: config.waves.max_parallel })
       changeDiags.push(...plan.blocks.flatMap((block) => block.diagnostics))

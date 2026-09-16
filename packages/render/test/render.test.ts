@@ -125,3 +125,13 @@ describe('cabeceras de metadatos', () => {
     expect(html).toContain('<p>Los artefactos aprobados no se editan: este plan es el único artefacto.</p>')
   })
 })
+
+describe('encabezados con etiquetas en negrita', () => {
+  it('convierte cada línea **Clave**: valor en un chip y la nota en prosa', () => {
+    const html = renderMarkdown('> **Cambio**: `x`\n> **Carril**: standard\n> **Dominio**: tarea\n> Los artefactos aprobados no se editan.')
+    expect(html).toContain('<b>Cambio:</b>')
+    expect(html).toContain('<b>Carril:</b>')
+    expect(html).toContain('<b>Dominio:</b>')
+    expect(html).toContain('<p>Los artefactos aprobados no se editan.</p>')
+  })
+})

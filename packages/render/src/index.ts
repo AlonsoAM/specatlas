@@ -317,34 +317,49 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
         quote.push((lines[i] ?? '').replace(/^>\s?/, ''))
         i += 1
       }
-      const joined = quote.join(' ')
-      const labelRe = /(?:^|\s)([\p{L}][\p{L}\s/()-]{1,32}):\s/gu
-      const hits: Array<{ start: number; end: number; label: string }> = []
-      let hitMatch: RegExpExecArray | null
-      while ((hitMatch = labelRe.exec(joined)) !== null) {
-        if (hitMatch[1]!.trim().split(/\s+/).length > 4) continue
-        hits.push({ start: hitMatch.index, end: hitMatch.index + hitMatch[0].length, label: hitMatch[1]! })
-      }
       const chips: string[] = []
       const prose: string[] = []
-      let cursor = 0
-      for (let h = 0; h < hits.length; h += 1) {
-        const hit = hits[h]!
-        const before = joined.slice(cursor, hit.start).replace(/[\s·]+$/u, '').trim()
-        if (before) prose.push(before)
-        const valueEnd = h + 1 < hits.length ? hits[h + 1]!.start : joined.length
-        let value = joined.slice(hit.end, valueEnd).replace(/[\s·]+$/u, '').trim()
-        const sentenceBreak = /[·.]\s+(?=[\p{Lu}][\p{L}]+(?:\s+[\p{L}]+){3,})/u.exec(value)
-        if (sentenceBreak) {
-          const note = value.slice(sentenceBreak.index + 1).trim()
-          if (note) prose.push(note)
-          value = value.slice(0, sentenceBreak.index + 1)
+      const chipFor = (label: string, value: string): string => `<span class="meta-chip"><b>${inlineMarkdown(label)}:</b> ${inlineMarkdown(value)}</span>`
+      for (const rawLine of quote) {
+        const line = rawLine.trim()
+        if (!line) continue
+        const whole = /^(?:\*{0,2})([\p{L}][\p{L}\s/()-]{1,32}?)(?:\*{0,2})\s*:\s*(.+)$/u.exec(line)
+        const hasInlineLabels = / · \s*\*{0,2}[\p{L}][\p{L}\s/()-]{1,32}\*{0,2}:\s/u.test(line)
+        if (whole && !hasInlineLabels && whole[1]!.trim().split(/\s+/).length <= 4) {
+          chips.push(chipFor(whole[1]!, whole[2]!))
+          continue
         }
-        chips.push(`<span class="meta-chip"><b>${inlineMarkdown(hit.label)}:</b> ${inlineMarkdown(value)}</span>`)
-        cursor = valueEnd
+        const labelRe = /(?:^|\s|\*{0,2})([\p{L}][\p{L}\s/()-]{1,32}?)\*{0,2}:\s/gu
+        const hits: Array<{ start: number; end: number; label: string }> = []
+        let hitMatch: RegExpExecArray | null
+        while ((hitMatch = labelRe.exec(line)) !== null) {
+          if (hitMatch[1]!.trim().split(/\s+/).length > 4) continue
+          const prefix = /^\*+/.exec(hitMatch[0])?.[0].length ?? 0
+          hits.push({ start: hitMatch.index + prefix, end: hitMatch.index + hitMatch[0].length, label: hitMatch[1]! })
+        }
+        if (hits.length === 0) {
+          prose.push(line)
+          continue
+        }
+        let cursor = 0
+        for (let h = 0; h < hits.length; h += 1) {
+          const hit = hits[h]!
+          const before = line.slice(cursor, hit.start).replace(/[\s·*]+$/u, '').trim()
+          if (before) prose.push(before)
+          const valueEnd = h + 1 < hits.length ? hits[h + 1]!.start : line.length
+          let value = line.slice(hit.end, valueEnd).replace(/[\s·*]+$/u, '').trim()
+          const sentenceBreak = /[·.]\s+(?=[\p{Lu}][\p{L}]+(?:\s+[\p{L}]+){3,})/u.exec(value)
+          if (sentenceBreak) {
+            const note = value.slice(sentenceBreak.index + 1).trim()
+            if (note) prose.push(note)
+            value = value.slice(0, sentenceBreak.index + 1)
+          }
+          chips.push(chipFor(hit.label, value))
+          cursor = valueEnd
+        }
+        const tail = line.slice(cursor).replace(/^[\s·*]+/u, '').trim()
+        if (tail) prose.push(tail)
       }
-      const tail = joined.slice(cursor).replace(/^[\s·]+/u, '').trim()
-      if (tail) prose.push(tail)
       const chipLine = chips.length > 0 ? `<div class="meta-line">${chips.join('')}</div>` : ''
       const proseHtml = prose.length > 0 ? `<p>${inlineMarkdown(prose.join(' · '))}</p>` : ''
       out.push(`<blockquote>${chipLine}${proseHtml}</blockquote>`)
@@ -436,9 +451,15 @@ export function renderDocument(markdown: string, opts: RenderOptions = {}): stri
     opts.cspSource !== undefined
       ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${opts.cspSource} 'unsafe-inline'; img-src ${opts.cspSource} data:; font-src ${opts.cspSource}; script-src 'nonce-${opts.nonce ?? ''}' ${opts.cspSource};">\n`
       : ''
+  const mermaidTheme =
+    theme === 'dark'
+      ? "'dark'"
+      : theme === 'vscode'
+        ? "(document.body.classList.contains('vscode-light') ? 'default' : 'dark')"
+        : "'default'"
   const mermaidScript =
     opts.mermaid === 'script' && opts.mermaidScriptUri
-      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${theme === 'dark' ? "'dark'" : "'default'"};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme }); }\n</script>\n`
+      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${mermaidTheme};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : undefined }); }\n</script>\n`
       : ''
   const title = opts.title ? `<title>${escapeHtml(opts.title)}</title>\n` : ''
   const description = opts.description ? `<meta name="description" content="${escapeHtml(opts.description)}">\n` : ''

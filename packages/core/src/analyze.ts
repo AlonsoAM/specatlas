@@ -2,8 +2,8 @@ import path from 'node:path'
 import { localStamp } from './time.js'
 import type { Diagnostic } from './diagnostics.js'
 import { countBySeverity, diag } from './diagnostics.js'
-import { writeText } from './fsx.js'
-import { lintDelta } from './lint.js'
+import { readTextIfExists, writeText } from './fsx.js'
+import { lintDelta, lintPlan } from './lint.js'
 import { checkTrace } from './trace.js'
 import { planWaves } from './waves.js'
 import { checkMockups } from './mockups.js'
@@ -77,6 +77,10 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<AnalyzeResult> {
   const lane = change.meta?.lane ?? config.lanes.default
   if (lane !== 'fix' && !change.planPath) {
     findings.push(diag('ATLAS-ANALYZE-001', 'warning', 'El cambio no tiene plan.md (plan técnico)', { suggestion: 'Ejecuta la fase /satlas-plan' }))
+  }
+  if (change.planPath) {
+    const planText = (await readTextIfExists(change.planPath)) ?? ''
+    findings.push(...lintPlan(planText, change.planPath))
   }
 
   const deltaScenarios = [...(change.delta?.added ?? []), ...(change.delta?.modified ?? [])].flatMap((r) => r.scenarios)
