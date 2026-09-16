@@ -192,5 +192,6 @@ export interface Workspace {
   sddDir: string
   specs: SpecRef[]
   changes: Change[]
+  archived?: Change[]
   diagnostics: Diagnostic[]
 }

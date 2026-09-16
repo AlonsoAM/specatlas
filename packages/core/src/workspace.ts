@@ -54,8 +54,8 @@ export async function loadSpecs(sddDir: string): Promise<SpecRef[]> {
   return out
 }
 
-export async function loadChange(root: string, slug: string): Promise<Change> {
-  const dir = path.join(root, SDD_DIR, 'changes', slug)
+export async function loadChange(root: string, slug: string, relDir?: string): Promise<Change> {
+  const dir = path.join(root, SDD_DIR, 'changes', relDir ?? slug)
   const diagnostics: Diagnostic[] = []
   const change: Change = { slug, dir, diagnostics }
 
@@ -129,7 +129,15 @@ export async function loadWorkspace(root: string): Promise<{ workspace: Workspac
     diagnostics.push(...change.diagnostics)
   }
 
-  return { workspace: { root, sddDir, specs, changes, diagnostics }, config }
+  const archived: Change[] = []
+  const archivedDir = path.join(sddDir, 'changes', 'archive')
+  if (await isDirectory(archivedDir)) {
+    for (const entry of await listDirs(archivedDir)) {
+      archived.push(await loadChange(root, entry.replace(/^\d{4}-\d{2}-/, ''), path.join('archive', entry)))
+    }
+  }
+
+  return { workspace: { root, sddDir, specs, changes, archived, diagnostics }, config }
 }
 
 export async function ensureSddDirs(sddDir: string): Promise<string[]> {

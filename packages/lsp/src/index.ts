@@ -40,6 +40,7 @@ export interface TaskInfo {
   covers: string[]
   dependsOn: string[]
   done: boolean
+  archived?: boolean
   wave?: number
 }
 
@@ -100,6 +101,37 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
   for (const spec of workspace.specs) {
     for (const requirement of spec.spec.requirements) {
       registerRequirement(requirements, scenarios, requirement, spec.path, true)
+    }
+  }
+
+  for (const change of workspace.archived ?? []) {
+    if (change.tasks) {
+      for (const block of change.tasks.blocks) {
+        for (const task of block.tasks) {
+          if (tasks.has(task.id)) continue
+          tasks.set(task.id, {
+            id: task.id,
+            text: task.text,
+            file: change.tasks.path,
+            line: task.line,
+            block: block.id,
+            covers: task.covers,
+            dependsOn: task.dependsOn,
+            done: task.done,
+            archived: true,
+          })
+        }
+      }
+    }
+    for (const entry of change.verify?.evidence ?? []) {
+      const list = evidence.get(entry.scenario) ?? []
+      list.push({ scenario: entry.scenario, result: entry.result, method: entry.method, file: change.verify?.path ?? '', line: entry.line })
+      evidence.set(entry.scenario, list)
+    }
+    for (const entry of change.fix?.evidence ?? []) {
+      const list = evidence.get(entry.scenario) ?? []
+      list.push({ scenario: entry.scenario, result: entry.result, method: entry.method, file: change.fix?.path ?? '', line: entry.line })
+      evidence.set(entry.scenario, list)
     }
   }
 

@@ -2,7 +2,10 @@ import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { foldDelta } from '../src/archive'
+import { archiveChange, foldDelta } from '../src/archive'
+import { createChange } from '../src/new'
+import { initWorkspace } from '../src/init'
+import { loadWorkspace } from '../src/workspace'
 import { parseDelta } from '../src/parse/delta'
 import { parseConfig, defaultConfig } from '../src/config'
 import { detectProfiles, loadProfilesFromDir } from '../src/profiles'
@@ -114,5 +117,55 @@ describe('perfiles', () => {
     const empty = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-prof2-'))
     const none = await detectProfiles(empty, profiles)
     expect(none.matches).toHaveLength(0)
+  })
+})
+
+describe('workspace con cambios archivados', () => {
+  it('expone el cambio archivado con sus tareas y evidencia', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-arch-'))
+    await initWorkspace({ root, name: 'arch-demo', language: 'es' })
+    await createChange({ root, slug: 'alta', lane: 'standard', domain: 'tareas', title: 'Alta' })
+    const dir = path.join(root, '.sdd', 'changes', 'alta')
+    await fs.writeFile(
+      path.join(dir, 'spec.md'),
+      `## Requisitos agregados
+
+### Requisito: REQ-TAR-001 — Alta
+El sistema DEBE permitir registrar tareas.
+
+#### Escenario: REQ-TAR-001-S1 — Alta valida
+- **CUANDO** la persona registra una tarea
+- **ENTONCES** aparece en la lista
+`,
+      'utf8',
+    )
+    await fs.writeFile(path.join(dir, 'tasks.md'), '## Bloque 1 — Nucleo\n\n- [x] T1.1 Registrar · Archivos: src/a.ts · Cubre: REQ-TAR-001-S1 · Reversion: borrar\n', 'utf8')
+    await fs.writeFile(
+      path.join(dir, 'verify.md'),
+      `# Verificacion
+
+\`\`\`evidence
+scenario: REQ-TAR-001-S1
+method: executable
+command: npm test
+result: pass
+date: 2026-09-16T10:00:00Z
+by: Ana
+\`\`\`
+`,
+      'utf8',
+    )
+
+    const result = await archiveChange({ root, slug: 'alta' })
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toHaveLength(0)
+
+    const { workspace } = await loadWorkspace(root)
+    expect(workspace.changes).toHaveLength(0)
+    expect(workspace.archived?.map((c) => c.slug)).toEqual(['alta'])
+    const archived = workspace.archived![0]!
+    expect(archived.tasks?.counts.total).toBe(1)
+    expect(archived.verify?.evidence[0]?.result).toBe('pass')
+    expect(archived.dir).toContain('archive')
+    expect(workspace.specs[0]?.spec.requirements[0]?.id).toBe('REQ-TAR-001')
   })
 })

@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
+import { archiveChange, collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
 import { buildMatrix, buildSnapshot, escapeHtml, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
 import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
 
@@ -106,6 +106,23 @@ screens:
     const mockupFile = change.files.find((file) => file.kind === 'mockup')
     expect(mockupFile?.screens?.map((screen) => screen.id)).toEqual(['alta', 'vacio'])
     expect(change.mockups.items?.map((screen) => screen.title)).toEqual(['Alta de tareas', 'Lista vacía'])
+  })
+
+  it('la matriz reconoce las tareas y la evidencia de cambios archivados', async () => {
+    const root = await makeWorkspace(true)
+    await archiveChange({ root, slug: 'reset-password' })
+
+    const snapshot = await buildSnapshot(root)
+    expect(snapshot!.summary.changes).toBe(0)
+
+    const matrix = await buildMatrix(root)
+    const requirement = matrix.requirements.find((r) => r.id === 'REQ-AUTH-001')
+    expect(requirement).toBeDefined()
+    const scenario = requirement!.scenarios[0]!
+    expect(scenario.tasks.length).toBeGreaterThan(0)
+    expect(scenario.evidence).toBe('pass')
+    expect(matrix.uncoveredScenarios).toHaveLength(0)
+    expect(matrix.requirementsWithoutTasks).toHaveLength(0)
   })
 
   it('sin firma queda en esperando aprobación', async () => {
