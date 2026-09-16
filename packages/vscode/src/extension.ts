@@ -40,6 +40,10 @@ function pathForScreen(change: SnapshotChange, screen: SnapshotMockupItem): stri
   return path.join(change.dir, 'mockups', screen.file)
 }
 
+function panelNonce(): string {
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+}
+
 async function rewriteLocalHtml(panel: vscode.WebviewPanel, target: string): Promise<string> {
   const content = (await readTextIfExists(target)) ?? ''
   const baseDir = path.dirname(target)
@@ -785,11 +789,11 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!root) return
     const model = await buildMatrix(root)
     const panel = vscode.window.createWebviewPanel('specatlas.matrix', 'Matriz de trazabilidad', vscode.ViewColumn.Active, {
-      enableScripts: false,
+      enableScripts: true,
       enableCommandUris: true,
     })
     panel.iconPath = panelIcon
-    panel.webview.html = matrixHtml(model)
+    panel.webview.html = matrixHtml(model, panelNonce())
   })
 
   register('specatlas.board', async () => {
@@ -797,11 +801,11 @@ export function activate(context: vscode.ExtensionContext): void {
     const snapshot = provider.snapshotOf(0)
     if (!snapshot) return
     const panel = vscode.window.createWebviewPanel('specatlas.board', `Tablero — ${snapshot.projectName}`, vscode.ViewColumn.Active, {
-      enableScripts: false,
+      enableScripts: true,
       enableCommandUris: true,
     })
     panel.iconPath = panelIcon
-    panel.webview.html = boardHtml(snapshot)
+    panel.webview.html = boardHtml(snapshot, panelNonce())
   })
 
   register('specatlas.metrics', async () => {

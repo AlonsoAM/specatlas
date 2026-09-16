@@ -385,6 +385,8 @@ export interface MatrixRequirement {
   passed: number
   total: number
   scenarios: MatrixScenario[]
+  domain?: string
+  changes?: string[]
 }
 
 export interface MatrixModel {
@@ -435,6 +437,8 @@ export async function buildMatrix(root: string): Promise<MatrixModel> {
       passed,
       total: scenarios.length,
       scenarios,
+      ...(requirement.domain !== undefined ? { domain: requirement.domain } : {}),
+      ...(requirement.changes !== undefined && requirement.changes.length > 0 ? { changes: requirement.changes } : {}),
     })
   }
 

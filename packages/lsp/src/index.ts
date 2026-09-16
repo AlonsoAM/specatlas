@@ -21,6 +21,8 @@ export interface ReqInfo {
   line: number
   scenarios: string[]
   living: boolean
+  domain?: string
+  changes?: string[]
 }
 
 export interface ScenarioInfo {
@@ -100,7 +102,7 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
 
   for (const spec of workspace.specs) {
     for (const requirement of spec.spec.requirements) {
-      registerRequirement(requirements, scenarios, requirement, spec.path, true)
+      registerRequirement(requirements, scenarios, requirement, spec.path, true, { domain: spec.domain })
     }
   }
 
@@ -138,7 +140,10 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
   for (const change of workspace.changes) {
     if (change.delta) {
       for (const requirement of [...change.delta.added, ...change.delta.modified]) {
-        registerRequirement(requirements, scenarios, requirement, change.delta.path, false)
+        registerRequirement(requirements, scenarios, requirement, change.delta.path, false, {
+          change: change.slug,
+          ...(change.meta?.domain !== undefined ? { domain: change.meta.domain } : {}),
+        })
       }
     }
     if (change.tasks) {
@@ -192,9 +197,16 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
   return { root, requirements, scenarios, tasks, evidence, diagnostics, files }
 }
 
-function registerRequirement(requirements: Map<string, ReqInfo>, scenarios: Map<string, ScenarioInfo>, requirement: Requirement, file: string, living: boolean): void {
+function registerRequirement(
+  requirements: Map<string, ReqInfo>,
+  scenarios: Map<string, ScenarioInfo>,
+  requirement: Requirement,
+  file: string,
+  living: boolean,
+  opts: { domain?: string; change?: string } = {},
+): void {
   const existing = requirements.get(requirement.id)
-  if (!existing || (!existing.living && living)) {
+  if (!existing) {
     requirements.set(requirement.id, {
       id: requirement.id,
       title: requirement.title,
@@ -202,7 +214,22 @@ function registerRequirement(requirements: Map<string, ReqInfo>, scenarios: Map<
       line: requirement.line,
       scenarios: requirement.scenarios.map((s) => s.id),
       living,
+      ...(opts.domain !== undefined ? { domain: opts.domain } : {}),
+      ...(opts.change !== undefined ? { changes: [opts.change] } : {}),
     })
+  } else {
+    if (!existing.living && living) {
+      existing.living = true
+      existing.file = file
+      existing.line = requirement.line
+      existing.title = requirement.title
+    }
+    if (opts.domain !== undefined) existing.domain = opts.domain
+    if (opts.change !== undefined) {
+      const list = existing.changes ?? []
+      if (!list.includes(opts.change)) list.push(opts.change)
+      existing.changes = list
+    }
   }
   for (const scenario of requirement.scenarios) {
     scenarios.set(scenario.id, { id: scenario.id, title: scenario.title, reqId: requirement.id, file, line: scenario.line })

@@ -170,6 +170,12 @@ tr.row-gap td { background: color-mix(in srgb, ${TONES.red} 7%, transparent); }
 .blocked-card b { color: var(--atlas-ink); }
 .footer { margin-top: 18px; color: var(--atlas-muted); font-size: 11.5px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .footer .brand { letter-spacing: .14em; text-transform: uppercase; font-size: 10.5px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px 0; }
+.filters input[type="search"] { flex: 1 1 220px; min-width: 170px; background: var(--vscode-input-background, #3c3c3c); color: var(--vscode-input-foreground, #ccc); border: 1px solid var(--vscode-input-border, transparent); border-radius: 6px; padding: 5px 10px; font: inherit; }
+.filters select { background: var(--vscode-dropdown-background, #3c3c3c); color: var(--vscode-dropdown-foreground, #ccc); border: 1px solid var(--vscode-dropdown-border, transparent); border-radius: 6px; padding: 5px 8px; font: inherit; }
+.filters .fcount { margin-left: auto; color: var(--atlas-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+tbody tr[hidden], article.ticket[hidden] { display: none; }
 a { color: var(--atlas-accent); text-decoration: none; border-bottom: 1px dotted color-mix(in srgb, var(--atlas-accent) 50%, transparent); }
 a:hover { border-bottom-style: solid; }
 `
@@ -258,13 +264,26 @@ function progressBar(percent: number, t: Tone): string {
   return `<div class="progress" style="--tone:${tone(t)}"><span style="width:${clamped}%"></span></div>`
 }
 
-function panelPage(input: { kind: string; title: string; subtitle: string; heroRight?: string; body: string; footer?: string }): string {
+function panelPage(input: {
+  kind: string
+  title: string
+  subtitle: string
+  heroRight?: string
+  body: string
+  footer?: string
+  script?: string
+  nonce?: string
+}): string {
+  const csp = input.nonce
+    ? `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${input.nonce}'; img-src data:;">\n`
+    : ''
+  const script = input.script && input.nonce ? `<script nonce="${input.nonce}">${input.script}</script>\n` : ''
   return `<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>${renderStyles({ theme: 'vscode' })}${PANEL_CSS}</style>
+${csp}<style>${renderStyles({ theme: 'vscode' })}${PANEL_CSS}</style>
 </head>
 <body>
 <div class="shell">
@@ -282,7 +301,7 @@ function panelPage(input: { kind: string; title: string; subtitle: string; heroR
   ${input.body}
   <div class="footer"><span>${escapeHtml(input.footer ?? '')}</span><span class="brand">SpecAtlas</span></div>
 </div>
-</body>
+${script}</body>
 </html>
 `
 }
@@ -318,7 +337,75 @@ function requirementTone(requirement: MatrixRequirement): Tone {
   return 'red'
 }
 
-export function matrixHtml(model: MatrixModel): string {
+const MATRIX_FILTERS_SCRIPT = `
+(function () {
+  var rows = Array.prototype.slice.call(document.querySelectorAll('tbody tr[data-group]'));
+  var heads = new Map();
+  rows.forEach(function (row) { if (row.classList.contains('row-group')) heads.set(row.getAttribute('data-group'), row); });
+  var q = document.getElementById('mq');
+  var st = document.getElementById('mstatus');
+  var dom = document.getElementById('mdomain');
+  var ch = document.getElementById('mchange');
+  var out = document.getElementById('mcount');
+  function norm(value) { return (value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase(); }
+  function apply() {
+    var text = norm(q && q.value ? q.value : '').trim();
+    var status = st ? st.value : 'all';
+    var domain = dom ? dom.value : '';
+    var change = ch ? ch.value : '';
+    var visible = 0;
+    heads.forEach(function (head, key) {
+      var list = (head.getAttribute('data-changes') || '').split(' ').filter(Boolean);
+      var show = (!text || norm(head.getAttribute('data-text')).indexOf(text) >= 0)
+        && (status === 'all' || (status === 'gap' ? head.getAttribute('data-gap') === '1' : head.getAttribute('data-gap') !== '1'))
+        && (!domain || head.getAttribute('data-domain') === domain)
+        && (!change || (change === '__none' ? list.length === 0 : list.indexOf(change) >= 0));
+      if (show) visible += 1;
+      rows.forEach(function (row) { if (row.getAttribute('data-group') === key) row.hidden = !show; });
+    });
+    if (out) out.textContent = visible + ' de ' + heads.size + ' requisito(s)';
+  }
+  [q, st, dom, ch].forEach(function (el) { if (el) el.addEventListener('input', apply); });
+  apply();
+})()
+`
+
+const BOARD_FILTERS_SCRIPT = `
+(function () {
+  var tickets = Array.prototype.slice.call(document.querySelectorAll('article.ticket'));
+  var q = document.getElementById('bq');
+  var lane = document.getElementById('blane');
+  var dom = document.getElementById('bdomain');
+  var out = document.getElementById('bcount');
+  function norm(value) { return (value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase(); }
+  function apply() {
+    var text = norm(q && q.value ? q.value : '').trim();
+    var laneValue = lane ? lane.value : '';
+    var domain = dom ? dom.value : '';
+    var counters = {};
+    var visible = 0;
+    tickets.forEach(function (ticket) {
+      var show = (!text || norm(ticket.getAttribute('data-text')).indexOf(text) >= 0)
+        && (!laneValue || ticket.getAttribute('data-lane') === laneValue)
+        && (!domain || ticket.getAttribute('data-domain') === domain);
+      ticket.hidden = !show;
+      if (show) {
+        visible += 1;
+        var col = ticket.closest('[data-col]');
+        if (col) { var key = col.getAttribute('data-col'); counters[key] = (counters[key] || 0) + 1; }
+      }
+    });
+    Array.prototype.slice.call(document.querySelectorAll('[data-count]')).forEach(function (el) {
+      el.textContent = String(counters[el.getAttribute('data-count')] || 0);
+    });
+    if (out) out.textContent = visible + ' de ' + tickets.length + ' cambio(s)';
+  }
+  [q, lane, dom].forEach(function (el) { if (el) el.addEventListener('input', apply); });
+  apply();
+})()
+`
+
+export function matrixHtml(model: MatrixModel, nonce?: string): string {
   const scenarios = model.requirements.flatMap((requirement) => requirement.scenarios)
   const passed = scenarios.filter((scenario) => scenario.evidence === 'pass').length
   const coverage = scenarios.length > 0 ? (passed / scenarios.length) * 100 : 0
@@ -329,7 +416,7 @@ export function matrixHtml(model: MatrixModel): string {
     .map((requirement) => {
       const requirementPercent = requirement.total > 0 ? (requirement.passed / requirement.total) * 100 : 0
       const requirementGap = requirement.scenarios.some((scenario) => scenario.tasks.length === 0 || scenario.evidence !== 'pass')
-      const groupRow = `<tr class="row-group${requirementGap ? ' has-gap' : ''}">
+      const groupRow = `<tr class="row-group${requirementGap ? ' has-gap' : ''}" data-group="${escapeHtml(requirement.id)}" data-gap="${requirementGap ? '1' : '0'}" data-domain="${escapeHtml(requirement.domain ?? '')}" data-changes="${escapeHtml((requirement.changes ?? []).join(' '))}" data-text="${escapeHtml([requirement.id, requirement.title, ...requirement.scenarios.flatMap((s) => [s.id, s.title])].join(' ').toLowerCase())}">
   <td colspan="4">
     <div class="group-line">
       <span class="group-title">${commandLink('specatlas.openAt', [requirement.file, requirement.line], `${requirement.id} — ${requirement.title}`)}</span>
@@ -356,7 +443,7 @@ export function matrixHtml(model: MatrixModel): string {
               : scenario.evidence === 'fail'
                 ? `${pillHtml('fail', 'red', '✕')}${method}`
                 : pillHtml('pendiente', 'orange', '⋯')
-          return `<tr class="scenario-row${gap ? ' row-gap' : ''}">
+          return `<tr class="scenario-row${gap ? ' row-gap' : ''}" data-group="${escapeHtml(requirement.id)}">
   <td class="mono">${commandLink('specatlas.openAt', [scenario.file, scenario.line], scenario.id)}</td>
   <td>${escapeHtml(scenario.title)}</td>
   <td>${taskChips}</td>
@@ -388,6 +475,20 @@ export function matrixHtml(model: MatrixModel): string {
   </div>
 </div>`
 
+  const domains = [...new Set(model.requirements.map((requirement) => requirement.domain).filter((domain): domain is string => Boolean(domain)))].sort()
+  const changeSlugs = [...new Set(model.requirements.flatMap((requirement) => requirement.changes ?? []))].sort()
+  const filters = `<div class="filters">
+  <input type="search" id="mq" placeholder="Buscar requisito o escenario…" aria-label="Buscar requisito o escenario">
+  <select id="mstatus" aria-label="Estado">
+    <option value="all">Todos</option>
+    <option value="gap">Con huecos</option>
+    <option value="pass">Verificados</option>
+  </select>
+  ${domains.length > 1 ? `<select id="mdomain" aria-label="Dominio"><option value="">Todos los dominios</option>${domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('')}</select>` : ''}
+  ${changeSlugs.length > 0 ? `<select id="mchange" aria-label="Cambio"><option value="">Todos los cambios</option><option value="__none">Sin cambio activo</option>${changeSlugs.map((slug) => `<option value="${escapeHtml(slug)}">${escapeHtml(slug)}</option>`).join('')}</select>` : ''}
+  <span class="fcount" id="mcount"></span>
+</div>`
+
   const body = `
 ${status}
 <div class="kpis">
@@ -403,7 +504,8 @@ ${status}
 </section>
 <section class="section">
   <div class="section-head"><h2>Matriz</h2><span class="sub">lo accionable primero · los huecos se resaltan · clic en un id para abrir en la línea</span></div>
-  <div class="section-body" style="padding:0">
+  ${filters}
+  <div class="section-body" style="padding:6px 0 0">
     <table class="matrix">
       <thead><tr><th style="width:190px">Escenario</th><th>Título</th><th style="width:290px">Tareas</th><th style="width:170px">Evidencia</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="4"><div class="empty">Sin requisitos todavía. Especifica un cambio con <span class="mono">/satlas-specify</span>.</div></td></tr>'}</tbody>
@@ -423,7 +525,8 @@ ${status}
     subtitle: `${plural(model.requirements.length, 'requisito', 'requisitos')} · ${plural(scenarios.length, 'escenario', 'escenarios')} · ${passed} con evidencia pass`,
     heroRight: donut(coverage, `${Math.round(coverage)}%`, 'cobertura', coverageTone),
     body,
-    footer: 'los ids abren el artefacto en la línea exacta · re-ejecuta el comando para refrescar',
+    footer: 'los ids abren el artefacto en la línea exacta · los filtros no recargan el panel',
+    ...(nonce ? { script: MATRIX_FILTERS_SCRIPT, nonce } : {}),
   })
 }
 
@@ -438,7 +541,7 @@ const BOARD_ORDER: Array<{ state: string; label: string }> = [
   { state: 'ready', label: 'Listo para archivar' },
 ]
 
-export function boardHtml(snapshot: Snapshot): string {
+export function boardHtml(snapshot: Snapshot, nonce?: string): string {
   const columns = BOARD_ORDER.map((column) => {
     const items = snapshot.changes.filter((change) => change.state === column.state)
     const t = STATE_TONES[column.state] ?? 'gray'
@@ -447,7 +550,8 @@ export function boardHtml(snapshot: Snapshot): string {
         const total = change.progress.tasksTotal
         const percent = total > 0 ? Math.round((change.progress.tasksDone / total) * 100) : 0
         const blocked = change.blockedBy.length > 0 ? `<div class="banner warn">▲ ${escapeHtml(change.blockedBy[0] ?? '')}</div>` : ''
-        return `<article class="ticket">
+        const searchText = `${change.slug} ${change.title ?? ''}`.toLowerCase()
+        return `<article class="ticket" data-lane="${escapeHtml(change.lane)}" data-domain="${escapeHtml(change.domain ?? '')}" data-text="${escapeHtml(searchText)}">
   <h4>${escapeHtml(change.title ?? change.slug)}</h4>
   <div class="chips">
     ${pillHtml(change.lane, laneTone(change.lane), '◆')}
@@ -460,11 +564,20 @@ export function boardHtml(snapshot: Snapshot): string {
 </article>`
       })
       .join('')
-    return `<div class="col" style="--tone:${tone(t)}">
-  <div class="col-head"><h3>${escapeHtml(column.label)}</h3><span class="count">${items.length}</span></div>
+    return `<div class="col" style="--tone:${tone(t)}" data-col="${escapeHtml(column.state)}">
+  <div class="col-head"><h3>${escapeHtml(column.label)}</h3><span class="count" data-count="${escapeHtml(column.state)}">${items.length}</span></div>
   <div class="col-body">${tickets || '<div class="empty">Sin cambios</div>'}</div>
 </div>`
   }).join('')
+
+  const lanes = [...new Set(snapshot.changes.map((change) => change.lane))].sort()
+  const domains = [...new Set(snapshot.changes.map((change) => change.domain).filter((domain): domain is string => Boolean(domain)))].sort()
+  const filters = `<div class="filters">
+  <input type="search" id="bq" placeholder="Buscar cambio…" aria-label="Buscar cambio">
+  ${lanes.length > 1 ? `<select id="blane" aria-label="Carril"><option value="">Todos los carriles</option>${lanes.map((lane) => `<option value="${escapeHtml(lane)}">${escapeHtml(lane)}</option>`).join('')}</select>` : ''}
+  ${domains.length > 1 ? `<select id="bdomain" aria-label="Dominio"><option value="">Todos los dominios</option>${domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('')}</select>` : ''}
+  <span class="fcount" id="bcount"></span>
+</div>`
 
   const body = `
 <div class="kpis">
@@ -475,6 +588,7 @@ export function boardHtml(snapshot: Snapshot): string {
 </div>
 <section class="section">
   <div class="section-head"><h2>Flujo de cambios</h2><span class="sub">de la especificación al archivo · una columna por fase</span></div>
+  ${snapshot.changes.length > 0 ? filters : ''}
   <div class="section-body"><div class="board">${columns}</div></div>
 </section>`
 
@@ -486,6 +600,7 @@ export function boardHtml(snapshot: Snapshot): string {
     heroRight: donut(snapshot.summary.changes > 0 ? (readyCount / snapshot.summary.changes) * 100 : 0, `${readyCount}`, 'listos', 'green'),
     body,
     footer: 'arrastra el scroll horizontal para ver todas las fases',
+    ...(nonce ? { script: BOARD_FILTERS_SCRIPT, nonce } : {}),
   })
 }
 

@@ -219,6 +219,30 @@ describe('matriz, tablero y métricas', () => {
     expect(html).toContain('url(#atlas-donut-')
   })
 
+  it('la matriz y el tablero traen filtros listos para usar', async () => {
+    const root = await makeWorkspace(true)
+    const matrix = await buildMatrix(root)
+    const requirement = matrix.requirements[0]!
+    expect(requirement.domain).toBe('auth')
+    expect(requirement.changes).toContain('reset-password')
+
+    const matrixPage = matrixHtml(matrix, 'nonce1')
+    expect(matrixPage).toContain('id="mq"')
+    expect(matrixPage).toContain('data-group="REQ-AUTH-001"')
+    expect(matrixPage).toMatch(/data-gap="[01]"/)
+    expect(matrixPage).toContain('data-changes="reset-password"')
+    expect(matrixPage).toContain('nonce="nonce1"')
+    expect(matrixPage).toContain('Content-Security-Policy')
+    expect(matrixPage).toContain('data-domain="auth"')
+
+    const snapshot = await buildSnapshot(root)
+    const boardPage = boardHtml(snapshot!, 'nonce2')
+    expect(boardPage).toContain('id="bq"')
+    expect(boardPage).toContain('data-count="')
+    expect(boardPage).toContain('data-lane="standard"')
+    expect(boardPage).toContain('nonce="nonce2"')
+  })
+
   it('metricsHtml resume totales, WIP y evidencia', async () => {
     const root = await makeWorkspace(true)
     const metrics = await collectMetrics(root)

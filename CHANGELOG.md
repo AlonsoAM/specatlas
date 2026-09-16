@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Filtros en los paneles**: la Matriz de trazabilidad tiene búsqueda (insensible a acentos), estado (todos / con huecos / verificados) y, cuando aplican, dominio y cambio activo, con contador en vivo; el Tablero filtra por texto, carril y dominio, y actualiza el recuento por columna.
 - **El árbol refresca al recuperar el foco** la ventana de VS Code: los cambios hechos desde la terminal (evidencia, tareas, archivado) aparecen sin recargar.
 - **Tooltip de «Specs vivas»** en el árbol: explica que es la fuente de verdad y que se llena al archivar; cuando está vacío indica «se llenan al archivar un cambio».
 - El prompt de **Especificar** pide la **historia de usuario** («como <rol>, quiero <acción>, para <beneficio>») cuando no está clara y la refleja en la propuesta.
