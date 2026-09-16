@@ -287,10 +287,12 @@ describe('paneles y acciones del sidebar', () => {
   it('con workspace inicializado lista los paneles con icono y comando', () => {
     const items = toolItems(true)
     expect(items.map((item) => item.command)).toEqual([
+      'specatlas.new',
       'specatlas.matrix',
       'specatlas.board',
       'specatlas.metrics',
       'specatlas.validate',
+      'specatlas.ci',
       'specatlas.doctor',
       'specatlas.adapters',
     ])

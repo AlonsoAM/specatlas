@@ -470,10 +470,12 @@ export function toolItems(initialized: boolean): ToolItem[] {
     ]
   }
   return [
+    { id: 'new', label: 'Nuevo cambio', description: 'fix · standard · full', icon: 'add', command: 'specatlas.new' },
     { id: 'matrix', label: 'Matriz de trazabilidad', description: 'requisito → escenario → tarea → evidencia', icon: 'list-tree', command: 'specatlas.matrix' },
     { id: 'board', label: 'Tablero de cambios', description: 'flujo por fase', icon: 'project', command: 'specatlas.board' },
     { id: 'metrics', label: 'Métricas locales', description: 'sin telemetría', icon: 'graph', command: 'specatlas.metrics' },
     { id: 'validate', label: 'Validar specs y deltas', description: 'estructura y lenguaje de negocio', icon: 'check', command: 'specatlas.validate' },
+    { id: 'ci', label: 'CI (gate local)', description: 'specs · cambios · doctor · adaptadores', icon: 'check-all', command: 'specatlas.ci' },
     { id: 'doctor', label: 'Diagnóstico del workspace', description: 'salud de .sdd/ y gates', icon: 'pulse', command: 'specatlas.doctor' },
     { id: 'adapters', label: 'Compilar adaptadores', description: 'comandos y skills del agente', icon: 'plug', command: 'specatlas.adapters' },
   ]

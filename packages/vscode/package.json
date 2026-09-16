@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -58,7 +58,11 @@
       { "command": "specatlas.matrix", "title": "SpecAtlas: Matriz de trazabilidad", "icon": "$(list-tree)" },
       { "command": "specatlas.board", "title": "SpecAtlas: Tablero de cambios", "icon": "$(project)" },
       { "command": "specatlas.metrics", "title": "SpecAtlas: Métricas locales", "icon": "$(graph)" },
-      { "command": "specatlas.adapters", "title": "SpecAtlas: Compilar adaptadores (comandos del agente)", "icon": "$(plug)" }
+      { "command": "specatlas.adapters", "title": "SpecAtlas: Compilar adaptadores (comandos del agente)", "icon": "$(plug)" },
+      { "command": "specatlas.new", "title": "SpecAtlas: Nuevo cambio (fix · standard · full)", "icon": "$(add)" },
+      { "command": "specatlas.verify", "title": "SpecAtlas: Registrar evidencia de un escenario", "icon": "$(beaker)" },
+      { "command": "specatlas.packs", "title": "SpecAtlas: Evaluar packs de cumplimiento", "icon": "$(shield)" },
+      { "command": "specatlas.ci", "title": "SpecAtlas: CI (gate local)", "icon": "$(check-all)" }
     ],
     "menus": {
       "view/title": [
@@ -66,16 +70,19 @@
         { "command": "specatlas.init", "when": "view == specatlas.explorer && !specatlas.initialized", "group": "navigation" }
       ],
       "view/item/context": [
-        { "command": "specatlas.runNext", "when": "view == specatlas.explorer && viewItem == action", "group": "inline" },
-        { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem == change", "group": "1_ciclo@1" },
-        { "command": "specatlas.analyze", "when": "view == specatlas.explorer && viewItem == change", "group": "1_ciclo@2" },
-        { "command": "specatlas.trace", "when": "view == specatlas.explorer && viewItem == change", "group": "1_ciclo@3" },
-        { "command": "specatlas.waves", "when": "view == specatlas.explorer && viewItem == change", "group": "1_ciclo@4" },
-        { "command": "specatlas.present", "when": "view == specatlas.explorer && viewItem == change", "group": "2_salidas@1" },
-        { "command": "specatlas.mockup.open", "when": "view == specatlas.explorer && viewItem == change", "group": "2_salidas@2" },
-        { "command": "specatlas.copyNext", "when": "view == specatlas.explorer && viewItem == change", "group": "2_salidas@3" },
-        { "command": "specatlas.archive", "when": "view == specatlas.explorer && viewItem == change", "group": "3_peligro@1" },
-        { "command": "specatlas.openPreview", "when": "view == specatlas.explorer && viewItem == file", "group": "inline" }
+        { "command": "specatlas.runNext", "when": "view == specatlas.explorer && viewItem =~ /^action/", "group": "inline" },
+        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/", "group": "1_ciclo@1" },
+        { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/", "group": "1_ciclo@2" },
+        { "command": "specatlas.analyze", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@3" },
+        { "command": "specatlas.trace", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@4" },
+        { "command": "specatlas.waves", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@5" },
+        { "command": "specatlas.packs", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@6" },
+        { "command": "specatlas.present", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@1" },
+        { "command": "specatlas.mockup.open", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@2" },
+        { "command": "specatlas.copyNext", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@3" },
+        { "command": "specatlas.archive", "when": "view == specatlas.explorer && viewItem =~ /change-(verified|ready)/", "group": "3_peligro@1" },
+        { "command": "specatlas.openPreview", "when": "view == specatlas.explorer && viewItem =~ /^file/", "group": "inline" },
+        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /file-(verify|fix)/", "group": "inline" }
       ],
       "commandPalette": [
         { "command": "specatlas.openAt", "when": "false" },

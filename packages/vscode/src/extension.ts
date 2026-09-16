@@ -4,18 +4,29 @@ import {
   archiveChange,
   checkTrace,
   collectMetrics,
+  createChange,
+  evaluatePacks,
   generatePresentation,
   initWorkspace,
+  loadActiveProfile,
+  loadChange,
   loadConfig,
+  packFindings,
+  parseDelta,
+  parseVerifyFile,
   planWaves,
   readMockupManifest,
   readTextIfExists,
+  recordEvidence,
+  resolvePacks,
   runAnalyze,
+  runCiGate,
   runDoctor,
   signApproval,
+  type CiExtraCheck,
   type Diagnostic as CoreDiagnostic,
 } from '@specatlas/core'
-import { compileTargets, type AgentTarget } from '@specatlas/adapters'
+import { checkAdapters, compileTargets, type AgentTarget } from '@specatlas/adapters'
 import {
   buildMatrix,
   buildSnapshot,
@@ -42,6 +53,16 @@ function pathForScreen(change: SnapshotChange, screen: SnapshotMockupItem): stri
 
 function panelNonce(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
+}
+
+function slugify(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48)
 }
 
 async function rewriteLocalHtml(panel: vscode.WebviewPanel, target: string): Promise<string> {
@@ -152,7 +173,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             .join('\n'),
         )
         item.iconPath = stateIcon(c.state)
-        item.contextValue = 'change'
+        item.contextValue = `change change-${c.state}`
         return item
       }
       case 'action': {
@@ -182,7 +203,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         }
         item.description = parts.join(' · ')
         item.iconPath = node.file.exists ? fileIcon(node.file.kind) : new vscode.ThemeIcon('circle-slash', new vscode.ThemeColor('disabledForeground'))
-        item.contextValue = 'file'
+        item.contextValue = `file file-${node.file.kind}`
         item.tooltip = `${node.change.slug} · ${vscode.workspace.asRelativePath(node.file.path)}`
         if (node.file.exists) {
           if (node.file.kind === 'presentation') {
@@ -666,6 +687,198 @@ export function activate(context: vscode.ExtensionContext): void {
     const requested = typeof screenArg === 'string' ? screens.find((s) => s.id === screenArg) : undefined
     const screen = requested ?? screens[0]!
     await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(path.join(change.dir, 'mockups', screen.file)))
+  })
+
+  register('specatlas.new', async () => {
+    const root = workspaceRoot()
+    if (!root) {
+      void vscode.window.showWarningMessage('SpecAtlas: abre una carpeta de proyecto para crear un cambio.')
+      return
+    }
+    const lanePick = await vscode.window.showQuickPick(
+      [
+        { label: '$(wrench) fix', description: 'Incidente express: fix.md con causa raíz, cambio mínimo y evidencia', lane: 'fix' as const },
+        { label: '$(checklist) standard', description: 'Feature o mejora: delta, aprobación, plan y evidencia', lane: 'standard' as const },
+        { label: '$(shield) full', description: 'Cambio grande o sensible: standard + revisión de código', lane: 'full' as const },
+      ],
+      { title: 'Nuevo cambio — carril', placeHolder: 'Elige el carril (fix / standard / full)' },
+    )
+    if (!lanePick) return
+    const title = await vscode.window.showInputBox({ title: 'Nuevo cambio — título', prompt: 'Título corto en lenguaje de negocio', ignoreFocusOut: true })
+    if (!title) return
+    const slug = await vscode.window.showInputBox({ title: 'Nuevo cambio — slug', prompt: 'Identificador del cambio (carpeta)', value: slugify(title), ignoreFocusOut: true })
+    if (!slug) return
+    const domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio (p. ej. tareas, auth, facturación)', value: 'general', ignoreFocusOut: true })
+    if (!domain) return
+
+    const result = await createChange({ root, slug, lane: lanePick.lane, domain, title })
+    const errors = result.diagnostics.filter((d) => d.severity === 'error')
+    if (errors.length > 0) {
+      void vscode.window.showErrorMessage(`SpecAtlas: ${errors.map((d) => d.message).join('; ')}`)
+      return
+    }
+    await refresh()
+    const target = lanePick.lane === 'fix' ? path.join(result.dir, 'fix.md') : path.join(result.dir, 'spec.md')
+    const document = await vscode.workspace.openTextDocument(vscode.Uri.file(target))
+    await vscode.window.showTextDocument(document)
+    void vscode.window.showInformationMessage(
+      lanePick.lane === 'fix'
+        ? `SpecAtlas: fix "${slug}" creado. Completa causa raíz y cambio mínimo, registra la evidencia y archívalo.`
+        : `SpecAtlas: cambio "${slug}" creado (${lanePick.lane}). Escribe la spec con el agente o a mano y valida.`,
+    )
+  })
+
+  register('specatlas.verify', async (arg?: unknown) => {
+    const root = workspaceRoot()
+    const change = selectedChange(arg)
+    if (!root || !change) {
+      void vscode.window.showWarningMessage('SpecAtlas: selecciona un cambio para registrar evidencia.')
+      return
+    }
+    const isFix = change.lane === 'fix'
+    const deltaRaw = isFix ? undefined : await readTextIfExists(path.join(change.dir, 'spec.md'))
+    const delta = deltaRaw ? parseDelta(deltaRaw, 'spec.md') : undefined
+    const scenarios = [...(delta?.added ?? []), ...(delta?.modified ?? [])].flatMap((requirement) =>
+      requirement.scenarios.map((scenario) => ({ label: scenario.id, description: scenario.title, id: scenario.id })),
+    )
+    const recordedFile = isFix ? 'fix.md' : 'verify.md'
+    const recorded = parseVerifyFile((await readTextIfExists(path.join(change.dir, recordedFile))) ?? '', recordedFile).evidence
+    const options = [
+      ...scenarios,
+      ...recorded.filter((entry) => !scenarios.some((scenario) => scenario.id === entry.scenario)).map((entry) => ({ label: entry.scenario, description: `registrada: ${entry.result}`, id: entry.scenario })),
+      { label: '$(edit) Otro escenario…', description: 'Escribe el id a mano', id: '' },
+    ]
+    const pick = await vscode.window.showQuickPick(options, { title: `Evidencia — ${change.slug}`, placeHolder: 'Escenario a verificar' })
+    if (!pick) return
+    let scenario = pick.id
+    if (!scenario) {
+      const manual = await vscode.window.showInputBox({ title: 'Escenario', prompt: 'Id del escenario (REQ-DOMINIO-NNN-S1)', placeHolder: 'REQ-TAREA-001-S1', ignoreFocusOut: true })
+      if (!manual) return
+      scenario = manual
+    }
+
+    const methodPick = await vscode.window.showQuickPick(
+      [
+        { label: '$(play) Ejecutar un comando', description: 'Registra comando, salida y hash (evidencia fuerte)', method: 'executable' as const },
+        { label: '$(edit) Manual', description: 'Comprobación a mano, con notas', method: 'manual' as const },
+      ],
+      { title: `Evidencia — ${scenario}` },
+    )
+    if (!methodPick) return
+
+    let command: string | undefined
+    let notes: string | undefined
+    if (methodPick.method === 'executable') {
+      command = await vscode.window.showInputBox({ title: 'Comando de verificación', prompt: 'Se ejecuta en la raíz del proyecto', value: 'npm test', ignoreFocusOut: true })
+      if (!command) return
+    } else {
+      notes = await vscode.window.showInputBox({ title: 'Notas', prompt: '¿Cómo lo comprobaste?', ignoreFocusOut: true })
+      if (notes === undefined) return
+    }
+
+    const byDefault = context.globalState.get<string>('specatlas.by') ?? ''
+    const by = await vscode.window.showInputBox({ title: 'Quién verifica', prompt: 'Nombre y apellido (queda auditado)', value: byDefault, ignoreFocusOut: true })
+    if (!by) return
+    await context.globalState.update('specatlas.by', by)
+
+    const profile = await loadActiveProfile(path.join(root, '.sdd'), [path.join(root, '.sdd', 'profiles', 'custom')])
+    const allowed = profile?.verify.executable ?? []
+    let allowCommand = false
+    if (command && allowed.length > 0 && !allowed.some((prefix) => command!.startsWith(prefix))) {
+      const confirm = await vscode.window.showWarningMessage(`El comando no está en la lista permitida del perfil (${allowed.join(', ')}). ¿Registrar la evidencia igualmente?`, { modal: true }, 'Registrar')
+      if (confirm !== 'Registrar') return
+      allowCommand = true
+    }
+
+    const record = await recordEvidence({
+      root,
+      slug: change.slug,
+      scenario,
+      method: methodPick.method,
+      by,
+      file: isFix ? 'fix' : 'verify',
+      allowedPrefixes: allowed,
+      allowCommand,
+      ...(command !== undefined ? { command } : {}),
+      ...(notes !== undefined ? { notes } : {}),
+    })
+    if (!record.evidence) {
+      void vscode.window.showErrorMessage(`SpecAtlas: ${record.diagnostics.map((d) => d.message).join('; ') || 'no se pudo registrar la evidencia'}`)
+      return
+    }
+    const ok = record.evidence.result === 'pass'
+    void vscode.window.showInformationMessage(`SpecAtlas: evidencia de ${scenario} registrada (${record.evidence.result})${record.evidence.method === 'executable' ? ` · ${record.evidence.method}` : ''}.`, ...(ok ? [] : ['Ver salida'])).then(async (action) => {
+      if (action === 'Ver salida') {
+        output.clear()
+        output.appendLine(`Evidencia — ${scenario} (${record.evidence?.result})`)
+        if (record.stdout) output.appendLine(record.stdout)
+        if (record.stderr) output.appendLine(record.stderr)
+        output.show()
+      }
+    })
+    await refresh()
+  })
+
+  register('specatlas.packs', async (arg?: unknown) => {
+    const root = workspaceRoot()
+    const change = selectedChange(arg)
+    if (!root || !change) return
+    const loaded = await loadConfig(path.join(root, '.sdd'))
+    if (loaded.config.packs.length === 0) {
+      void vscode.window.showInformationMessage('SpecAtlas: no hay packs activos. Actívalos en .sdd/config.yaml → packs: [seguridad, datos, auditoria, accesibilidad].')
+      return
+    }
+    const resolved = await resolvePacks(path.join(root, '.sdd'), loaded.config)
+    const parsed = await loadChange(root, change.slug)
+    const findings = packFindings(evaluatePacks(resolved.packs, parsed, loaded.config), parsed)
+    const errors = findings.filter((f) => f.severity === 'error')
+    if (findings.length === 0) {
+      void vscode.window.showInformationMessage(`SpecAtlas: los packs activos (${resolved.packs.map((pack) => pack.id).join(', ')}) pasan en ${change.slug}.`)
+      return
+    }
+    output.clear()
+    output.appendLine(`Packs — ${change.slug}`)
+    output.appendLine('')
+    for (const finding of findings) output.appendLine(`  ${finding.severity === 'error' ? 'ERROR' : 'AVISO'} ${finding.code}: ${finding.message}${finding.suggestion ? ` — ${finding.suggestion}` : ''}`)
+    const action = await vscode.window.showWarningMessage(`SpecAtlas: packs con ${errors.length} error(es) y ${findings.length - errors.length} aviso(s) en ${change.slug}.`, 'Ver informe')
+    if (action === 'Ver informe') output.show()
+  })
+
+  register('specatlas.ci', async () => {
+    const root = workspaceRoot()
+    if (!root) return
+    const loaded = await loadConfig(path.join(root, '.sdd'))
+    const extra: CiExtraCheck[] = []
+    const fs = await import('node:fs')
+    const workflowDir = context.asAbsolutePath('workflow')
+    if (fs.existsSync(path.join(workflowDir, 'phases'))) {
+      const health = await checkAdapters({ root, workflowDir, targets: loaded.config.adapters.targets, language: loaded.config.project.language })
+      extra.push({
+        name: 'adaptadores',
+        diagnostics:
+          health.manifest && !health.ok
+            ? [{ code: 'ATLAS-ADAPTERS-001', severity: 'warning', message: 'Los adaptadores de agente están desactualizados respecto a workflow/', suggestion: 'Ejecuta «Compilar adaptadores»' }]
+            : [],
+      })
+    }
+    const gate = await runCiGate({ root, extra })
+    output.clear()
+    output.appendLine('CI de SpecAtlas')
+    output.appendLine('')
+    for (const check of gate.checks) output.appendLine(`  ${check.errors === 0 && check.warnings === 0 ? 'OK  ' : 'FALLA'} ${check.name}: ${check.errors} errores, ${check.warnings} avisos`)
+    output.appendLine('')
+    output.appendLine(gate.failed ? 'Resultado: BLOQUEADO' : 'Resultado: OK')
+    if (gate.diagnostics.length > 0) {
+      output.appendLine('')
+      for (const diagnostic of gate.diagnostics) output.appendLine(`  ${diagnostic.severity.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`)
+    }
+    if (gate.failed) {
+      const action = await vscode.window.showErrorMessage(`SpecAtlas CI: BLOQUEADO (${gate.errors} error(es), ${gate.warnings} aviso(s)).`, 'Ver informe')
+      if (action === 'Ver informe') output.show()
+    } else {
+      void vscode.window.showInformationMessage(`SpecAtlas CI: OK${gate.warnings > 0 ? ` (${gate.warnings} aviso(s))` : ''}.`)
+    }
+    await refresh()
   })
 
   register('specatlas.approve', async (arg?: unknown) => {
