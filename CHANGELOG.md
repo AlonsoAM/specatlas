@@ -10,6 +10,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- El paquete npm del CLI ahora incluye `workflow/` y `profiles/` (vía `prepack`): al instalar desde npm, `satlas init` y `satlas adapters` ya generan los comandos y skills del agente.
+- `satlas init` ahora falla con `ATLAS-ADAPTERS-003` si no encuentra las fuentes de prompts, en lugar de omitir los adaptadores en silencio.
 - Las claves de tarea aceptan variantes sin acentos (`Reversion` ≡ `Reversión`).
 - La configuración se serializa sin duplicar la clave `packs`.
 

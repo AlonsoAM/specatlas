@@ -20,7 +20,14 @@ export async function runInit(ctx: CliContext): Promise<CommandResult> {
 
   const compiled: string[] = []
   const workflowDir = await resolveWorkflowDir()
-  if (workflowDir && !result.diagnostics.some((d) => d.severity === 'error')) {
+  if (!workflowDir) {
+    result.diagnostics.push({
+      code: 'ATLAS-ADAPTERS-003',
+      severity: 'error',
+      message: 'No se encontró la carpeta workflow/phases con las fuentes de prompts: no se compilaron los adaptadores',
+      suggestion: 'Verifica la instalación del CLI o define SPECATLAS_WORKFLOW_DIR apuntando a la carpeta workflow del paquete',
+    })
+  } else if (!result.diagnostics.some((d) => d.severity === 'error')) {
     const loaded = await loadConfig(result.sddDir)
     const agentsFlag = flagString(ctx.flags, 'agents')
     const requested = agentsFlag
