@@ -53,6 +53,7 @@ code --install-extension specatlas.specatlas-vscode
 ## Notas
 
 - El CLI **bundlea** `@specatlas/core` y `@specatlas/adapters` en `dist/`, pero los declara como dependencias: publica siempre `core`/`render`/`adapters` antes que `specatlas`.
+- El paquete del CLI publica también `workflow/` y `profiles/` (el script `prepack` los copia desde la raíz del repo); sin ellos `satlas init`/`satlas adapters` no generan los comandos del agente.
 - La extensión no se publica en npm; solo `.vsix` (Marketplace + Open VSX).
 - `packages/vscode/README.md` no admite SVG (restricción de `vsce`); usa `media/logo.png` (las rutas base del monorepo las fijan los scripts `package`/`publish:vsce`).
 - Publicar en Open VSX exige firmar el **Publisher Agreement** desde el perfil de Open VSX (vinculando la cuenta Eclipse); la ECA no aplica.
