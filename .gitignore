@@ -16,3 +16,5 @@ tmp/
 .tmp/
 packages/cli/workflow/
 packages/cli/profiles/
+fixtures/**/obj/
+fixtures/**/bin/
