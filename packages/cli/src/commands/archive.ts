@@ -18,9 +18,9 @@ export async function runArchive(ctx: CliContext): Promise<CommandResult> {
       diagnostics: [
         {
           code: 'ATLAS-ARCHIVE-001',
-          severity: 'error',
-          message: `Archivar "${slug}" pliega los deltas en la spec viva y mueve el cambio al histórico.`,
-          suggestion: 'Revisa con `satlas archive <slug> --dry-run` y confirma con `--yes`',
+          severity: 'warning',
+          message: `Confirmación requerida: archivar "${slug}" pliega sus deltas en la spec viva y mueve el cambio al histórico.`,
+          suggestion: `Revisa primero con \`satlas archive ${slug} --dry-run\` y confirma con \`satlas archive ${slug} --yes\``,
         },
       ],
     }

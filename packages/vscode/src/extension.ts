@@ -57,7 +57,7 @@ async function rewriteLocalHtml(panel: vscode.WebviewPanel, target: string): Pro
 let languageClient: LanguageClient | undefined
 
 type Node =
-  | { kind: 'group'; label: string; description?: string; icon?: string; tone?: string; children: Node[] }
+  | { kind: 'group'; label: string; description?: string; icon?: string; tone?: string; tooltip?: string; children: Node[] }
   | { kind: 'spec'; spec: SnapshotSpec }
   | { kind: 'specItem'; spec: SnapshotSpec; item: SnapshotSpecItem }
   | { kind: 'change'; change: SnapshotChange }
@@ -98,6 +98,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
       case 'group': {
         const item = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded)
         if (node.description) item.description = node.description
+        if (node.tooltip) item.tooltip = new vscode.MarkdownString(node.tooltip)
         item.iconPath = new vscode.ThemeIcon(node.icon ?? 'library', node.tone ? new vscode.ThemeColor(node.tone) : undefined)
         item.contextValue = 'group'
         return item
@@ -257,7 +258,15 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         icon: 'root-folder',
         tone: 'charts.blue',
         children: [
-          { kind: 'group', label: 'Specs vivas', description: `${snapshot.summary.specs}`, icon: 'book', tone: 'charts.purple', children: specs },
+          {
+            kind: 'group',
+            label: 'Specs vivas',
+            description: snapshot.summary.specs > 0 ? `${snapshot.summary.specs}` : '0 · se llenan al archivar un cambio',
+            icon: 'book',
+            tone: 'charts.purple',
+            tooltip: '**Specs vivas** — la fuente de verdad del comportamiento actual.\n\nSe llenan al archivar: `satlas archive <slug>` pliega el delta del cambio en `.sdd/specs/<dominio>/spec.md`.',
+            children: specs,
+          },
           { kind: 'group', label: 'Cambios', description: `${snapshot.summary.changes}`, icon: 'git-pull-request', tone: 'charts.green', children: changes },
         ],
       }
@@ -436,6 +445,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidSaveTextDocument((doc) => {
       const auto = vscode.workspace.getConfiguration('specatlas').get<boolean>('autoValidate', true)
       if (auto && doc.uri.fsPath.includes('.sdd')) debouncedRefresh()
+    }),
+    vscode.window.onDidChangeWindowState((state) => {
+      if (state.focused) debouncedRefresh()
     }),
   )
 

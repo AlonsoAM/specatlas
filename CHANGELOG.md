@@ -6,6 +6,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **El árbol refresca al recuperar el foco** la ventana de VS Code: los cambios hechos desde la terminal (evidencia, tareas, archivado) aparecen sin recargar.
+- **Tooltip de «Specs vivas»** en el árbol: explica que es la fuente de verdad y que se llena al archivar; cuando está vacío indica «se llenan al archivar un cambio».
+- El prompt de **Especificar** pide la **historia de usuario** («como <rol>, quiero <acción>, para <beneficio>») cuando no está clara y la refleja en la propuesta.
 - **Tareas desplegables en el árbol**: el nodo `Tareas` muestra la lista de tareas (id, bloque, hecha/pendiente) y cada una abre `tasks.md` en su línea.
 - **Mockups desplegables**: el nodo `Mockups` lista las pantallas del manifiesto (con aviso de desactualizado) y cada una abre el visor de mockups en esa pantalla.
 - **Presentación y mockups desde el sidebar**: clic en `Presentación` abre el HTML en una vista previa; clic en `Mockups` abre el visor con el selector de pantallas.
@@ -16,6 +19,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **`satlas archive` sin `--yes`** ya no se muestra como ERROR: es una **confirmación requerida** (aviso + exit 2) e indica el comando exacto con el slug (`--dry-run` para revisar, `--yes` para confirmar).
 - **Presentación y mockups se abren como desde el explorador**: el clic en `Presentación`, en `Mockups` o en cada pantalla abre el HTML con el editor predeterminado (Integrated Browser), por lo que los mockups embebidos en la propuesta **renderizan correctamente**. Antes se abrían en un visor propio con iframes vacíos y estilos bloqueados por CSP (visor retirado).
 - La vista previa HTML de respaldo reescribe las rutas relativas (mockups embebidos) a URIs del webview.
 - **Donas de métricas legibles en tema oscuro**: el interior ahora es un **degradado radial del color de la métrica** (no un agujero negro), la pista del anillo se ve en temas claros y oscuros, y el texto central usa su estilo correcto también en la cabecera de los paneles (antes quedaba negro y a 13px porque el selector `.donut` no aplicaba en el hero).
