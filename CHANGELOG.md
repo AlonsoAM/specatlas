@@ -6,6 +6,9 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Tareas desplegables en el árbol**: el nodo `Tareas` muestra la lista de tareas (id, bloque, hecha/pendiente) y cada una abre `tasks.md` en su línea.
+- **Mockups desplegables**: el nodo `Mockups` lista las pantallas del manifiesto (con aviso de desactualizado) y cada una abre el visor de mockups en esa pantalla.
+- **Presentación y mockups desde el sidebar**: clic en `Presentación` abre el HTML en una vista previa; clic en `Mockups` abre el visor con el selector de pantallas.
 - **Sección «Paneles y acciones» en el sidebar**: lanza Matriz de trazabilidad, Tablero, Métricas, Validar, Diagnóstico y Compilar adaptadores desde la vista (con icono y descripción), sin ensanchar el título de la vista (que queda solo con Refrescar e Inicializar). Al inicializar, la sección muestra las acciones disponibles.
 - **Icono propio en las pestañas de los paneles**: Matriz, Tablero, Métricas, vista previa y mockups usan el icono de SpecAtlas en lugar de la hoja genérica.
 - **Compilar adaptadores desde el editor**: botón «Compilar adaptadores» en el sidebar de la extensión (y acción en la paleta), que genera los comandos/skills del agente sin salir de VS Code. `Inicializar workspace` ahora compila los adaptadores automáticamente.

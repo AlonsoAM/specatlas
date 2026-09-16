@@ -35,18 +35,36 @@ export interface FlatDiagnostic {
 
 export type FileKind = 'proposal' | 'spec' | 'plan' | 'tasks' | 'verify' | 'fix' | 'analyze' | 'presentation' | 'mockup'
 
+export interface SnapshotTaskItem {
+  id: string
+  title: string
+  block: string
+  done: boolean
+  line: number
+  covers: number
+}
+
+export interface SnapshotMockupItem {
+  id: string
+  title: string
+  file: string
+}
+
 export interface SnapshotFile {
   label: string
   path: string
   exists: boolean
   kind: FileKind
   description?: string
+  tasks?: SnapshotTaskItem[]
+  screens?: SnapshotMockupItem[]
 }
 
 export interface SnapshotMockups {
   screens: number
   stale: boolean
   dir?: string
+  items?: SnapshotMockupItem[]
 }
 
 export interface SnapshotChange {
@@ -148,6 +166,8 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       for (const finding of packFindings(evaluations, change)) diagnostics.push(toFlat(finding))
     }
 
+    const mockups = await mockupInfo(root, change)
+
     changes.push({
       slug: change.slug,
       dir: change.dir,
@@ -167,8 +187,8 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
         scenariosTotal: state.progress.scenariosTotal,
       },
       blocking,
-      files: await changeFiles(change),
-      mockups: await mockupInfo(root, change),
+      files: await changeFiles(change, mockups.items ?? []),
+      mockups,
     })
   }
 
@@ -214,10 +234,15 @@ async function mockupInfo(root: string, change: Change): Promise<SnapshotMockups
   } catch {
     stale = false
   }
-  return { screens: manifest.screens.length, stale, dir }
+  const items: SnapshotMockupItem[] = manifest.screens.map((screen) => ({
+    id: screen.id,
+    title: screen.title ?? screen.id,
+    file: screen.file,
+  }))
+  return { screens: manifest.screens.length, stale, dir, items }
 }
 
-async function changeFiles(change: Change): Promise<SnapshotFile[]> {
+async function changeFiles(change: Change, screens: SnapshotMockupItem[]): Promise<SnapshotFile[]> {
   const candidates: Array<{ label: string; rel: string; kind: FileKind; description?: string }> = [
     { label: 'Propuesta', rel: 'proposal.md', kind: 'proposal' },
     { label: 'Spec (delta)', rel: 'spec.md', kind: 'spec' },
@@ -232,13 +257,24 @@ async function changeFiles(change: Change): Promise<SnapshotFile[]> {
   const out: SnapshotFile[] = []
   for (const candidate of candidates) {
     const abs = path.join(change.dir, candidate.rel)
-    out.push({
+    const file: SnapshotFile = {
       label: candidate.label,
       path: abs,
       exists: await exists(abs),
       kind: candidate.kind,
       ...(candidate.description !== undefined ? { description: candidate.description } : {}),
-    })
+    }
+    if (candidate.kind === 'tasks' && file.exists) {
+      const tasks: SnapshotTaskItem[] = []
+      for (const block of change.tasks?.blocks ?? []) {
+        for (const task of block.tasks) {
+          tasks.push({ id: task.id, title: task.text, block: block.title, done: task.done, line: task.line, covers: task.covers.length })
+        }
+      }
+      if (tasks.length > 0) file.tasks = tasks
+    }
+    if (candidate.kind === 'mockup' && screens.length > 0) file.screens = screens
+    out.push(file)
   }
   return out
 }
@@ -301,9 +337,12 @@ export interface MockupScreenView {
   uri: string
 }
 
-export function mockupHtmlPage(input: { title: string; screens: MockupScreenView[]; cspSource: string; nonce: string }): string {
-  const options = input.screens.map((s) => `<option value="${escapeHtml(s.uri)}">${escapeHtml(s.title)}</option>`).join('')
-  const first = input.screens[0]?.uri ?? ''
+export function mockupHtmlPage(input: { title: string; screens: MockupScreenView[]; cspSource: string; nonce: string; selected?: string }): string {
+  const options = input.screens
+    .map((s) => `<option value="${escapeHtml(s.uri)}"${input.selected === s.id ? ' selected' : ''}>${escapeHtml(s.title)}</option>`)
+    .join('')
+  const selected = input.screens.find((s) => s.id === input.selected)
+  const first = selected?.uri ?? input.screens[0]?.uri ?? ''
   return `<!doctype html>
 <html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${input.cspSource}; frame-src ${input.cspSource}; img-src ${input.cspSource} data:; script-src 'nonce-${input.nonce}';">

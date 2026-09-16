@@ -73,6 +73,41 @@ describe('buildSnapshot', () => {
     expect(byKind.get('presentation')).toBe(false)
   })
 
+  it('tareas y mockups se despliegan como hijos del árbol', async () => {
+    const root = await makeWorkspace(true)
+    const dir = path.join(root, '.sdd', 'changes', 'reset-password')
+    await fs.mkdir(path.join(dir, 'mockups'), { recursive: true })
+    await fs.writeFile(
+      path.join(dir, 'mockups', 'manifest.yaml'),
+      `schema_version: 1
+version: 1
+level: hifi
+platform: web
+screens:
+  - id: alta
+    title: Alta de tareas
+    file: alta.html
+  - id: vacio
+    title: Lista vacía
+    file: vacio.html
+`,
+      'utf8',
+    )
+
+    const snapshot = await buildSnapshot(root)
+    const change = snapshot!.changes[0]!
+
+    const tasksFile = change.files.find((file) => file.kind === 'tasks')
+    expect(tasksFile?.tasks?.length).toBeGreaterThan(0)
+    expect(tasksFile?.tasks?.[0]?.id).toBeTruthy()
+    expect(typeof tasksFile?.tasks?.[0]?.done).toBe('boolean')
+    expect(tasksFile?.tasks?.[0]?.line).toBeGreaterThan(0)
+
+    const mockupFile = change.files.find((file) => file.kind === 'mockup')
+    expect(mockupFile?.screens?.map((screen) => screen.id)).toEqual(['alta', 'vacio'])
+    expect(change.mockups.items?.map((screen) => screen.title)).toEqual(['Alta de tareas', 'Lista vacía'])
+  })
+
   it('sin firma queda en esperando aprobación', async () => {
     const root = await makeWorkspace(false)
     const snapshot = await buildSnapshot(root)
