@@ -9,6 +9,7 @@ import {
   loadApprovals,
   loadWorkspace,
   evaluatePacks,
+  mockupsReady,
   packFindings,
   readMockupManifest,
   readTextIfExists,
@@ -163,7 +164,15 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
     })
     const blocking = [...lintFindings, ...trace.findings].filter((d) => d.severity === 'error').length
-    const state = deriveState({ change, cfg: config, approval, blockingFindings: change.delta ? blocking : 0 })
+    const requiresMockupGate = requiresMockups(change.meta, config)
+    const mockupsAreReady = requiresMockupGate ? await mockupsReady(root, change.slug, change) : undefined
+    const state = deriveState({
+      change,
+      cfg: config,
+      approval,
+      blockingFindings: change.delta ? blocking : 0,
+      ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
+    })
 
     for (const finding of [...lintFindings, ...trace.findings]) diagnostics.push(toFlat(finding))
     if (packEvaluation) {
@@ -171,7 +180,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       for (const finding of packFindings(evaluations, change)) diagnostics.push(toFlat(finding))
     }
 
-    const mockups = await mockupInfo(root, change, requiresMockups(change.meta, config))
+    const mockups = await mockupInfo(root, change, requiresMockupGate)
 
     changes.push({
       slug: change.slug,

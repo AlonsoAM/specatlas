@@ -7,7 +7,7 @@ export interface ParsedArgs {
   flags: Flags
 }
 
-const BOOLEAN_FLAGS = new Set(['json', 'local', 'strict', 'yes', 'dry-run', 'require-evidence', 'help', 'version'])
+const BOOLEAN_FLAGS = new Set(['json', 'local', 'strict', 'yes', 'dry-run', 'require-evidence', 'require', 'help', 'version'])
 
 export function parseArgs(argv: string[]): ParsedArgs {
   const positionals: string[] = []

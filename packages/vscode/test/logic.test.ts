@@ -107,6 +107,15 @@ screens:
     const mockupFile = change.files.find((file) => file.kind === 'mockup')
     expect(mockupFile?.screens?.map((screen) => screen.id)).toEqual(['alta', 'vacio'])
     expect(change.mockups.items?.map((screen) => screen.title)).toEqual(['Alta de tareas', 'Lista vacía'])
+
+    const metaFile = path.join(dir, 'meta.yaml')
+    const metaRaw = await fs.readFile(metaFile, 'utf8')
+    await fs.writeFile(metaFile, `${metaRaw.trimEnd()}\nmockups: required\n`, 'utf8')
+    const required = await buildSnapshot(root)
+    const requiredChange = required!.changes[0]!
+    expect(requiredChange.mockups.required).toBe(true)
+    expect(requiredChange.mockups.decision).toBe('required')
+    expect(requiredChange.state).not.toBe('awaiting_mockups')
   })
 
   it('la matriz reconoce las tareas y la evidencia de cambios archivados', async () => {

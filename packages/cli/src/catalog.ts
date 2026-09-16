@@ -23,7 +23,7 @@ export const CATALOG: CommandSpec[] = [
   { name: 'archive', description: 'Pliega los deltas a la spec viva y archiva el cambio', flags: ['yes', 'dry-run', 'domain', 'json'], usage: 'satlas archive <slug> [--yes] [--dry-run] [--json]' },
   { name: 'verify', description: 'Registra evidencia por escenario (ejecuta el comando y guarda resultado y hash)', flags: ['scenario', 'command', 'method', 'result', 'by', 'notes', 'file', 'allow-command', 'json'], usage: 'satlas verify <slug> [--scenario REQ-…-S1 --command "npm test" --by "<nombre>"]' },
   { name: 'analyze', description: 'Chequeo cruzado (lint + trace + waves + mockups) y escribe analyze.md', flags: ['json'], usage: 'satlas analyze <slug>' },
-  { name: 'mockup', description: 'Planifica, valida o captura los mockups del cambio', flags: ['plan', 'check', 'capture', 'json'], usage: 'satlas mockup <slug> [--check|--capture]' },
+  { name: 'mockup', description: 'Planifica, valida o captura los mockups del cambio', flags: ['plan', 'check', 'capture', 'require', 'json'], usage: 'satlas mockup <slug> [--plan|--check|--capture|--require]' },
   { name: 'present', description: 'Genera el paquete de propuesta para el stakeholder (HTML autocontenido)', flags: ['json'], usage: 'satlas present <slug>' },
   { name: 'ci', description: 'Gate de pipeline: specs + cambios + doctor + adaptadores (sin agente)', flags: ['strict', 'json'], usage: 'satlas ci [--strict]' },
   { name: 'metrics', description: 'Métricas locales del workspace (progreso, WIP, throughput, evidencia)', flags: ['json'], usage: 'satlas metrics [--json]' },
