@@ -17,7 +17,7 @@ describe('renderMarkdown', () => {
         '- uno',
         '- dos',
         '- [x] hecho',
-        '- [ ] pendiente',
+        '- [ ] pendiente · Archivos: src/a.ts · Cubre: REQ-X-001-S1',
         '',
         '| A | B |',
         '|---|---|',
@@ -30,8 +30,12 @@ describe('renderMarkdown', () => {
       ].join('\n'),
     )
     expect(html).toContain('<ul><li>uno</li><li>dos</li></ul>')
-    expect(html).toContain('☑ hecho')
-    expect(html).toContain('☐ pendiente')
+    expect(html).toContain('task-item done')
+    expect(html).toContain('task-item')
+    expect(html).toContain('☑')
+    expect(html).toContain('task-meta')
+    expect(html).toContain('meta-chip')
+    expect(html).toContain('Cubre: REQ-X-001-S1')
     expect(html).toContain('<th>A</th>')
     expect(html).toContain('<td>2</td>')
     expect(html).toContain('<blockquote><p>cita simple</p></blockquote>')

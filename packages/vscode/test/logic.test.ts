@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { archiveChange, collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
-import { buildMatrix, buildSnapshot, escapeHtml, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
+import { buildMatrix, buildSnapshot, escapeHtml, groupTasksByBlock, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
 import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
 
 const DELTA = `# Delta — Restablecer contraseña
@@ -314,5 +314,19 @@ describe('paneles y acciones del sidebar', () => {
 
   it('sin workspace ofrece inicializar y compilar adaptadores', () => {
     expect(toolItems(false).map((item) => item.command)).toEqual(['specatlas.init', 'specatlas.adapters'])
+  })
+})
+
+describe('agrupación de tareas', () => {
+  it('agrupa por bloque conservando el orden de aparición', () => {
+    const tasks = [
+      { id: 'T1.1', title: 'a', block: 'Bloque 1 — X', done: true, line: 1, covers: 0 },
+      { id: 'T2.1', title: 'b', block: 'Bloque 2 — Y', done: false, line: 2, covers: 1 },
+      { id: 'T1.2', title: 'c', block: 'Bloque 1 — X', done: false, line: 3, covers: 0 },
+    ]
+    const groups = groupTasksByBlock(tasks)
+    expect(groups.map((group) => group.block)).toEqual(['Bloque 1 — X', 'Bloque 2 — Y'])
+    expect(groups[0]!.tasks.map((task) => task.id)).toEqual(['T1.1', 'T1.2'])
+    expect(groups[1]!.tasks.map((task) => task.id)).toEqual(['T2.1'])
   })
 })

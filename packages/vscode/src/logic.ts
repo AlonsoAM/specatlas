@@ -52,6 +52,21 @@ export interface SnapshotMockupItem {
   file: string
 }
 
+export interface TaskBlockGroup {
+  block: string
+  tasks: SnapshotTaskItem[]
+}
+
+export function groupTasksByBlock(tasks: SnapshotTaskItem[]): TaskBlockGroup[] {
+  const groups: TaskBlockGroup[] = []
+  for (const task of tasks) {
+    const existing = groups.find((group) => group.block === task.block)
+    if (existing) existing.tasks.push(task)
+    else groups.push({ block: task.block, tasks: [task] })
+  }
+  return groups
+}
+
 export interface SnapshotFile {
   label: string
   path: string

@@ -161,6 +161,13 @@ blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: c
 hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
 ul, ol { padding-left: 1.4em; }
 li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .55em 0; padding: .45em .6em .5em; border: 1px solid color-mix(in srgb, var(--atlas-line) 70%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 55%, transparent); }
+ul.checklist > li.task-item.done { opacity: .72; }
+.task-box { font-size: 14px; margin-right: 4px; }
+.task-title { font-weight: 600; }
+.task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 5px 0 1px 20px; }
+.task-meta .meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 1px 8px; }
 small, .muted { color: var(--atlas-muted); }
 .mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
 .atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
@@ -334,7 +341,16 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
       const items: string[] = []
       while (i < lines.length && /^\s*-\s+\[[ xX]\]\s+/.test(lines[i] ?? '')) {
         const match = /^\s*-\s+\[([ xX])\]\s+(.*)$/.exec(lines[i] ?? '')
-        items.push(`<li>${match?.[1]?.toLowerCase() === 'x' ? '☑' : '☐'} ${inlineMarkdown(match?.[2] ?? '')}</li>`)
+        const done = match?.[1]?.toLowerCase() === 'x'
+        const segments = (match?.[2] ?? '').split(' · ')
+        const title = segments.shift() ?? ''
+        const meta =
+          segments.length > 0
+            ? `<div class="task-meta">${segments.map((segment) => `<span class="meta-chip">${inlineMarkdown(segment)}</span>`).join('')}</div>`
+            : ''
+        items.push(
+          `<li class="task-item${done ? ' done' : ''}"><span class="task-box">${done ? '☑' : '☐'}</span> <span class="task-title">${inlineMarkdown(title)}</span>${meta}</li>`,
+        )
         i += 1
       }
       out.push(`<ul class="checklist">${items.join('')}</ul>`)

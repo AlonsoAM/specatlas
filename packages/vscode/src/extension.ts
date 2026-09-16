@@ -32,6 +32,7 @@ import { checkAdapters, compileTargets, type AgentTarget } from '@specatlas/adap
 import {
   buildMatrix,
   buildSnapshot,
+  groupTasksByBlock,
   previewHtml,
   toolItems,
   type Snapshot,
@@ -90,6 +91,7 @@ type Node =
   | { kind: 'change'; change: SnapshotChange }
   | { kind: 'action'; change: SnapshotChange }
   | { kind: 'file'; change: SnapshotChange; file: SnapshotFile }
+  | { kind: 'taskBlock'; change: SnapshotChange; file: SnapshotFile; block: string; tasks: SnapshotTaskItem[] }
   | { kind: 'task'; change: SnapshotChange; file: SnapshotFile; task: SnapshotTaskItem }
   | { kind: 'mockup'; change: SnapshotChange; screen: SnapshotMockupItem }
 
@@ -224,6 +226,15 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         }
         return item
       }
+      case 'taskBlock': {
+        const done = node.tasks.filter((task) => task.done).length
+        const item = new vscode.TreeItem(node.block, vscode.TreeItemCollapsibleState.Expanded)
+        item.description = `${done}/${node.tasks.length} tareas`
+        item.iconPath = new vscode.ThemeIcon('list-ordered', new vscode.ThemeColor('charts.purple'))
+        item.contextValue = 'taskBlock'
+        item.tooltip = `${node.change.slug} · ${node.block}`
+        return item
+      }
       case 'task': {
         const item = new vscode.TreeItem(node.task.title, vscode.TreeItemCollapsibleState.None)
         item.description = `${node.task.id} · ${node.task.block}`
@@ -270,9 +281,14 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
     }
     if (node.kind === 'file') {
       const children: Node[] = []
-      for (const task of node.file.tasks ?? []) children.push({ kind: 'task', change: node.change, file: node.file, task })
+      for (const group of groupTasksByBlock(node.file.tasks ?? [])) {
+        children.push({ kind: 'taskBlock', change: node.change, file: node.file, block: group.block, tasks: group.tasks })
+      }
       for (const screen of node.file.screens ?? []) children.push({ kind: 'mockup', change: node.change, screen })
       return children
+    }
+    if (node.kind === 'taskBlock') {
+      return node.tasks.map((task) => ({ kind: 'task' as const, change: node.change, file: node.file, task }))
     }
     return []
   }
@@ -1035,10 +1051,16 @@ export function activate(context: vscode.ExtensionContext): void {
       return
     }
     if (target.endsWith('.md')) {
-      try {
-        await vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.file(target))
-        return
-      } catch {
+      const insideSdd = target.includes(`${path.sep}.sdd${path.sep}`)
+      if (!insideSdd) {
+        try {
+          await vscode.commands.executeCommand('markdown.showPreview', vscode.Uri.file(target))
+          return
+        } catch {
+          // continúa con la vista previa propia
+        }
+      }
+      {
         const content = (await readTextIfExists(target)) ?? ''
         const mediaRoot = vscode.Uri.joinPath(context.extensionUri, 'media')
         const panel = vscode.window.createWebviewPanel('specatlas.preview', path.basename(target), vscode.ViewColumn.Beside, {
