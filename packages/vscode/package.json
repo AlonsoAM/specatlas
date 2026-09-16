@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -113,8 +113,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsup && node scripts/copy-assets.mjs",
-    "package": "vsce package --no-dependencies",
-    "publish:vsce": "vsce publish --no-dependencies",
+    "package": "vsce package --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode",
+    "publish:vsce": "vsce publish --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode",
     "publish:ovsx": "ovsx publish"
   },
   "dependencies": {

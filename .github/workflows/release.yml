@@ -62,15 +62,31 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r build
-      - run: pnpm --filter specatlas-vscode build
       - name: Empaquetar .vsix
-        run: pnpm --filter specatlas-vscode exec vsce package --no-dependencies
-      - name: Publicar en VS Code Marketplace
+        working-directory: packages/vscode
+        run: ./node_modules/.bin/vsce package --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode
+      - name: Publicar en VS Code Marketplace (idempotente)
         if: ${{ env.VSCE_PAT != '' }}
-        run: pnpm --filter specatlas-vscode exec vsce publish --packagePath specatlas-vscode-*.vsix -p "$VSCE_PAT"
-      - name: Publicar en Open VSX
+        working-directory: packages/vscode
+        run: |
+          set -e
+          version=$(node -p "require('./package.json').version")
+          if ./node_modules/.bin/vsce show specatlas.specatlas-vscode --json 2>/dev/null | grep -q "\"$version\""; then
+            echo "specatlas-vscode $version ya está publicado, se omite"
+          else
+            ./node_modules/.bin/vsce publish --packagePath "specatlas-vscode-$version.vsix" -p "$VSCE_PAT"
+          fi
+      - name: Publicar en Open VSX (idempotente)
         if: ${{ env.OVSX_PAT != '' }}
-        run: pnpm --filter specatlas-vscode exec ovsx publish specatlas-vscode-*.vsix -p "$OVSX_PAT"
+        working-directory: packages/vscode
+        run: |
+          set -e
+          version=$(node -p "require('./package.json').version")
+          if ./node_modules/.bin/ovsx get specatlas.specatlas-vscode --version "$version" >/dev/null 2>&1; then
+            echo "specatlas-vscode $version ya está en Open VSX, se omite"
+          else
+            ./node_modules/.bin/ovsx publish "specatlas-vscode-$version.vsix" -p "$OVSX_PAT"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: specatlas-vscode-vsix
