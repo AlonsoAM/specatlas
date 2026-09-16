@@ -167,7 +167,9 @@ ul.checklist > li.task-item.done { opacity: .72; }
 .task-box { font-size: 14px; margin-right: 4px; }
 .task-title { font-weight: 600; }
 .task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 5px 0 1px 20px; }
-.task-meta .meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 1px 8px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
 small, .muted { color: var(--atlas-muted); }
 .mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
 .atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
@@ -315,7 +317,37 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
         quote.push((lines[i] ?? '').replace(/^>\s?/, ''))
         i += 1
       }
-      out.push(`<blockquote><p>${inlineMarkdown(quote.join(' '))}</p></blockquote>`)
+      const joined = quote.join(' ')
+      const labelRe = /(?:^|\s)([\p{L}][\p{L}\s/()-]{1,32}):\s/gu
+      const hits: Array<{ start: number; end: number; label: string }> = []
+      let hitMatch: RegExpExecArray | null
+      while ((hitMatch = labelRe.exec(joined)) !== null) {
+        if (hitMatch[1]!.trim().split(/\s+/).length > 4) continue
+        hits.push({ start: hitMatch.index, end: hitMatch.index + hitMatch[0].length, label: hitMatch[1]! })
+      }
+      const chips: string[] = []
+      const prose: string[] = []
+      let cursor = 0
+      for (let h = 0; h < hits.length; h += 1) {
+        const hit = hits[h]!
+        const before = joined.slice(cursor, hit.start).replace(/[\s·]+$/u, '').trim()
+        if (before) prose.push(before)
+        const valueEnd = h + 1 < hits.length ? hits[h + 1]!.start : joined.length
+        let value = joined.slice(hit.end, valueEnd).replace(/[\s·]+$/u, '').trim()
+        const sentenceBreak = /[·.]\s+(?=[\p{Lu}][\p{L}]+(?:\s+[\p{L}]+){3,})/u.exec(value)
+        if (sentenceBreak) {
+          const note = value.slice(sentenceBreak.index + 1).trim()
+          if (note) prose.push(note)
+          value = value.slice(0, sentenceBreak.index + 1)
+        }
+        chips.push(`<span class="meta-chip"><b>${inlineMarkdown(hit.label)}:</b> ${inlineMarkdown(value)}</span>`)
+        cursor = valueEnd
+      }
+      const tail = joined.slice(cursor).replace(/^[\s·]+/u, '').trim()
+      if (tail) prose.push(tail)
+      const chipLine = chips.length > 0 ? `<div class="meta-line">${chips.join('')}</div>` : ''
+      const proseHtml = prose.length > 0 ? `<p>${inlineMarkdown(prose.join(' · '))}</p>` : ''
+      out.push(`<blockquote>${chipLine}${proseHtml}</blockquote>`)
       continue
     }
 

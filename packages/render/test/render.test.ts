@@ -114,3 +114,14 @@ describe('estilos y documento', () => {
     expect(styles).toContain(`--atlas-accent: ${defaultTokens.danger};`)
   })
 })
+
+describe('cabeceras de metadatos', () => {
+  it('convierte la cita de metadatos en chips y deja la prosa aparte', () => {
+    const html = renderMarkdown('> Cambio: `x` · Carril: `standard` · Los artefactos aprobados no se editan: este plan es el único artefacto.')
+    expect(html).toContain('meta-line')
+    expect(html).toContain('meta-chip')
+    expect(html).toContain('<b>Cambio:</b>')
+    expect(html).toContain('<b>Carril:</b>')
+    expect(html).toContain('<p>Los artefactos aprobados no se editan: este plan es el único artefacto.</p>')
+  })
+})

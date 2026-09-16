@@ -1,6 +1,6 @@
 {
   "name": "specatlas",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "SpecAtlas: kernel determinista de Spec-Driven Development (CLI)",
   "license": "MIT",
   "type": "module",
