@@ -81,6 +81,9 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   const planFile = path.join(dir, 'plan.md')
   if (await exists(planFile)) change.planPath = planFile
 
+  const reviewFile = path.join(dir, 'review.md')
+  if (await exists(reviewFile)) change.reviewPath = reviewFile
+
   const tasksFile = path.join(dir, 'tasks.md')
   const tasksRaw = await readTextIfExists(tasksFile)
   if (tasksRaw !== undefined) {

@@ -139,4 +139,30 @@ Prosa.
     const approval = verifyApproval(change, approvals, cfg, 'contenido actual')
     expect(approval.status).toBe('stale')
   })
+
+  it('el carril full exige review.md cuando el gate de revisión está en blocking', () => {
+    const baseCfg = defaultConfig()
+    const cfg = { ...baseCfg, gates: { ...baseCfg.gates, review: { mode: 'blocking' as const } } }
+    const delta = parseDelta('## Requisitos agregados\n\n### Requisito: REQ-A-001 — X\nProsa.\n\n#### Escenario: REQ-A-001-S1 — Caso\n- **CUANDO** a\n- **ENTONCES** b\n', 'changes/x/spec.md')
+    const meta = parseChangeMeta('schema_version: 1\nslug: x\nlane: full\ndomain: auth\n', 'meta.yaml').meta
+    const tasks = parseTasksFile('## Bloque 1 — X\n- [x] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
+    const verify = {
+      path: 'verify.md',
+      diagnostics: [],
+      evidence: [{ scenario: 'REQ-A-001-S1', method: 'manual' as const, result: 'pass' as const, date: '2026-01-01', by: 'x', line: 1 }],
+    }
+    const approval = { status: 'valid' as const, approvedBy: 'Ana', approvedAt: '2026-01-01' }
+    const change: Change = { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta, tasks, verify }
+
+    const pending = deriveState({ change, cfg, approval, blockingFindings: 0 })
+    expect(pending.state).toBe('verified')
+    expect(pending.nextAction.command).toContain('/satlas.review')
+
+    const reviewed = deriveState({ change: { ...change, reviewPath: 'changes/x/review.md' }, cfg, approval, blockingFindings: 0 })
+    expect(reviewed.state).toBe('ready')
+    expect(reviewed.nextAction.command).toContain('satlas archive')
+
+    const advisory = deriveState({ change, cfg: baseCfg, approval, blockingFindings: 0 })
+    expect(advisory.state).toBe('ready')
+  })
 })

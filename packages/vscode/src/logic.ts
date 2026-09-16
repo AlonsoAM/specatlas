@@ -33,7 +33,7 @@ export interface FlatDiagnostic {
   suggestion?: string
 }
 
-export type FileKind = 'proposal' | 'spec' | 'plan' | 'tasks' | 'verify' | 'fix' | 'analyze' | 'presentation' | 'mockup'
+export type FileKind = 'proposal' | 'spec' | 'plan' | 'tasks' | 'verify' | 'review' | 'fix' | 'analyze' | 'presentation' | 'mockup'
 
 export interface SnapshotTaskItem {
   id: string
@@ -249,6 +249,7 @@ async function changeFiles(change: Change, screens: SnapshotMockupItem[]): Promi
     { label: 'Plan técnico', rel: 'plan.md', kind: 'plan', description: 'incluye diagramas mermaid' },
     { label: 'Tareas', rel: 'tasks.md', kind: 'tasks' },
     { label: 'Verificación', rel: 'verify.md', kind: 'verify' },
+    { label: 'Revisión', rel: 'review.md', kind: 'review' },
     { label: 'Fix', rel: 'fix.md', kind: 'fix' },
     { label: 'Análisis', rel: 'analyze.md', kind: 'analyze' },
     { label: 'Presentación', rel: path.join('presentation', 'index.html'), kind: 'presentation' },

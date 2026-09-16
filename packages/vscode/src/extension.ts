@@ -310,6 +310,7 @@ const KIND_LABELS: Record<SnapshotFile['kind'], string> = {
   plan: 'plan técnico',
   tasks: 'tareas',
   verify: 'verificación',
+  review: 'revisión de código',
   fix: 'fix',
   analyze: 'análisis',
   presentation: 'propuesta HTML',
@@ -326,6 +327,8 @@ function fileIcon(kind: SnapshotFile['kind']): vscode.ThemeIcon {
       return new vscode.ThemeIcon('checklist', new vscode.ThemeColor('charts.green'))
     case 'verify':
       return new vscode.ThemeIcon('beaker', new vscode.ThemeColor('charts.yellow'))
+    case 'review':
+      return new vscode.ThemeIcon('eye', new vscode.ThemeColor('charts.red'))
     case 'fix':
       return new vscode.ThemeIcon('wrench', new vscode.ThemeColor('charts.orange'))
     case 'analyze':

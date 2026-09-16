@@ -116,7 +116,7 @@ export function deriveState(input: DeriveInput): DerivedState {
     return { state: 'built', blockedBy, nextAction: next(`satlas verify ${change.slug}`, 'Registrar evidencia por escenario'), progress }
   }
 
-  if (lane === 'full' && cfg.gates.review.mode === 'blocking' && !change.verify) {
+  if (lane === 'full' && cfg.gates.review.mode === 'blocking' && !change.reviewPath) {
     blockedBy.push('review pendiente')
     return { state: 'verified', blockedBy, nextAction: next(`/satlas.review ${change.slug}`, 'Revisión de código', true), progress }
   }

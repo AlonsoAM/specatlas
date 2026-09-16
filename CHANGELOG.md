@@ -20,6 +20,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **Gate de revisión del carril `full`**: se resolvía con `verify.md` en vez del artefacto de revisión. Ahora se carga `review.md` en el modelo y el gate exige `/satlas.review` (con `gates.review.mode: blocking`) hasta que exista; en el árbol aparece el nodo «Revisión».
 - **`satlas archive` sin `--yes`** ya no se muestra como ERROR: es una **confirmación requerida** (aviso + exit 2) e indica el comando exacto con el slug (`--dry-run` para revisar, `--yes` para confirmar).
 - **Presentación y mockups se abren como desde el explorador**: el clic en `Presentación`, en `Mockups` o en cada pantalla abre el HTML con el editor predeterminado (Integrated Browser), por lo que los mockups embebidos en la propuesta **renderizan correctamente**. Antes se abrían en un visor propio con iframes vacíos y estilos bloqueados por CSP (visor retirado).
 - La vista previa HTML de respaldo reescribe las rutas relativas (mockups embebidos) a URIs del webview.

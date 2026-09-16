@@ -177,6 +177,7 @@ export interface Change {
   verify?: VerifyFile
   fix?: VerifyFile
   planPath?: string
+  reviewPath?: string
   mockupManifestPath?: string
   diagnostics: Diagnostic[]
 }
