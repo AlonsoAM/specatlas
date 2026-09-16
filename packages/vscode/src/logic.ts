@@ -331,37 +331,6 @@ export function previewHtml(title: string, markdown: string, opts: PreviewOption
   return renderDocument(markdown, options)
 }
 
-export interface MockupScreenView {
-  id: string
-  title: string
-  uri: string
-}
-
-export function mockupHtmlPage(input: { title: string; screens: MockupScreenView[]; cspSource: string; nonce: string; selected?: string }): string {
-  const options = input.screens
-    .map((s) => `<option value="${escapeHtml(s.uri)}"${input.selected === s.id ? ' selected' : ''}>${escapeHtml(s.title)}</option>`)
-    .join('')
-  const selected = input.screens.find((s) => s.id === input.selected)
-  const first = selected?.uri ?? input.screens[0]?.uri ?? ''
-  return `<!doctype html>
-<html><head><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${input.cspSource}; frame-src ${input.cspSource}; img-src ${input.cspSource} data:; script-src 'nonce-${input.nonce}';">
-<style>${BASE_CSS}</style></head>
-<body>
-<div class="toolbar">
-  <strong>${escapeHtml(input.title)}</strong>
-  ${options ? `<select id="screen" aria-label="Pantalla">${options}</select>` : '<small>Sin pantallas</small>'}
-  <small>MOCKUP · contrato visual (no interactivo)</small>
-</div>
-${first ? `<iframe id="frame" src="${escapeHtml(first)}" title="Mockup"></iframe>` : '<p><small>No hay mockups generados todavía.</small></p>'}
-<script nonce="${input.nonce}">
-  const select = document.getElementById('screen');
-  const frame = document.getElementById('frame');
-  if (select && frame) select.addEventListener('change', (e) => { frame.src = e.target.value; });
-</script>
-</body></html>`
-}
-
 export function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }

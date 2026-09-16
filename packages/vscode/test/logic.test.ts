@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
-import { buildMatrix, buildSnapshot, escapeHtml, mockupHtmlPage, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
+import { buildMatrix, buildSnapshot, escapeHtml, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
 import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
 
 const DELTA = `# Delta — Restablecer contraseña
@@ -240,19 +240,6 @@ describe('presentación y diagnósticos', () => {
     expect(html).toContain('mermaid.initialize')
   })
 
-  it('mockupHtmlPage incluye CSP, nonce, iframe y select', () => {
-    const html = mockupHtmlPage({
-      title: 'Mockups — x',
-      screens: [{ id: 'a', title: 'Pantalla A', uri: 'vscode-webview://abc/a.html' }],
-      cspSource: 'vscode-webview://abc',
-      nonce: 'n123',
-    })
-    expect(html).toContain("script-src 'nonce-n123'")
-    expect(html).toContain('frame-src vscode-webview://abc')
-    expect(html).toContain('<iframe id="frame" src="vscode-webview://abc/a.html"')
-    expect(html).toContain('<option value="vscode-webview://abc/a.html">Pantalla A</option>')
-    expect(escapeHtml('<a "x">')).toBe('&lt;a &quot;x&quot;&gt;')
-  })
 })
 
 describe('paneles y acciones del sidebar', () => {

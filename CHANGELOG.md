@@ -16,6 +16,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **Presentación y mockups se abren como desde el explorador**: el clic en `Presentación`, en `Mockups` o en cada pantalla abre el HTML con el editor predeterminado (Integrated Browser), por lo que los mockups embebidos en la propuesta **renderizan correctamente**. Antes se abrían en un visor propio con iframes vacíos y estilos bloqueados por CSP (visor retirado).
+- La vista previa HTML de respaldo reescribe las rutas relativas (mockups embebidos) a URIs del webview.
 - **Donas de métricas legibles en tema oscuro**: el interior ahora es un **degradado radial del color de la métrica** (no un agujero negro), la pista del anillo se ve en temas claros y oscuros, y el texto central usa su estilo correcto también en la cabecera de los paneles (antes quedaba negro y a 13px porque el selector `.donut` no aplicaba en el hero).
 - Los adaptadores serializan el frontmatter como YAML válido: las descripciones con `:` (p. ej. «Adoptar (brownfield): …») ya no rompen el parseo en opencode ni en el preview de VS Code.
 - El paquete npm del CLI ahora incluye `workflow/` y `profiles/` (vía `prepack`): al instalar desde npm, `satlas init` y `satlas adapters` ya generan los comandos y skills del agente.

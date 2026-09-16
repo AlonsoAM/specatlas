@@ -19,7 +19,6 @@ import { compileTargets, type AgentTarget } from '@specatlas/adapters'
 import {
   buildMatrix,
   buildSnapshot,
-  mockupHtmlPage,
   previewHtml,
   toolItems,
   type Snapshot,
@@ -36,6 +35,24 @@ import { startLanguageClient } from './client.js'
 import type { LanguageClient } from 'vscode-languageclient/node'
 
 const VIEW_ID = 'specatlas.explorer'
+
+function pathForScreen(change: SnapshotChange, screen: SnapshotMockupItem): string {
+  return path.join(change.dir, 'mockups', screen.file)
+}
+
+async function rewriteLocalHtml(panel: vscode.WebviewPanel, target: string): Promise<string> {
+  const content = (await readTextIfExists(target)) ?? ''
+  const baseDir = path.dirname(target)
+  const fs = await import('node:fs')
+  return content.replace(/(src|href)\s*=\s*"([^"]+)"/g, (match, attr: string, value: string) => {
+    if (!value || /^(https?:|data:|#|mailto:|command:|vscode-)/i.test(value)) return match
+    const clean = value.split('?')[0] ?? value
+    const abs = path.resolve(baseDir, clean)
+    if (!fs.existsSync(abs)) return match
+    const uri = panel.webview.asWebviewUri(vscode.Uri.file(abs)).toString()
+    return `${attr}="${uri}"`
+  })
+}
 
 let languageClient: LanguageClient | undefined
 
@@ -163,7 +180,13 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         item.contextValue = 'file'
         item.tooltip = `${node.change.slug} · ${vscode.workspace.asRelativePath(node.file.path)}`
         if (node.file.exists) {
-          item.command = { command: 'specatlas.openPreview', title: 'Abrir', arguments: [node.file.path, node.change.slug, node.file.kind] }
+          if (node.file.kind === 'presentation') {
+            item.command = { command: 'vscode.open', title: 'Abrir', arguments: [vscode.Uri.file(node.file.path)] }
+          } else if (node.file.kind === 'mockup' && node.file.screens && node.file.screens.length > 0) {
+            item.command = { command: 'vscode.open', title: 'Abrir', arguments: [vscode.Uri.file(pathForScreen(node.change, node.file.screens[0]!))] }
+          } else {
+            item.command = { command: 'specatlas.openPreview', title: 'Abrir', arguments: [node.file.path, node.change.slug, node.file.kind] }
+          }
         }
         return item
       }
@@ -192,7 +215,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         item.iconPath = new vscode.ThemeIcon('device-mobile', new vscode.ThemeColor('charts.purple'))
         item.contextValue = 'mockup'
         item.tooltip = `${node.change.slug} · pantalla ${node.screen.id}`
-        item.command = { command: 'specatlas.mockup.open', title: 'Ver mockup', arguments: [node.change.slug, node.screen.id] }
+        item.command = { command: 'vscode.open', title: 'Ver mockup', arguments: [vscode.Uri.file(pathForScreen(node.change, node.screen))] }
         return item
       }
     }
@@ -616,26 +639,14 @@ export function activate(context: vscode.ExtensionContext): void {
     const change = selectedChange(arg)
     if (!root || !change) return
     const { manifest } = await readMockupManifest(root, change.slug)
-    const dir = path.join(change.dir, 'mockups')
-    const screens = (manifest?.screens ?? []).map((screen) => ({ id: screen.id, title: screen.title ?? screen.id, file: path.join(dir, screen.file) }))
+    const screens = manifest?.screens ?? []
     if (screens.length === 0) {
       void vscode.window.showInformationMessage(`SpecAtlas: ${change.slug} no tiene mockups. Ejecuta \`satlas mockup ${change.slug}\`.`)
       return
     }
-    const selected = typeof screenArg === 'string' && screens.some((s) => s.id === screenArg) ? screenArg : undefined
-    const panel = vscode.window.createWebviewPanel('specatlas.mockup', `Mockups — ${change.slug}`, vscode.ViewColumn.Beside, {
-      enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(dir)],
-    })
-    panel.iconPath = panelIcon
-    const nonce = String(Date.now())
-    panel.webview.html = mockupHtmlPage({
-      title: `Mockups — ${change.slug}`,
-      screens: screens.map((s) => ({ id: s.id, title: s.title, uri: panel.webview.asWebviewUri(vscode.Uri.file(s.file)).toString() })),
-      cspSource: panel.webview.cspSource,
-      nonce,
-      ...(selected !== undefined ? { selected } : {}),
-    })
+    const requested = typeof screenArg === 'string' ? screens.find((s) => s.id === screenArg) : undefined
+    const screen = requested ?? screens[0]!
+    await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(path.join(change.dir, 'mockups', screen.file)))
   })
 
   register('specatlas.approve', async (arg?: unknown) => {
@@ -677,13 +688,12 @@ export function activate(context: vscode.ExtensionContext): void {
       return
     }
     if (target.endsWith('.html') || target.endsWith('.htm')) {
-      const content = (await readTextIfExists(target)) ?? ''
       const panel = vscode.window.createWebviewPanel('specatlas.preview', path.basename(target), vscode.ViewColumn.Beside, {
-        enableScripts: false,
+        enableScripts: true,
         localResourceRoots: [vscode.Uri.file(path.dirname(target))],
       })
       panel.iconPath = panelIcon
-      panel.webview.html = content
+      panel.webview.html = await rewriteLocalHtml(panel, target)
       return
     }
     if (target.endsWith('.md')) {
