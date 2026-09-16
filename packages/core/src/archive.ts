@@ -1,4 +1,5 @@
 import { promises as fs } from 'node:fs'
+import { cp, rename, rm } from 'node:fs/promises'
 import { localDate, localMonth } from './time.js'
 import path from 'node:path'
 import type { Diagnostic } from './diagnostics.js'
@@ -93,6 +94,59 @@ function trimTrailingBlanks(lines: string[]): string[] {
   return out
 }
 
+const TRANSIENT_MOVE_CODES = new Set(['EPERM', 'EBUSY', 'ENOTEMPTY', 'EACCES'])
+
+export interface MoveOps {
+  rename?: typeof rename
+  cp?: typeof cp
+  rm?: typeof rm
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export async function moveDirectory(from: string, to: string, ops: MoveOps = {}): Promise<{ strategy: 'rename' | 'copy' }> {
+  const doRename = ops.rename ?? rename
+  const doCopy = ops.cp ?? cp
+  const doRemove = ops.rm ?? rm
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await doRename(from, to)
+      return { strategy: 'rename' }
+    } catch (error) {
+      lastError = error
+      const code = (error as NodeJS.ErrnoException).code ?? ''
+      if (!TRANSIENT_MOVE_CODES.has(code)) throw error
+      await delay(250 * attempt)
+    }
+  }
+
+  await doCopy(from, to, { recursive: true, force: true })
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await doRemove(from, { recursive: true, force: true, maxRetries: 2 })
+      return { strategy: 'copy' }
+    } catch (error) {
+      lastError = error
+      await delay(350 * attempt)
+    }
+  }
+  await doRemove(to, { recursive: true, force: true }).catch(() => undefined)
+  throw lastError
+}
+
+async function restoreFile(file: string, previous: string | undefined): Promise<void> {
+  try {
+    if (previous === undefined) await fs.rm(file, { force: true })
+    else await writeText(file, previous)
+  } catch {
+    // el rollback es best-effort
+  }
+}
+
 export interface ArchiveOptions {
   root: string
   slug: string
@@ -137,7 +191,17 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
     }
     if (!opts.dryRun) {
       await ensureDir(path.dirname(targetFix))
-      await fs.rename(change.dir, targetFix)
+      try {
+        await moveDirectory(change.dir, targetFix)
+      } catch (error) {
+        diagnostics.push(
+          diag('ATLAS-ARCH-004', 'error', `No se pudo mover el cambio al histórico: ${(error as Error).message}`, {
+            path: change.dir,
+            suggestion: 'Cierra las pestañas con archivos de este cambio (y espera unos segundos si OneDrive está sincronizando) y vuelve a intentar',
+          }),
+        )
+        return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: false }
+      }
       await regenerateIndex(root, config)
     }
     return { slug: opts.slug, archivedTo: targetFix, fold: emptyFold, diagnostics, dryRun: opts.dryRun ?? false }
@@ -186,7 +250,18 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
   if (!opts.dryRun) {
     await writeText(specFile, nextContent)
     await ensureDir(archiveDir)
-    await fs.rename(change.dir, target)
+    try {
+      await moveDirectory(change.dir, target)
+    } catch (error) {
+      await restoreFile(specFile, existing)
+      diagnostics.push(
+        diag('ATLAS-ARCH-004', 'error', `No se pudo mover el cambio al histórico: ${(error as Error).message}`, {
+          path: change.dir,
+          suggestion: 'Cierra las pestañas con archivos de este cambio (y espera unos segundos si OneDrive está sincronizando) y vuelve a intentar; el cambio y la spec viva quedaron como estaban',
+        }),
+      )
+      return { slug: opts.slug, domain, fold, diagnostics, dryRun: false }
+    }
     await regenerateIndex(root, config, now)
   }
 

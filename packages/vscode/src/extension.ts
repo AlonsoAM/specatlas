@@ -1025,7 +1025,15 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!root || !change) return
     const confirm = await vscode.window.showWarningMessage(`¿Archivar ${change.slug}? Se pliegan los deltas en la spec viva.`, { modal: true }, 'Archivar')
     if (confirm !== 'Archivar') return
-    const result = await archiveChange({ root, slug: change.slug })
+    let result: Awaited<ReturnType<typeof archiveChange>>
+    try {
+      result = await archiveChange({ root, slug: change.slug })
+    } catch (error) {
+      void vscode.window.showErrorMessage(
+        `SpecAtlas: no se pudo archivar ${change.slug}: ${(error as Error).message}. Cierra las pestañas con archivos de este cambio (y espera si OneDrive está sincronizando) y reintenta.`,
+      )
+      return
+    }
     const errors = result.diagnostics.filter((d) => d.severity === 'error')
     if (errors.length > 0) {
       void vscode.window.showErrorMessage(errors.map((d) => d.message).join('; '))
