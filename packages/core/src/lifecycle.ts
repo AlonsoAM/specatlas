@@ -95,10 +95,13 @@ export function deriveState(input: DeriveInput): DerivedState {
 
   if (approval.status === 'missing' || approval.status === 'stale') {
     blockedBy.push(approval.status === 'stale' ? 'la firma de la spec quedó obsoleta (el archivo cambió)' : 'la spec no está aprobada')
+    const presented = change.presentationPath !== undefined
     return {
       state: 'awaiting_approval',
       blockedBy,
-      nextAction: next(`satlas present ${change.slug}`, 'Presentar la propuesta y firmar la aprobación (satlas approve)'),
+      nextAction: presented
+        ? next(`satlas approve ${change.slug} --by "<nombre>"`, 'Firmar la aprobación (la presentación ya está generada)')
+        : next(`satlas present ${change.slug}`, 'Presentar la propuesta y firmar la aprobación (satlas approve)'),
       progress,
     }
   }

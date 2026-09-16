@@ -84,6 +84,9 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   const reviewFile = path.join(dir, 'review.md')
   if (await exists(reviewFile)) change.reviewPath = reviewFile
 
+  const presentationFile = path.join(dir, 'presentation', 'index.html')
+  if (await exists(presentationFile)) change.presentationPath = presentationFile
+
   const tasksFile = path.join(dir, 'tasks.md')
   const tasksRaw = await readTextIfExists(tasksFile)
   if (tasksRaw !== undefined) {

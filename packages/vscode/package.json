@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -71,6 +71,8 @@
       ],
       "view/item/context": [
         { "command": "specatlas.runNext", "when": "view == specatlas.explorer && viewItem =~ /^action/", "group": "inline" },
+        { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/", "group": "inline" },
+        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/", "group": "inline" },
         { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/", "group": "1_ciclo@1" },
         { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/", "group": "1_ciclo@2" },
         { "command": "specatlas.analyze", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@3" },

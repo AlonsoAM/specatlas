@@ -165,4 +165,24 @@ Prosa.
     const advisory = deriveState({ change, cfg: baseCfg, approval, blockingFindings: 0 })
     expect(advisory.state).toBe('ready')
   })
+
+  it('con la presentación generada el siguiente paso es firmar la aprobación', () => {
+    const cfg = defaultConfig()
+    const delta = parseDelta('## Requisitos agregados\n\n### Requisito: REQ-A-001 — X\n#### Escenario: REQ-A-001-S1 — Caso\n- **CUANDO** a\n- **ENTONCES** b\n', 'changes/x/spec.md')
+    const meta = parseChangeMeta('schema_version: 1\nslug: x\nlane: standard\ndomain: auth\n', 'meta.yaml').meta
+    const base: Change = { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta }
+
+    const notPresented = deriveState({ change: base, cfg, approval: { status: 'missing' }, blockingFindings: 0 })
+    expect(notPresented.state).toBe('awaiting_approval')
+    expect(notPresented.nextAction.command).toContain('satlas present')
+
+    const presented = deriveState({
+      change: { ...base, presentationPath: 'changes/x/presentation/index.html' },
+      cfg,
+      approval: { status: 'missing' },
+      blockingFindings: 0,
+    })
+    expect(presented.state).toBe('awaiting_approval')
+    expect(presented.nextAction.command).toContain('satlas approve')
+  })
 })
