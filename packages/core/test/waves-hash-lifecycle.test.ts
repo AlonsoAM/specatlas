@@ -9,6 +9,9 @@ import { defaultConfig } from '../src/config'
 import { deriveState, verifyApproval } from '../src/lifecycle'
 import { parseDelta } from '../src/parse/delta'
 import { parseChangeMeta } from '../src/parse/meta'
+import { setMockupRequirement } from '../src/mockups'
+import { createChange } from '../src/new'
+import { initWorkspace } from '../src/init'
 import type { Change } from '../src/model'
 
 describe('planWaves', () => {
@@ -184,5 +187,40 @@ Prosa.
     })
     expect(presented.state).toBe('awaiting_approval')
     expect(presented.nextAction.command).toContain('satlas approve')
+  })
+  it('con mockups requeridos exige mockups antes de aprobar', () => {
+    const cfg = defaultConfig()
+    const delta = parseDelta('## Requisitos agregados\n\n### Requisito: REQ-A-001 — X\n#### Escenario: REQ-A-001-S1 — Caso\n- **CUANDO** a\n- **ENTONCES** b\n', 'changes/x/spec.md')
+    const meta = parseChangeMeta('schema_version: 1\nslug: x\nlane: standard\ndomain: frontend\nmockups: required\n', 'meta.yaml').meta
+    const change: Change = { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta }
+
+    const pending = deriveState({ change, cfg, approval: { status: 'missing' }, blockingFindings: 0 })
+    expect(pending.state).toBe('awaiting_mockups')
+    expect(pending.nextAction.command).toContain('/satlas-mockup')
+
+    const ready = deriveState({ change, cfg, approval: { status: 'missing' }, blockingFindings: 0, mockupsReady: true })
+    expect(ready.state).toBe('awaiting_approval')
+
+    const skipped = deriveState({ change: { ...change, meta: { ...meta!, mockups: 'skip' } }, cfg, approval: { status: 'missing' }, blockingFindings: 0 })
+    expect(skipped.state).toBe('awaiting_approval')
+
+    const overridden = deriveState({
+      change: { ...change, meta: { ...meta!, overrides: [{ gate: 'mockup', reason: 'urgencia', by: 'Ana', at: '2026-01-01' }] } },
+      cfg,
+      approval: { status: 'missing' },
+      blockingFindings: 0,
+    })
+    expect(overridden.state).toBe('awaiting_approval')
+  })
+
+  it('setMockupRequirement marca meta.yaml sin duplicar la clave', async () => {
+    const tmp = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-mkp-req-'))
+    await initWorkspace({ root: tmp, name: 'mkp', language: 'es' })
+    await createChange({ root: tmp, slug: 'a', lane: 'standard', domain: 'frontend', title: 'Alta' })
+    await setMockupRequirement(tmp, 'a', 'required')
+    await setMockupRequirement(tmp, 'a', 'skip')
+    const raw = await fs.readFile(path.join(tmp, '.sdd', 'changes', 'a', 'meta.yaml'), 'utf8')
+    expect(raw.match(/^mockups:/gm)?.length).toBe(1)
+    expect(raw).toContain('mockups: skip')
   })
 })

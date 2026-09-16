@@ -126,6 +126,7 @@ export interface ChangeMeta {
   risk?: RiskLevel
   created?: string
   owner?: string
+  mockups?: 'required' | 'skip'
   tracker?: { provider: string; id: string; url?: string }
   paused?: { reason: string; at: string; by: string }
   laneHistory?: Array<{ from: Lane; to: Lane; at: string; by: string }>

@@ -13,6 +13,7 @@ export const changeMetaSchema = z.object({
   risk: z.enum(['low', 'medium', 'high']).optional(),
   created: z.string().optional(),
   owner: z.string().optional(),
+  mockups: z.enum(['required', 'skip']).optional(),
   tracker: z.object({ provider: z.string(), id: z.string() }).optional(),
   paused: z.object({ reason: z.string(), at: z.string(), by: z.string() }).optional(),
   lane_history: z.array(z.object({ from: z.enum(['fix', 'standard', 'full']), to: z.enum(['fix', 'standard', 'full']), at: z.string(), by: z.string() })).optional(),
@@ -43,6 +44,7 @@ export function parseChangeMeta(raw: string, filePath: string): { meta?: ChangeM
   if (v.risk !== undefined) meta.risk = v.risk
   if (v.created !== undefined) meta.created = v.created
   if (v.owner !== undefined) meta.owner = v.owner
+  if (v.mockups !== undefined) meta.mockups = v.mockups
   if (v.tracker !== undefined) meta.tracker = v.tracker
   if (v.paused !== undefined) meta.paused = v.paused
   if (v.lane_history !== undefined) meta.laneHistory = v.lane_history

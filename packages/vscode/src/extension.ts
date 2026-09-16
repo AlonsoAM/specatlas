@@ -11,6 +11,7 @@ import {
   loadActiveProfile,
   loadChange,
   loadConfig,
+  mockupsReady,
   packFindings,
   parseDelta,
   parseVerifyFile,
@@ -22,6 +23,7 @@ import {
   runAnalyze,
   runCiGate,
   runDoctor,
+  setMockupRequirement,
   signApproval,
   type CiExtraCheck,
   type Diagnostic as CoreDiagnostic,
@@ -162,6 +164,11 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             '',
             `Estado: ${c.stateLabel} · carril \`${c.lane}\`${c.domain ? ` · dominio \`${c.domain}\`` : ''}`,
             c.approval ? `Aprobación: **${c.approval.by}** · ${c.approval.at}` : '',
+            c.mockups.decision === 'required'
+              ? `Mockups: **requeridos**${c.mockups.screens > 0 && !c.mockups.stale ? ' · listos' : ' · pendientes'}`
+              : c.mockups.screens > 0
+                ? `Mockups: ${c.mockups.screens} pantalla(s)${c.mockups.stale ? ' · desactualizados' : ''}`
+                : '',
             `Tareas: ${c.progress.tasksDone}/${c.progress.tasksTotal} · evidencia: ${c.progress.scenariosDone}/${c.progress.scenariosTotal}`,
             c.blocking > 0 ? `Hallazgos bloqueantes: ${c.blocking}` : '',
             c.blockedBy.length > 0 ? `Bloqueado: ${c.blockedBy.join('; ')}` : '',
@@ -482,6 +489,31 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 
+  const mockupGateBlocked = async (change: SnapshotChange): Promise<boolean> => {
+    const root = workspaceRoot()
+    if (!root) return false
+    const parsed = await loadChange(root, change.slug)
+    return !(await mockupsReady(root, change.slug, parsed))
+  }
+
+  const ensureMockupsDecision = async (change: SnapshotChange): Promise<boolean | undefined> => {
+    if (change.mockups.decision === 'required') return true
+    if (change.mockups.decision === 'skip') return false
+    const root = workspaceRoot()
+    if (!root) return undefined
+    const pick = await vscode.window.showQuickPick(
+      [
+        { label: '$(device-mobile) Sí, lleva mockups', description: 'No se podrá aprobar hasta que los mockups estén listos; se incluirán en la propuesta', value: 'required' as const },
+        { label: '$(circle-slash) No, sin mockups', description: 'Se aprueba sin contrato visual', value: 'skip' as const },
+      ],
+      { title: `Mockups — ${change.slug}`, placeHolder: '¿Este cambio lleva mockups?', ignoreFocusOut: true },
+    )
+    if (!pick) return undefined
+    await setMockupRequirement(root, change.slug, pick.value)
+    await refresh()
+    return pick.value === 'required'
+  }
+
   const compileAdapters = async (root: string): Promise<{ written: string[]; error?: string }> => {
     const fs = await import('node:fs')
     const workflowDir = context.asAbsolutePath('workflow')
@@ -665,6 +697,12 @@ export function activate(context: vscode.ExtensionContext): void {
     const root = workspaceRoot()
     const change = selectedChange(arg)
     if (!root || !change) return
+    const required = await ensureMockupsDecision(change)
+    if (required === undefined) return
+    if (required && (await mockupGateBlocked(change))) {
+      void vscode.window.showWarningMessage(`SpecAtlas: "${change.slug}" exige mockups y aún no están listos. Genera el contrato visual con /satlas-mockup ${change.slug} y vuelve a presentar.`)
+      return
+    }
     const result = await generatePresentation({ root, slug: change.slug })
     if (result.path) {
       await vscode.env.openExternal(vscode.Uri.file(result.path))
@@ -673,6 +711,27 @@ export function activate(context: vscode.ExtensionContext): void {
       void vscode.window.showErrorMessage(result.diagnostics.map((d) => d.message).join('; ') || 'No se pudo generar la propuesta.')
     }
     await refresh()
+  })
+
+  register('specatlas.mockups.decide', async (arg?: unknown) => {
+    const root = workspaceRoot()
+    const change = selectedChange(arg)
+    if (!root || !change) return
+    const pick = await vscode.window.showQuickPick(
+      [
+        { label: '$(device-mobile) Requerir mockups', description: 'Bloquea la aprobación hasta que estén listos', value: 'required' as const },
+        { label: '$(circle-slash) No requiere mockups', description: 'Se aprueba sin contrato visual', value: 'skip' as const },
+      ],
+      { title: `Mockups — ${change.slug}`, placeHolder: 'Decisión de mockups para este cambio' },
+    )
+    if (!pick) return
+    await setMockupRequirement(root, change.slug, pick.value)
+    await refresh()
+    void vscode.window.showInformationMessage(
+      pick.value === 'required'
+        ? `SpecAtlas: "${change.slug}" exigirá mockups antes de aprobar (siguiente: /satlas-mockup ${change.slug}).`
+        : `SpecAtlas: "${change.slug}" no requiere mockups.`,
+    )
   })
 
   register('specatlas.mockup.open', async (arg?: unknown, screenArg?: unknown) => {
@@ -886,6 +945,12 @@ export function activate(context: vscode.ExtensionContext): void {
     const root = workspaceRoot()
     const change = selectedChange(arg)
     if (!root || !change) return
+    const required = await ensureMockupsDecision(change)
+    if (required === undefined) return
+    if (required && (await mockupGateBlocked(change))) {
+      void vscode.window.showErrorMessage(`SpecAtlas: "${change.slug}" exige mockups (meta.yaml: mockups: required) y no están listos. Genera el contrato visual con /satlas-mockup ${change.slug} y vuelve a aprobar.`)
+      return
+    }
     const name = await vscode.window.showInputBox({ title: 'Aprobar spec', prompt: 'Nombre de quien aprueba (queda auditado con hash y fecha)' })
     if (!name) return
     const result = await signApproval({ root, artifact: path.posix.join('changes', change.slug, 'spec.md'), by: name, channel: 'editor' })

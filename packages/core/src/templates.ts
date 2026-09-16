@@ -321,6 +321,7 @@ export function changeMetaYaml(meta: ChangeMeta): string {
   if (meta.risk) doc['risk'] = meta.risk
   if (meta.created) doc['created'] = meta.created
   if (meta.owner) doc['owner'] = meta.owner
+  if (meta.mockups) doc['mockups'] = meta.mockups
   return `# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.\n` + stringifyYaml(doc, { lineWidth: 120 })
 }
 

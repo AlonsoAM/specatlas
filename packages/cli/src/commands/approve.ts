@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { signApproval } from '@specatlas/core'
+import { mockupsReady, requiresMockups, signApproval } from '@specatlas/core'
 import { flagBool, flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { runApproveFromGithub } from './issue.js'
@@ -28,10 +28,32 @@ export async function runApprove(ctx: CliContext): Promise<CommandResult> {
     }
   }
 
-  const { root } = await requireWorkspace(ctx)
+  const { root, workspace, config } = await requireWorkspace(ctx)
   const artifact = target.includes('/') || target.includes('\\') ? target : path.join('changes', target, 'spec.md')
   const channelFlag = flagString(ctx.flags, 'channel')
   const channel = channelFlag === 'presentation' || channelFlag === 'editor' || channelFlag === 'pr' || channelFlag === 'tracker' ? channelFlag : 'cli'
+
+  const change = workspace.changes.find(
+    (candidate) => candidate.slug === target || artifact.includes(`changes/${candidate.slug}/`) || artifact.includes(`changes\\${candidate.slug}\\`),
+  )
+  if (
+    change &&
+    requiresMockups(change.meta, config) &&
+    !(change.meta?.overrides ?? []).some((override) => override.gate === 'mockup') &&
+    !(await mockupsReady(root, change.slug, change))
+  ) {
+    return {
+      exitCode: 1,
+      diagnostics: [
+        {
+          code: 'ATLAS-APPROVE-002',
+          severity: 'error',
+          message: `El cambio "${change.slug}" exige mockups (meta.yaml: mockups: required) y no están listos`,
+          suggestion: `Genera el contrato visual con \`/satlas-mockup ${change.slug}\` y vuelve a aprobar (o registra un override del gate "mockup" en meta.yaml)`,
+        },
+      ],
+    }
+  }
 
   const result = await signApproval({
     root,

@@ -13,6 +13,7 @@ import {
   readMockupManifest,
   readTextIfExists,
   renderDocument,
+  requiresMockups,
   resolvePacks,
   stateLabel,
   verifyApproval,
@@ -65,6 +66,8 @@ export interface SnapshotMockups {
   stale: boolean
   dir?: string
   items?: SnapshotMockupItem[]
+  required?: boolean
+  decision?: 'required' | 'skip'
 }
 
 export interface SnapshotChange {
@@ -103,13 +106,14 @@ export interface SnapshotSpec {
 }
 
 export const STATE_PRIORITY: Record<string, number> = {
-  awaiting_approval: 0,
-  spec_draft: 1,
-  draft: 2,
-  building: 3,
-  built: 4,
-  verified: 5,
-  ready: 6,
+  awaiting_mockups: 0,
+  awaiting_approval: 1,
+  spec_draft: 2,
+  draft: 3,
+  building: 4,
+  built: 5,
+  verified: 6,
+  ready: 7,
 }
 
 export function sortChanges(changes: SnapshotChange[]): SnapshotChange[] {
@@ -167,7 +171,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       for (const finding of packFindings(evaluations, change)) diagnostics.push(toFlat(finding))
     }
 
-    const mockups = await mockupInfo(root, change)
+    const mockups = await mockupInfo(root, change, requiresMockups(change.meta, config))
 
     changes.push({
       slug: change.slug,
@@ -226,11 +230,12 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
   }
 }
 
-async function mockupInfo(root: string, change: Change): Promise<SnapshotMockups> {
+async function mockupInfo(root: string, change: Change, requireMockups: boolean): Promise<SnapshotMockups> {
   const dir = path.join(change.dir, 'mockups')
-  if (!(await exists(dir))) return { screens: 0, stale: false }
+  const decision = change.meta?.mockups
+  if (!(await exists(dir))) return { screens: 0, stale: false, required: requireMockups, ...(decision ? { decision } : {}) }
   const { manifest } = await readMockupManifest(root, change.slug)
-  if (!manifest) return { screens: 0, stale: false, dir }
+  if (!manifest) return { screens: 0, stale: false, dir, required: requireMockups, ...(decision ? { decision } : {}) }
   let stale = false
   try {
     const inputsHash = await computeInputsHash(root, change)
@@ -243,7 +248,7 @@ async function mockupInfo(root: string, change: Change): Promise<SnapshotMockups
     title: screen.title ?? screen.id,
     file: screen.file,
   }))
-  return { screens: manifest.screens.length, stale, dir, items }
+  return { screens: manifest.screens.length, stale, dir, items, required: requireMockups, ...(decision ? { decision } : {}) }
 }
 
 async function changeFiles(change: Change, screens: SnapshotMockupItem[]): Promise<SnapshotFile[]> {

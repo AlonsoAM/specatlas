@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -62,7 +62,8 @@
       { "command": "specatlas.new", "title": "SpecAtlas: Nuevo cambio (fix · standard · full)", "icon": "$(add)" },
       { "command": "specatlas.verify", "title": "SpecAtlas: Registrar evidencia de un escenario", "icon": "$(beaker)" },
       { "command": "specatlas.packs", "title": "SpecAtlas: Evaluar packs de cumplimiento", "icon": "$(shield)" },
-      { "command": "specatlas.ci", "title": "SpecAtlas: CI (gate local)", "icon": "$(check-all)" }
+      { "command": "specatlas.ci", "title": "SpecAtlas: CI (gate local)", "icon": "$(check-all)" },
+      { "command": "specatlas.mockups.decide", "title": "SpecAtlas: Decidir mockups del cambio (sí/no)", "icon": "$(device-mobile)" }
     ],
     "menus": {
       "view/title": [
@@ -80,6 +81,7 @@
         { "command": "specatlas.waves", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@5" },
         { "command": "specatlas.packs", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@6" },
         { "command": "specatlas.present", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@1" },
+        { "command": "specatlas.mockups.decide", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@1" },
         { "command": "specatlas.mockup.open", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@2" },
         { "command": "specatlas.copyNext", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@3" },
         { "command": "specatlas.archive", "when": "view == specatlas.explorer && viewItem =~ /change-(verified|ready)/", "group": "3_peligro@1" },

@@ -16,6 +16,7 @@ const TONES: Record<Tone, string> = {
 const STATE_TONES: Record<string, Tone> = {
   draft: 'gray',
   spec_draft: 'orange',
+  awaiting_mockups: 'purple',
   awaiting_approval: 'purple',
   approved: 'blue',
   planned: 'blue',

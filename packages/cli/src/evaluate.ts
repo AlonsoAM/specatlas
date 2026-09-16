@@ -3,7 +3,9 @@ import {
   checkTrace,
   deriveState,
   lintDelta,
+  mockupsReady,
   readTextIfExists,
+  requiresMockups,
   verifyApproval,
   type AtlasConfig,
   type ApprovalStatus,
@@ -54,7 +56,14 @@ export async function evaluateChange(
   const blocking =
     lintFindings.filter((d) => d.severity === 'error').length + trace.findings.filter((d) => d.severity === 'error').length
 
-  const state = deriveState({ change, cfg: config, approval, blockingFindings: change.delta ? blocking : 0 })
+  const mockupsAreReady = requiresMockups(change.meta, config) ? await mockupsReady(workspace.root, change.slug, change) : undefined
+  const state = deriveState({
+    change,
+    cfg: config,
+    approval,
+    blockingFindings: change.delta ? blocking : 0,
+    ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
+  })
 
   return { change, approval, lintFindings, trace, blocking, state }
 }

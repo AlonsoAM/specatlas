@@ -314,3 +314,24 @@ export async function captureMockups(root: string, slug: string, manifest: Mocku
   void now
   return { screenshots, diagnostics }
 }
+
+export async function mockupsReady(root: string, slug: string, change: Change): Promise<boolean> {
+  const check = await checkMockups(root, slug, change)
+  return Boolean(check.manifest && check.manifest.screens.length > 0 && !check.stale)
+}
+
+export async function setMockupRequirement(root: string, slug: string, value: 'required' | 'skip'): Promise<{ path: string }> {
+  const file = path.join(root, '.sdd', 'changes', slug, 'meta.yaml')
+  const raw = (await readTextIfExists(file)) ?? `schema_version: 1\nslug: ${slug}\nlane: standard\n`
+  const lines = raw.replace(/\r\n?/g, '\n').split('\n')
+  const index = lines.findIndex((line) => /^mockups:/.test(line))
+  if (index >= 0) {
+    lines[index] = `mockups: ${value}`
+  } else {
+    let last = lines.length
+    while (last > 0 && (lines[last - 1] ?? '').trim() === '') last -= 1
+    lines.splice(last, 0, `mockups: ${value}`)
+  }
+  await writeText(file, lines.join('\n'))
+  return { path: file }
+}

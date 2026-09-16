@@ -34,13 +34,14 @@ El contenido se escribe en **{{LANGUAGE_NAME}}**.
    - `MODIFIED` copia el bloque **completo** del requisito tal como está en la spec viva y lo edita.
    - `REMOVED` declara `- Motivo:` y `- Migración:`.
 5. Completa `.sdd/changes/{{SLUG}}/proposal.md` en lenguaje de negocio (sin tecnología y sin dejar los textos entre paréntesis de la plantilla): **Por qué** (problema u oportunidad, con la historia de usuario), **Qué cambia** (alcance funcional), **Fuera de alcance** (lo que no se hará) y **Cómo se mide el éxito** (indicadores observables).
-6. Verifica con el CLI y corrige hasta que no haya errores:
+6. Si el cambio toca interfaz, **pregunta si llevará mockups** y anótalo en `.sdd/changes/{{SLUG}}/meta.yaml`: `mockups: required` (no se podrá aprobar sin ellos; el siguiente paso será `/satlas-mockup`) o `mockups: skip` (se aprueba sin contrato visual).
+7. Verifica con el CLI y corrige hasta que no haya errores:
 
 ```
 satlas validate --change {{SLUG}}
 ```
 
-7. Reporta: número de requisitos y escenarios, supuestos, y las preguntas que quedaron abiertas.
+8. Reporta: número de requisitos y escenarios, supuestos, y las preguntas que quedaron abiertas.
 
 ## Prohibido
 

@@ -128,6 +128,19 @@ describe('CLI e2e (F0)', () => {
     expect(archivedDirs).toHaveLength(1)
   })
 
+  it('rechaza aprobar un cambio que exige mockups sin mockups listos', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli3-'))
+    await runInit(ctx(root))
+    await runNew(ctx(root, { lane: 'standard', domain: 'frontend' }, ['alta-mockup']))
+    const metaFile = path.join(root, '.sdd', 'changes', 'alta-mockup', 'meta.yaml')
+    const raw = await fs.readFile(metaFile, 'utf8')
+    await fs.writeFile(metaFile, raw.trimEnd() + '\nmockups: required\n', 'utf8')
+
+    const result = await runApprove(ctx(root, { by: 'Ana' }, ['alta-mockup']))
+    expect(result.exitCode).toBe(1)
+    expect(result.diagnostics[0]!.code).toBe('ATLAS-APPROVE-002')
+  })
+
   it('rechaza archivar sin --yes y sin dry-run', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli2-'))
     await runInit(ctx(root))

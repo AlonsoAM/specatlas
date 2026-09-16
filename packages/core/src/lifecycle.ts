@@ -1,11 +1,12 @@
 import path from 'node:path'
 import type { AtlasConfig } from './config.js'
-import type { Change, Lane } from './model.js'
+import type { Change, ChangeMeta, Lane } from './model.js'
 import { artifactHash } from './hash.js'
 
 export type ChangeState =
   | 'draft'
   | 'spec_draft'
+  | 'awaiting_mockups'
   | 'awaiting_approval'
   | 'approved'
   | 'planned'
@@ -52,7 +53,18 @@ export interface DeriveInput {
   cfg: AtlasConfig
   approval: ApprovalStatus
   blockingFindings: number
+  mockupsReady?: boolean
   specContent?: string
+}
+
+export function requiresMockups(meta: ChangeMeta | undefined, cfg: AtlasConfig): boolean {
+  if (meta?.mockups === 'required') return true
+  if (meta?.mockups === 'skip') return false
+  return cfg.gates.mockup.require_approval
+}
+
+function mockupOverride(change: Change): boolean {
+  return (change.meta?.overrides ?? []).some((override) => override.gate === 'mockup')
 }
 
 export function deriveState(input: DeriveInput): DerivedState {
@@ -93,6 +105,15 @@ export function deriveState(input: DeriveInput): DerivedState {
     return { state: 'spec_draft', blockedBy, nextAction: next(`satlas validate --change ${change.slug}`, 'Corregir los hallazgos de la especificación'), progress }
   }
 
+  if ((approval.status === 'missing' || approval.status === 'stale') && requiresMockups(change.meta, cfg) && input.mockupsReady !== true && !mockupOverride(change)) {
+    return {
+      state: 'awaiting_mockups',
+      blockedBy: ['mockups requeridos y no listos'],
+      nextAction: next(`/satlas-mockup ${change.slug}`, 'Generar los mockups (contrato visual) antes de aprobar', true),
+      progress,
+    }
+  }
+
   if (approval.status === 'missing' || approval.status === 'stale') {
     blockedBy.push(approval.status === 'stale' ? 'la firma de la spec quedó obsoleta (el archivo cambió)' : 'la spec no está aprobada')
     const presented = change.presentationPath !== undefined
@@ -131,6 +152,7 @@ export function stateLabel(state: ChangeState): string {
   const labels: Record<ChangeState, string> = {
     draft: 'borrador',
     spec_draft: 'spec en borrador',
+    awaiting_mockups: 'esperando mockups',
     awaiting_approval: 'esperando aprobación',
     approved: 'aprobado',
     planned: 'planificado',

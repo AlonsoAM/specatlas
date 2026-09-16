@@ -5,6 +5,7 @@ import {
   computeInputsHash,
   planMockups,
   readMockupManifest,
+  setMockupRequirement,
   updateMockupScreenshots,
   writeMockupManifest,
   writeMockupPlan,
@@ -16,11 +17,15 @@ export async function runMockup(ctx: CliContext): Promise<CommandResult> {
   const { root, workspace, config } = await requireWorkspace(ctx)
   const slug = ctx.positionals[0]
   if (!slug) {
-    return { exitCode: 2, diagnostics: [{ code: 'ATLAS-MKP-000', severity: 'error', message: 'Falta el slug: satlas mockup <slug> [--plan|--check|--capture]' }] }
+    return { exitCode: 2, diagnostics: [{ code: 'ATLAS-MKP-000', severity: 'error', message: 'Falta el slug: satlas mockup <slug> [--plan|--check|--capture|--require]' }] }
   }
   const change = workspace.changes.find((c) => c.slug === slug)
   if (!change) {
     return { exitCode: 2, diagnostics: [{ code: 'ATLAS-MKP-000', severity: 'error', message: `No existe el cambio "${slug}"` }] }
+  }
+
+  if (flagBool(ctx.flags, 'require')) {
+    await setMockupRequirement(root, slug, 'required')
   }
 
   if (flagBool(ctx.flags, 'check')) {
