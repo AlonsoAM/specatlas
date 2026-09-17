@@ -182,10 +182,14 @@ small, .muted { color: var(--atlas-muted); }
 .diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
 .diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
 .diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
-.diagram-canvas { overflow: hidden; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
 .diagram-canvas.panning { cursor: grabbing; user-select: none; }
-.diagram-canvas pre.mermaid { margin: 0; background: transparent; }
-.diagram-canvas svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
 .diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
 .mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
 .mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
@@ -503,78 +507,74 @@ const DIAGRAM_TOOLS_SCRIPT = `
       block.setAttribute('data-wired', '1');
       var level = block.querySelector('[data-diagram-level]');
       var fitButton = block.querySelector('[data-diagram-fit]');
-      var state = { zoom: 1, tx: 0, ty: 0, fit: true };
-      function clampPan() {
-        var pad = 24;
-        var cw = Math.max(0, canvas.clientWidth - pad);
-        var ch = Math.max(0, canvas.clientHeight - pad);
-        var baseW = svg.offsetWidth || svg.getBoundingClientRect().width;
-        var baseH = svg.offsetHeight || svg.getBoundingClientRect().height;
-        var contentW = baseW * state.zoom;
-        var contentH = baseH * state.zoom;
-        if (contentW <= cw) {
-          state.tx = (cw - contentW) / 2;
-        } else {
-          state.tx = Math.max(cw - contentW, Math.min(0, state.tx));
-        }
-        if (contentH <= ch) {
-          state.ty = (ch - contentH) / 2;
-        } else {
-          state.ty = Math.max(ch - contentH, Math.min(0, state.ty));
-        }
+      var state = { zoom: 1, fit: true };
+      var box = svg.viewBox && svg.viewBox.baseVal;
+      var rect = svg.getBoundingClientRect();
+      var natural = {
+        w: box && box.width ? box.width : rect.width,
+        h: box && box.height ? box.height : rect.height,
+      };
+      svg.style.maxWidth = 'none';
+      svg.style.maxHeight = 'none';
+      svg.style.margin = 'auto';
+      function padding() { return 24; }
+      function fitScale() {
+        var cw = Math.max(0, canvas.clientWidth - padding());
+        var ch = Math.max(0, canvas.clientHeight - padding());
+        if (natural.w <= 0 || natural.h <= 0) return 1;
+        return Math.min(1, cw / natural.w, ch / natural.h);
       }
       function apply() {
-        svg.style.transformOrigin = '0 0';
-        svg.style.maxWidth = state.fit && state.zoom === 1 ? '100%' : 'none';
-        clampPan();
-        var moved = state.zoom !== 1 || Math.abs(state.tx) > 0.5 || Math.abs(state.ty) > 0.5;
-        svg.style.transform = moved ? 'translate(' + state.tx + 'px,' + state.ty + 'px) scale(' + state.zoom + ')' : '';
-        if (fitButton) fitButton.classList.toggle('active', state.fit && state.zoom === 1);
-        if (level) level.textContent = state.zoom === 1 ? (state.fit ? 'Ajustar' : '100%') : Math.round(state.zoom * 100) + '%';
+        var scale = state.fit ? fitScale() : state.zoom;
+        svg.style.width = Math.max(1, Math.round(natural.w * scale)) + 'px';
+        svg.style.height = Math.max(1, Math.round(natural.h * scale)) + 'px';
+        if (fitButton) fitButton.classList.toggle('active', state.fit);
+        if (level) level.textContent = state.fit ? 'Ajustar' : Math.round(state.zoom * 100) + '%';
       }
-      function setZoom(z) {
-        state.zoom = Math.max(0.25, Math.min(3, z));
-        if (state.zoom !== 1 && state.fit) state.fit = false;
-        if (state.zoom === 1) { state.tx = 0; state.ty = 0; }
+      function setZoom(delta) {
+        if (state.fit) {
+          state.fit = false;
+          state.zoom = Math.max(0.1, Math.min(4, fitScale()));
+        }
+        state.zoom = Math.max(0.1, Math.min(4, state.zoom + delta));
         apply();
       }
       Array.prototype.slice.call(block.querySelectorAll('[data-diagram-zoom]')).forEach(function (button) {
         button.addEventListener('click', function () {
           var action = button.getAttribute('data-diagram-zoom');
-          if (action === 'in') setZoom(state.zoom + 0.25);
-          else if (action === 'out') setZoom(state.zoom - 0.25);
-          else { state.zoom = 1; state.tx = 0; state.ty = 0; state.fit = true; apply(); }
+          if (action === 'in') setZoom(0.25);
+          else if (action === 'out') setZoom(-0.25);
+          else { state.fit = true; state.zoom = 1; apply(); }
         });
       });
       if (fitButton) fitButton.addEventListener('click', function () {
         state.fit = !state.fit;
-        if (state.fit) { state.zoom = 1; state.tx = 0; state.ty = 0; }
+        if (state.fit) state.zoom = 1;
         apply();
       });
       canvas.addEventListener('wheel', function (event) {
         if (!event.ctrlKey && !event.metaKey) return;
         event.preventDefault();
-        setZoom(state.zoom + (event.deltaY < 0 ? 0.15 : -0.15));
+        setZoom(event.deltaY < 0 ? 0.15 : -0.15);
       }, { passive: false });
       var panning = false;
       var startX = 0;
       var startY = 0;
-      var originX = 0;
-      var originY = 0;
+      var originLeft = 0;
+      var originTop = 0;
       canvas.addEventListener('mousedown', function (event) {
         panning = true;
         startX = event.clientX;
         startY = event.clientY;
-        originX = state.tx;
-        originY = state.ty;
+        originLeft = canvas.scrollLeft;
+        originTop = canvas.scrollTop;
         canvas.classList.add('panning');
         event.preventDefault();
       });
       window.addEventListener('mousemove', function (event) {
         if (!panning) return;
-        state.tx = originX + (event.clientX - startX);
-        state.ty = originY + (event.clientY - startY);
-        apply();
+        canvas.scrollLeft = originLeft - (event.clientX - startX);
+        canvas.scrollTop = originTop - (event.clientY - startY);
       });
       window.addEventListener('mouseup', function () {
         if (!panning) return;
@@ -585,20 +585,16 @@ const DIAGRAM_TOOLS_SCRIPT = `
       var fullscreen = block.querySelector('[data-diagram-fullscreen]');
       if (fullscreen) fullscreen.addEventListener('click', function () {
         if (!block.classList.contains('diagram-fullscreen')) {
-          preFullscreen = { zoom: state.zoom, tx: state.tx, ty: state.ty, fit: state.fit };
+          preFullscreen = { zoom: state.zoom, fit: state.fit };
           block.classList.add('diagram-fullscreen');
           document.body.style.overflow = 'hidden';
-          state.zoom = 1;
-          state.tx = 0;
-          state.ty = 0;
           state.fit = true;
+          state.zoom = 1;
         } else {
           block.classList.remove('diagram-fullscreen');
           document.body.style.overflow = '';
           if (preFullscreen) {
             state.zoom = preFullscreen.zoom;
-            state.tx = preFullscreen.tx;
-            state.ty = preFullscreen.ty;
             state.fit = preFullscreen.fit;
             preFullscreen = null;
           }
@@ -607,15 +603,16 @@ const DIAGRAM_TOOLS_SCRIPT = `
       });
       canvas.addEventListener('dblclick', function () {
         state.fit = !state.fit;
-        if (state.fit) { state.zoom = 1; state.tx = 0; state.ty = 0; }
+        if (state.fit) state.zoom = 1;
         apply();
       });
       window.addEventListener('resize', function () { apply(); });
       var download = block.querySelector('[data-diagram-download]');
       if (download) download.addEventListener('click', function () {
         var clone = svg.cloneNode(true);
-        clone.style.transform = '';
-        clone.style.maxWidth = '';
+        clone.style.width = '';
+        clone.style.height = '';
+        clone.style.margin = '';
         var data = new XMLSerializer().serializeToString(clone);
         var link = document.createElement('a');
         link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
