@@ -208,12 +208,25 @@ function highlightCode(code: string, language: string | undefined, enabled: bool
 }
 
 function splitRow(line: string): string[] {
-  return line
-    .trim()
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .map((cell) => cell.trim())
+  const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '')
+  const cells: string[] = []
+  let current = ''
+  for (let index = 0; index < trimmed.length; index += 1) {
+    const char = trimmed[index] ?? ''
+    if (char === '\\' && trimmed[index + 1] === '|') {
+      current += '|'
+      index += 1
+      continue
+    }
+    if (char === '|') {
+      cells.push(current.trim())
+      current = ''
+      continue
+    }
+    current += char
+  }
+  cells.push(current.trim())
+  return cells
 }
 
 export interface TocEntry {

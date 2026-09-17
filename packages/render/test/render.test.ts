@@ -156,3 +156,14 @@ describe('tablas y diagramas', () => {
     expect(html).toContain('data-wired')
   })
 })
+
+describe('pipes escapados en tablas', () => {
+  it('no crea columnas extra cuando una celda usa \\|', () => {
+    const html = renderMarkdown('| Elemento | Contrato |\n|---|---|\n| `Resultado` | `{ ok } \\| { error }` |')
+    const header = html.slice(html.indexOf('<thead>'), html.indexOf('</thead>'))
+    const body = html.slice(html.indexOf('<tbody>'), html.indexOf('</tbody>'))
+    expect((header.match(/<th>/g) ?? []).length).toBe(2)
+    expect((body.match(/<td>/g) ?? []).length).toBe(2)
+    expect(body).toContain('{ ok } | { error }')
+  })
+})
