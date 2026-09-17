@@ -328,3 +328,33 @@ describe('agrupación de tareas', () => {
     expect(groups[1]!.tasks.map((task) => task.id)).toEqual(['T2.1'])
   })
 })
+
+describe('colisión de ids de tarea entre cambios', () => {
+  it('un cambio nuevo que reutiliza T1.1 no borra la cobertura del cambio archivado', async () => {
+    const root = await makeWorkspace(true)
+    await archiveChange({ root, slug: 'reset-password' })
+
+    await createChange({ root, slug: 'otra-cosa', lane: 'standard', domain: 'auth', title: 'Otra cosa' })
+    const dir = path.join(root, '.sdd', 'changes', 'otra-cosa')
+    await fs.writeFile(
+      path.join(dir, 'spec.md'),
+      `## Requisitos agregados
+
+### Requisito: REQ-AUTH-900 — Otra
+El sistema DEBE permitir otra cosa.
+
+#### Escenario: REQ-AUTH-900-S1 — Caso
+- **CUANDO** la persona pide otra cosa
+- **ENTONCES** ocurre
+`,
+      'utf8',
+    )
+    await fs.writeFile(path.join(dir, 'tasks.md'), '## Bloque 1 — X\n\n- [ ] T1.1 Otra tarea · Archivos: src/otra.ts · Cubre: REQ-AUTH-900-S1 · Reversión: borrar\n', 'utf8')
+
+    const matrix = await buildMatrix(root)
+    const archivedRequirement = matrix.requirements.find((requirement) => requirement.id === 'REQ-AUTH-001')!
+    expect(archivedRequirement.scenarios[0]!.tasks.length).toBeGreaterThan(0)
+    const nuevo = matrix.requirements.find((requirement) => requirement.id === 'REQ-AUTH-900')!
+    expect(nuevo.scenarios[0]!.tasks).toContain('T1.1')
+  })
+})
