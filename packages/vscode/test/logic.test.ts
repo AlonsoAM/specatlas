@@ -3,7 +3,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { archiveChange, collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
-import { buildMatrix, buildSnapshot, escapeHtml, groupTasksByBlock, previewHtml, sortChanges, toFlat, toolItems, type SnapshotChange } from '../src/logic'
+import { buildMatrix, buildSnapshot, escapeHtml, groupTasksByBlock, previewHtml, sortChanges, toFlat, toolGroups, type SnapshotChange } from '../src/logic'
 import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
 
 const DELTA = `# Delta — Restablecer contraseña
@@ -294,26 +294,24 @@ describe('presentación y diagnósticos', () => {
 })
 
 describe('paneles y acciones del sidebar', () => {
-  it('con workspace inicializado lista los paneles con icono y comando', () => {
-    const items = toolItems(true)
-    expect(items.map((item) => item.command)).toEqual([
-      'specatlas.new',
-      'specatlas.matrix',
-      'specatlas.board',
-      'specatlas.metrics',
-      'specatlas.validate',
-      'specatlas.ci',
-      'specatlas.doctor',
-      'specatlas.adapters',
-    ])
-    for (const item of items) {
-      expect(item.icon.length, `${item.id} con icono`).toBeGreaterThan(0)
-      expect(item.label.length, `${item.id} con etiqueta`).toBeGreaterThan(0)
+  it('separa los paneles de las acciones', () => {
+    const groups = toolGroups(true)
+    expect(groups.map((group) => group.label)).toEqual(['Paneles', 'Acciones'])
+    expect(groups[0]!.items.map((item) => item.command)).toEqual(['specatlas.matrix', 'specatlas.board', 'specatlas.metrics'])
+    expect(groups[1]!.items.map((item) => item.command)).toEqual(['specatlas.new', 'specatlas.validate', 'specatlas.ci', 'specatlas.doctor', 'specatlas.adapters'])
+    for (const group of groups) {
+      expect(group.icon.length, `${group.id} con icono`).toBeGreaterThan(0)
+      for (const item of group.items) {
+        expect(item.icon.length, `${item.id} con icono`).toBeGreaterThan(0)
+        expect(item.label.length, `${item.id} con etiqueta`).toBeGreaterThan(0)
+      }
     }
   })
 
   it('sin workspace ofrece inicializar y compilar adaptadores', () => {
-    expect(toolItems(false).map((item) => item.command)).toEqual(['specatlas.init', 'specatlas.adapters'])
+    const groups = toolGroups(false)
+    expect(groups).toHaveLength(1)
+    expect(groups[0]!.items.map((item) => item.command)).toEqual(['specatlas.init', 'specatlas.adapters'])
   })
 })
 

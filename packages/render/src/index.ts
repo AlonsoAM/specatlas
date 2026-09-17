@@ -178,11 +178,15 @@ ul.checklist > li.task-item.done { opacity: .72; }
 small, .muted { color: var(--atlas-muted); }
 .mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
 .diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
-.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
 .diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
-.diagram-canvas { overflow: auto; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 10px; }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { overflow: auto; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
 .diagram-canvas pre.mermaid { margin: 0; background: transparent; }
-.diagram-canvas svg { max-width: 100%; height: auto; }
+.diagram-canvas svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
 .mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
 .mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
 .atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
@@ -294,9 +298,10 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
         if (mermaidMode === 'script' && opts.mermaidScriptUri) {
           out.push(`<div class="mermaid-block">
   <div class="diagram-tools" role="toolbar" aria-label="Herramientas del diagrama">
-    <button type="button" data-diagram-zoom="out" title="Alejar" aria-label="Alejar">−</button>
-    <button type="button" data-diagram-zoom="in" title="Acercar" aria-label="Acercar">＋</button>
-    <button type="button" data-diagram-zoom="reset" title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-zoom="out" title="Alejar (Ctrl + rueda)" aria-label="Alejar">−</button>
+    <button type="button" data-diagram-zoom="reset" data-diagram-level title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-zoom="in" title="Acercar (Ctrl + rueda)" aria-label="Acercar">＋</button>
+    <button type="button" data-diagram-fit title="Ajustar al ancho / tamaño real" aria-label="Ajustar al ancho">⤢</button>
     <button type="button" data-diagram-fullscreen title="Pantalla completa (Esc para salir)" aria-label="Pantalla completa">⛶</button>
     <button type="button" data-diagram-download title="Descargar SVG" aria-label="Descargar SVG">⤓</button>
   </div>
@@ -497,20 +502,71 @@ const DIAGRAM_TOOLS_SCRIPT = `
       if (block.getAttribute('data-wired') === '1') return;
       block.setAttribute('data-wired', '1');
       block.setAttribute('data-zoom', '1');
-      function applyZoom() {
+      canvas.setAttribute('data-fit', 'on');
+      var level = block.querySelector('[data-diagram-level]');
+      var fitButton = block.querySelector('[data-diagram-fit]');
+      if (fitButton) fitButton.classList.add('active');
+      function apply() {
+        var fit = canvas.getAttribute('data-fit') !== 'off';
         var z = Number(block.getAttribute('data-zoom') || '1');
-        svg.style.zoom = z === 1 ? '' : String(z);
+        if (fit) {
+          svg.style.zoom = '';
+          if (level) level.textContent = 'Ajustar';
+        } else {
+          svg.style.zoom = z === 1 ? '' : String(z);
+          if (level) level.textContent = Math.round(z * 100) + '%';
+        }
+      }
+      function setZoom(z) {
+        block.setAttribute('data-zoom', String(z));
+        if (z !== 1 && canvas.getAttribute('data-fit') !== 'off') {
+          canvas.setAttribute('data-fit', 'off');
+          if (fitButton) fitButton.classList.remove('active');
+        }
+        apply();
       }
       Array.prototype.slice.call(block.querySelectorAll('[data-diagram-zoom]')).forEach(function (button) {
         button.addEventListener('click', function () {
           var action = button.getAttribute('data-diagram-zoom');
           var z = Number(block.getAttribute('data-zoom') || '1');
-          if (action === 'in') z = Math.min(3, z + 0.25);
-          else if (action === 'out') z = Math.max(0.5, z - 0.25);
-          else z = 1;
-          block.setAttribute('data-zoom', String(z));
-          applyZoom();
+          if (action === 'in') setZoom(Math.min(3, z + 0.25));
+          else if (action === 'out') setZoom(Math.max(0.25, z - 0.25));
+          else setZoom(1);
         });
+      });
+      if (fitButton) fitButton.addEventListener('click', function () {
+        var next = canvas.getAttribute('data-fit') === 'on' ? 'off' : 'on';
+        canvas.setAttribute('data-fit', next);
+        fitButton.classList.toggle('active', next === 'on');
+        apply();
+      });
+      canvas.addEventListener('wheel', function (event) {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        var z = Number(block.getAttribute('data-zoom') || '1');
+        setZoom(Math.min(3, Math.max(0.25, z + (event.deltaY < 0 ? 0.15 : -0.15))));
+      }, { passive: false });
+      var panning = false;
+      var startX = 0;
+      var startY = 0;
+      var startLeft = 0;
+      var startTop = 0;
+      canvas.addEventListener('mousedown', function (event) {
+        panning = true;
+        startX = event.clientX;
+        startY = event.clientY;
+        startLeft = canvas.scrollLeft;
+        startTop = canvas.scrollTop;
+        canvas.classList.add('panning');
+      });
+      window.addEventListener('mousemove', function (event) {
+        if (!panning) return;
+        canvas.scrollLeft = startLeft - (event.clientX - startX);
+        canvas.scrollTop = startTop - (event.clientY - startY);
+      });
+      window.addEventListener('mouseup', function () {
+        panning = false;
+        canvas.classList.remove('panning');
       });
       var fullscreen = block.querySelector('[data-diagram-fullscreen]');
       if (fullscreen) fullscreen.addEventListener('click', function () {
@@ -527,6 +583,7 @@ const DIAGRAM_TOOLS_SCRIPT = `
         link.download = 'diagrama.svg';
         link.click();
       });
+      apply();
     });
     if (pending && attempts < 40) { attempts += 1; setTimeout(wire, 250); }
   }
@@ -554,7 +611,7 @@ export function renderDocument(markdown: string, opts: RenderOptions = {}): stri
         : "'default'"
   const mermaidScript =
     opts.mermaid === 'script' && opts.mermaidScriptUri
-      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${mermaidTheme};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : undefined }); }\n${DIAGRAM_TOOLS_SCRIPT}\n</script>\n`
+      ? `<script nonce="${opts.nonce ?? ''}" src="${opts.mermaidScriptUri}"></script>\n<script nonce="${opts.nonce ?? ''}">\n  const theme = ${mermaidTheme};\n  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { fontSize: '13px', lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : { fontSize: '13px' } }); }\n${DIAGRAM_TOOLS_SCRIPT}\n</script>\n`
       : ''
   const title = opts.title ? `<title>${escapeHtml(opts.title)}</title>\n` : ''
   const description = opts.description ? `<meta name="description" content="${escapeHtml(opts.description)}">\n` : ''

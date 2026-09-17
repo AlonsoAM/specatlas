@@ -35,7 +35,7 @@ import {
   buildSnapshot,
   groupTasksByBlock,
   previewHtml,
-  toolItems,
+  toolGroups,
   type Snapshot,
   type SnapshotChange,
   type SnapshotFile,
@@ -45,6 +45,7 @@ import {
   type SnapshotMockupItem,
   type ToolItem,
 } from './logic.js'
+import { formHtml, type FormField } from './forms.js'
 import { boardHtml, matrixHtml, metricsHtml } from './panels.js'
 import { startLanguageClient } from './client.js'
 import type { LanguageClient } from 'vscode-languageclient/node'
@@ -388,7 +389,9 @@ function fileIcon(kind: SnapshotFile['kind']): vscode.ThemeIcon {
   }
 }
 
-class ToolsProvider implements vscode.TreeDataProvider<ToolItem> {
+type ToolNode = { kind: 'group'; label: string; icon: string; items: ToolItem[] } | { kind: 'item'; item: ToolItem }
+
+class ToolsProvider implements vscode.TreeDataProvider<ToolNode> {
   private initialized = false
   private readonly emitter = new vscode.EventEmitter<void>()
   readonly onDidChangeTreeData = this.emitter.event
@@ -399,17 +402,28 @@ class ToolsProvider implements vscode.TreeDataProvider<ToolItem> {
     this.emitter.fire()
   }
 
-  getChildren(): ToolItem[] {
-    return toolItems(this.initialized)
+  getChildren(node?: ToolNode): ToolNode[] {
+    if (!node) {
+      return toolGroups(this.initialized).map((group) => ({ kind: 'group' as const, label: group.label, icon: group.icon, items: group.items }))
+    }
+    if (node.kind === 'group') return node.items.map((item) => ({ kind: 'item' as const, item }))
+    return []
   }
 
-  getTreeItem(item: ToolItem): vscode.TreeItem {
-    const node = new vscode.TreeItem(item.label, vscode.TreeItemCollapsibleState.None)
-    node.description = item.description
-    node.iconPath = new vscode.ThemeIcon(item.icon)
-    node.command = { command: item.command, title: item.label }
-    node.contextValue = 'tool'
-    return node
+  getTreeItem(node: ToolNode): vscode.TreeItem {
+    if (node.kind === 'group') {
+      const group = new vscode.TreeItem(node.label, vscode.TreeItemCollapsibleState.Expanded)
+      group.iconPath = new vscode.ThemeIcon(node.icon, new vscode.ThemeColor('charts.blue'))
+      group.contextValue = 'toolGroup'
+      group.description = `${node.items.length}`
+      return group
+    }
+    const item = new vscode.TreeItem(node.item.label, vscode.TreeItemCollapsibleState.None)
+    item.description = node.item.description
+    item.iconPath = new vscode.ThemeIcon(node.item.icon)
+    item.command = { command: node.item.command, title: node.item.label }
+    item.contextValue = 'tool'
+    return item
   }
 }
 
@@ -503,6 +517,21 @@ export function activate(context: vscode.ExtensionContext): void {
       if (state.focused) debouncedRefresh()
     }),
   )
+
+  const openForm = async (id: string, title: string, html: string, onSubmit: (values: Record<string, string>) => Promise<void>): Promise<void> => {
+    const panel = vscode.window.createWebviewPanel(id, title, vscode.ViewColumn.Active, { enableScripts: true })
+    panel.iconPath = panelIcon
+    panel.webview.html = html
+    panel.webview.onDidReceiveMessage(async (message: { type?: string; values?: Record<string, string> }) => {
+      if (message.type === 'cancel') {
+        panel.dispose()
+        return
+      }
+      if (message.type !== 'submit' || !message.values) return
+      panel.dispose()
+      await onSubmit(message.values)
+    })
+  }
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 
@@ -772,19 +801,6 @@ export function activate(context: vscode.ExtensionContext): void {
       void vscode.window.showWarningMessage('SpecAtlas: abre una carpeta de proyecto para crear un cambio.')
       return
     }
-    const lanePick = await vscode.window.showQuickPick(
-      [
-        { label: '$(wrench) fix', description: 'Incidente express: fix.md con causa raíz, cambio mínimo y evidencia', lane: 'fix' as const },
-        { label: '$(checklist) standard', description: 'Feature o mejora: delta, aprobación, plan y evidencia', lane: 'standard' as const },
-        { label: '$(shield) full', description: 'Cambio grande o sensible: standard + revisión de código', lane: 'full' as const },
-      ],
-      { title: 'Nuevo cambio — carril', placeHolder: 'Elige el carril (fix / standard / full)' },
-    )
-    if (!lanePick) return
-    const title = await vscode.window.showInputBox({ title: 'Nuevo cambio — título', prompt: 'Título corto en lenguaje de negocio', ignoreFocusOut: true })
-    if (!title) return
-    const slug = await vscode.window.showInputBox({ title: 'Nuevo cambio — slug', prompt: 'Identificador del cambio (carpeta)', value: slugify(title), ignoreFocusOut: true })
-    if (!slug) return
     const workspaceSnapshot = provider.snapshotOf(0)
     const knownDomains = [
       ...new Set([
@@ -792,50 +808,66 @@ export function activate(context: vscode.ExtensionContext): void {
         ...(workspaceSnapshot?.changes.map((change) => change.domain).filter((domain): domain is string => Boolean(domain)) ?? []),
       ]),
     ].sort()
-    let domain: string | undefined
-    if (knownDomains.length > 0) {
-      const pick = await vscode.window.showQuickPick(
-        [
-          ...knownDomains.map((value) => ({ label: value, description: 'dominio existente', value })),
-          { label: '$(edit) Otro dominio…', description: 'Escribe uno nuevo', value: '__new' },
+    const fields: FormField[] = [
+      {
+        name: 'lane',
+        label: 'Carril',
+        type: 'radio',
+        value: 'standard',
+        options: [
+          { value: 'fix', label: 'fix', description: 'Incidente express: fix.md con causa raíz, cambio mínimo y evidencia' },
+          { value: 'standard', label: 'standard', description: 'Feature o mejora: delta, aprobación, plan y evidencia' },
+          { value: 'full', label: 'full', description: 'Cambio grande o sensible: standard + revisión de código' },
         ],
-        { title: 'Nuevo cambio — dominio', placeHolder: 'Dominio de negocio (reutilízalo para no dividir las specs)', ignoreFocusOut: true },
-      )
-      if (!pick) return
-      if (pick.value === '__new') {
-        domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio nuevo', value: 'general', ignoreFocusOut: true })
-      } else {
-        domain = pick.value
-      }
-    } else {
-      domain = await vscode.window.showInputBox({ title: 'Nuevo cambio — dominio', prompt: 'Dominio de negocio', value: 'general', ignoreFocusOut: true })
-    }
-    if (!domain) return
-    let chosenDomain: string = domain
-    const similar = knownDomains.find((known) => known !== chosenDomain && (known.replace(/s$/, '') === chosenDomain.replace(/s$/, '') || known.startsWith(chosenDomain) || chosenDomain.startsWith(known)))
-    if (similar) {
-      const choice = await vscode.window.showWarningMessage(
-        `Existe un dominio similar: "${similar}". Usar dominios distintos divide las specs vivas.`,
-        { modal: true },
-        `Usar "${similar}"`,
-      )
-      if (choice === `Usar "${similar}"`) chosenDomain = similar
-    }
-
-    const result = await createChange({ root, slug, lane: lanePick.lane, domain: chosenDomain, title })
-    const errors = result.diagnostics.filter((d) => d.severity === 'error')
-    if (errors.length > 0) {
-      void vscode.window.showErrorMessage(`SpecAtlas: ${errors.map((d) => d.message).join('; ')}`)
-      return
-    }
-    await refresh()
-    const target = lanePick.lane === 'fix' ? path.join(result.dir, 'fix.md') : path.join(result.dir, 'spec.md')
-    const document = await vscode.workspace.openTextDocument(vscode.Uri.file(target))
-    await vscode.window.showTextDocument(document)
-    void vscode.window.showInformationMessage(
-      lanePick.lane === 'fix'
-        ? `SpecAtlas: fix "${slug}" creado. Completa causa raíz y cambio mínimo, registra la evidencia y archívalo.`
-        : `SpecAtlas: cambio "${slug}" creado (${lanePick.lane}). Escribe la spec con el agente o a mano y valida.`,
+      },
+      { name: 'title', label: 'Título', type: 'text', required: true, placeholder: 'Completar tareas', hint: 'Título corto en lenguaje de negocio' },
+      { name: 'slug', label: 'Slug (carpeta)', type: 'text', mono: true, placeholder: 'se propone del título', hint: 'Minúsculas, números y guiones (2-50 caracteres)' },
+      {
+        name: 'domain',
+        label: 'Dominio',
+        type: 'text',
+        required: true,
+        value: knownDomains[0] ?? 'general',
+        options: knownDomains.map((domain) => ({ value: domain, label: domain })),
+        hint: `Existentes: ${knownDomains.join(', ') || 'ninguno'}. Reutilízalo para no dividir las specs vivas.`,
+      },
+    ]
+    await openForm(
+      'specatlas.form.new',
+      'Nuevo cambio',
+      formHtml({
+        title: 'Nuevo cambio',
+        intro: 'Elige el carril, escribe el título y el dominio; el slug se propone del título.',
+        submitLabel: 'Crear cambio',
+        nonce: panelNonce(),
+        fields,
+      }),
+      async (values) => {
+        const title = (values['title'] ?? '').trim()
+        let domain = (values['domain'] ?? '').trim() || 'general'
+        const lane = values['lane'] === 'fix' || values['lane'] === 'full' ? values['lane'] : 'standard'
+        const slug = (values['slug'] ?? '').trim() || slugify(title)
+        const similar = knownDomains.find((known) => known !== domain && (known.replace(/s$/, '') === domain.replace(/s$/, '') || known.startsWith(domain) || domain.startsWith(known)))
+        if (similar) {
+          const choice = await vscode.window.showWarningMessage(`Existe un dominio similar: "${similar}". Usar dominios distintos divide las specs vivas.`, { modal: true }, `Usar "${similar}"`)
+          if (choice === `Usar "${similar}"`) domain = similar
+        }
+        const result = await createChange({ root, slug, lane, domain, title })
+        const errors = result.diagnostics.filter((d) => d.severity === 'error')
+        if (errors.length > 0) {
+          void vscode.window.showErrorMessage(`SpecAtlas: ${errors.map((d) => d.message).join('; ')}`)
+          return
+        }
+        await refresh()
+        const target = lane === 'fix' ? path.join(result.dir, 'fix.md') : path.join(result.dir, 'spec.md')
+        const document = await vscode.workspace.openTextDocument(vscode.Uri.file(target))
+        await vscode.window.showTextDocument(document)
+        void vscode.window.showInformationMessage(
+          lane === 'fix'
+            ? `SpecAtlas: fix "${slug}" creado. Completa causa raíz y cambio mínimo, registra la evidencia y archívalo.`
+            : `SpecAtlas: cambio "${slug}" creado (${lane}). Escribe la spec con el agente o a mano y valida.`,
+        )
+      },
     )
   })
 
@@ -849,85 +881,93 @@ export function activate(context: vscode.ExtensionContext): void {
     const isFix = change.lane === 'fix'
     const deltaRaw = isFix ? undefined : await readTextIfExists(path.join(change.dir, 'spec.md'))
     const delta = deltaRaw ? parseDelta(deltaRaw, 'spec.md') : undefined
-    const scenarios = [...(delta?.added ?? []), ...(delta?.modified ?? [])].flatMap((requirement) =>
-      requirement.scenarios.map((scenario) => ({ label: scenario.id, description: scenario.title, id: scenario.id })),
+    const scenarioOptions = [...(delta?.added ?? []), ...(delta?.modified ?? [])].flatMap((requirement) =>
+      requirement.scenarios.map((scenario) => ({ value: scenario.id, label: scenario.id, description: scenario.title })),
     )
     const recordedFile = isFix ? 'fix.md' : 'verify.md'
     const recorded = parseVerifyFile((await readTextIfExists(path.join(change.dir, recordedFile))) ?? '', recordedFile).evidence
     const options = [
-      ...scenarios,
-      ...recorded.filter((entry) => !scenarios.some((scenario) => scenario.id === entry.scenario)).map((entry) => ({ label: entry.scenario, description: `registrada: ${entry.result}`, id: entry.scenario })),
-      { label: '$(edit) Otro escenario…', description: 'Escribe el id a mano', id: '' },
+      ...scenarioOptions,
+      ...recorded
+        .filter((entry) => !scenarioOptions.some((scenario) => scenario.value === entry.scenario))
+        .map((entry) => ({ value: entry.scenario, label: entry.scenario, description: `registrada: ${entry.result}` })),
+      { value: '__other', label: 'Otro escenario…', description: 'escribir el id a mano' },
     ]
-    const pick = await vscode.window.showQuickPick(options, { title: `Evidencia — ${change.slug}`, placeHolder: 'Escenario a verificar' })
-    if (!pick) return
-    let scenario = pick.id
-    if (!scenario) {
-      const manual = await vscode.window.showInputBox({ title: 'Escenario', prompt: 'Id del escenario (REQ-DOMINIO-NNN-S1)', placeHolder: 'REQ-TAREA-001-S1', ignoreFocusOut: true })
-      if (!manual) return
-      scenario = manual
-    }
+    const fields: FormField[] = [
+      { name: 'scenario', label: 'Escenario', type: 'select', required: true, options },
+      { name: 'scenarioOther', label: 'Id del escenario', type: 'text', mono: true, placeholder: 'REQ-TAREA-001-S1', required: true, showWhen: { field: 'scenario', equals: '__other' } },
+      {
+        name: 'method',
+        label: 'Método',
+        type: 'radio',
+        value: 'executable',
+        options: [
+          { value: 'executable', label: 'Ejecutar un comando', description: 'Registra comando, salida y hash (evidencia fuerte)' },
+          { value: 'manual', label: 'Manual', description: 'Comprobación a mano, con notas' },
+        ],
+      },
+      { name: 'command', label: 'Comando', type: 'text', mono: true, value: 'npm test', required: true, showWhen: { field: 'method', equals: 'executable' }, hint: 'Se ejecuta en la raíz del proyecto' },
+      { name: 'notes', label: 'Notas', type: 'textarea', required: true, showWhen: { field: 'method', equals: 'manual' }, hint: '¿Cómo lo comprobaste?' },
+      { name: 'by', label: 'Quién verifica', type: 'text', required: true, value: context.globalState.get<string>('specatlas.by') ?? '', hint: 'Queda auditado junto a la evidencia' },
+    ]
+    await openForm(
+      'specatlas.form.verify',
+      `Evidencia — ${change.slug}`,
+      formHtml({
+        title: `Registrar evidencia — ${change.slug}`,
+        intro: isFix ? 'El fix exige evidencia para poder archivarse.' : 'Registra el resultado real de un escenario (comando o manual).',
+        submitLabel: 'Registrar evidencia',
+        nonce: panelNonce(),
+        fields,
+      }),
+      async (values) => {
+        const scenario = values['scenario'] === '__other' ? (values['scenarioOther'] ?? '').trim() : (values['scenario'] ?? '')
+        const method = values['method'] === 'manual' ? ('manual' as const) : ('executable' as const)
+        const command = method === 'executable' ? (values['command'] ?? '').trim() : undefined
+        const notes = method === 'manual' ? (values['notes'] ?? '').trim() : undefined
+        const by = (values['by'] ?? '').trim()
+        await context.globalState.update('specatlas.by', by)
 
-    const methodPick = await vscode.window.showQuickPick(
-      [
-        { label: '$(play) Ejecutar un comando', description: 'Registra comando, salida y hash (evidencia fuerte)', method: 'executable' as const },
-        { label: '$(edit) Manual', description: 'Comprobación a mano, con notas', method: 'manual' as const },
-      ],
-      { title: `Evidencia — ${scenario}` },
+        const profile = await loadActiveProfile(path.join(root, '.sdd'), [path.join(root, '.sdd', 'profiles', 'custom')])
+        const allowed = profile?.verify.executable ?? []
+        let allowCommand = false
+        if (command && allowed.length > 0 && !allowed.some((prefix) => command.startsWith(prefix))) {
+          const confirm = await vscode.window.showWarningMessage(`El comando no está en la lista permitida del perfil (${allowed.join(', ')}). ¿Registrar la evidencia igualmente?`, { modal: true }, 'Registrar')
+          if (confirm !== 'Registrar') return
+          allowCommand = true
+        }
+
+        const record = await recordEvidence({
+          root,
+          slug: change.slug,
+          scenario,
+          method,
+          by,
+          file: isFix ? 'fix' : 'verify',
+          allowedPrefixes: allowed,
+          allowCommand,
+          ...(command !== undefined ? { command } : {}),
+          ...(notes !== undefined ? { notes } : {}),
+        })
+        if (!record.evidence) {
+          void vscode.window.showErrorMessage(`SpecAtlas: ${record.diagnostics.map((d) => d.message).join('; ') || 'no se pudo registrar la evidencia'}`)
+          return
+        }
+        const ok = record.evidence.result === 'pass'
+        void vscode.window
+          .showInformationMessage(`SpecAtlas: evidencia de ${scenario} registrada (${record.evidence.result})${record.evidence.method === 'executable' ? ` · ${record.evidence.method}` : ''}.`, ...(ok ? [] : ['Ver salida']))
+          .then(async (action) => {
+            if (action === 'Ver salida') {
+              output.clear()
+              output.appendLine(`Evidencia — ${scenario} (${record.evidence?.result})`)
+              if (record.stdout) output.appendLine(record.stdout)
+              if (record.stderr) output.appendLine(record.stderr)
+              output.show()
+            }
+          })
+        await refresh()
+      },
     )
-    if (!methodPick) return
-
-    let command: string | undefined
-    let notes: string | undefined
-    if (methodPick.method === 'executable') {
-      command = await vscode.window.showInputBox({ title: 'Comando de verificación', prompt: 'Se ejecuta en la raíz del proyecto', value: 'npm test', ignoreFocusOut: true })
-      if (!command) return
-    } else {
-      notes = await vscode.window.showInputBox({ title: 'Notas', prompt: '¿Cómo lo comprobaste?', ignoreFocusOut: true })
-      if (notes === undefined) return
-    }
-
-    const byDefault = context.globalState.get<string>('specatlas.by') ?? ''
-    const by = await vscode.window.showInputBox({ title: 'Quién verifica', prompt: 'Nombre y apellido (queda auditado)', value: byDefault, ignoreFocusOut: true })
-    if (!by) return
-    await context.globalState.update('specatlas.by', by)
-
-    const profile = await loadActiveProfile(path.join(root, '.sdd'), [path.join(root, '.sdd', 'profiles', 'custom')])
-    const allowed = profile?.verify.executable ?? []
-    let allowCommand = false
-    if (command && allowed.length > 0 && !allowed.some((prefix) => command!.startsWith(prefix))) {
-      const confirm = await vscode.window.showWarningMessage(`El comando no está en la lista permitida del perfil (${allowed.join(', ')}). ¿Registrar la evidencia igualmente?`, { modal: true }, 'Registrar')
-      if (confirm !== 'Registrar') return
-      allowCommand = true
-    }
-
-    const record = await recordEvidence({
-      root,
-      slug: change.slug,
-      scenario,
-      method: methodPick.method,
-      by,
-      file: isFix ? 'fix' : 'verify',
-      allowedPrefixes: allowed,
-      allowCommand,
-      ...(command !== undefined ? { command } : {}),
-      ...(notes !== undefined ? { notes } : {}),
-    })
-    if (!record.evidence) {
-      void vscode.window.showErrorMessage(`SpecAtlas: ${record.diagnostics.map((d) => d.message).join('; ') || 'no se pudo registrar la evidencia'}`)
-      return
-    }
-    const ok = record.evidence.result === 'pass'
-    void vscode.window.showInformationMessage(`SpecAtlas: evidencia de ${scenario} registrada (${record.evidence.result})${record.evidence.method === 'executable' ? ` · ${record.evidence.method}` : ''}.`, ...(ok ? [] : ['Ver salida'])).then(async (action) => {
-      if (action === 'Ver salida') {
-        output.clear()
-        output.appendLine(`Evidencia — ${scenario} (${record.evidence?.result})`)
-        if (record.stdout) output.appendLine(record.stdout)
-        if (record.stderr) output.appendLine(record.stderr)
-        output.show()
-      }
-    })
-    await refresh()
   })
 
   register('specatlas.packs', async (arg?: unknown) => {
