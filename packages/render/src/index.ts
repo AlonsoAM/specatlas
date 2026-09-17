@@ -501,70 +501,63 @@ const DIAGRAM_TOOLS_SCRIPT = `
       if (!svg) { pending = true; return; }
       if (block.getAttribute('data-wired') === '1') return;
       block.setAttribute('data-wired', '1');
-      block.setAttribute('data-zoom', '1');
-      canvas.setAttribute('data-fit', 'on');
       var level = block.querySelector('[data-diagram-level]');
       var fitButton = block.querySelector('[data-diagram-fit]');
-      if (fitButton) fitButton.classList.add('active');
+      var state = { zoom: 1, tx: 0, ty: 0, fit: true };
       function apply() {
-        var fit = canvas.getAttribute('data-fit') !== 'off';
-        var z = Number(block.getAttribute('data-zoom') || '1');
-        if (fit) {
-          svg.style.zoom = '';
-          if (level) level.textContent = 'Ajustar';
-        } else {
-          svg.style.zoom = z === 1 ? '' : String(z);
-          if (level) level.textContent = Math.round(z * 100) + '%';
-        }
+        svg.style.transformOrigin = '0 0';
+        svg.style.maxWidth = state.fit && state.zoom === 1 ? '100%' : 'none';
+        var moved = state.zoom !== 1 || state.tx !== 0 || state.ty !== 0;
+        svg.style.transform = moved ? 'translate(' + state.tx + 'px,' + state.ty + 'px) scale(' + state.zoom + ')' : '';
+        if (fitButton) fitButton.classList.toggle('active', state.fit && state.zoom === 1);
+        if (level) level.textContent = state.zoom === 1 ? (state.fit ? 'Ajustar' : '100%') : Math.round(state.zoom * 100) + '%';
       }
       function setZoom(z) {
-        block.setAttribute('data-zoom', String(z));
-        if (z !== 1 && canvas.getAttribute('data-fit') !== 'off') {
-          canvas.setAttribute('data-fit', 'off');
-          if (fitButton) fitButton.classList.remove('active');
-        }
+        state.zoom = Math.max(0.25, Math.min(3, z));
+        if (state.zoom !== 1 && state.fit) state.fit = false;
+        if (state.zoom === 1) { state.tx = 0; state.ty = 0; }
         apply();
       }
       Array.prototype.slice.call(block.querySelectorAll('[data-diagram-zoom]')).forEach(function (button) {
         button.addEventListener('click', function () {
           var action = button.getAttribute('data-diagram-zoom');
-          var z = Number(block.getAttribute('data-zoom') || '1');
-          if (action === 'in') setZoom(Math.min(3, z + 0.25));
-          else if (action === 'out') setZoom(Math.max(0.25, z - 0.25));
-          else setZoom(1);
+          if (action === 'in') setZoom(state.zoom + 0.25);
+          else if (action === 'out') setZoom(state.zoom - 0.25);
+          else { state.zoom = 1; state.tx = 0; state.ty = 0; state.fit = true; apply(); }
         });
       });
       if (fitButton) fitButton.addEventListener('click', function () {
-        var next = canvas.getAttribute('data-fit') === 'on' ? 'off' : 'on';
-        canvas.setAttribute('data-fit', next);
-        fitButton.classList.toggle('active', next === 'on');
+        state.fit = !state.fit;
+        if (state.fit) { state.zoom = 1; state.tx = 0; state.ty = 0; }
         apply();
       });
       canvas.addEventListener('wheel', function (event) {
         if (!event.ctrlKey && !event.metaKey) return;
         event.preventDefault();
-        var z = Number(block.getAttribute('data-zoom') || '1');
-        setZoom(Math.min(3, Math.max(0.25, z + (event.deltaY < 0 ? 0.15 : -0.15))));
+        setZoom(state.zoom + (event.deltaY < 0 ? 0.15 : -0.15));
       }, { passive: false });
       var panning = false;
       var startX = 0;
       var startY = 0;
-      var startLeft = 0;
-      var startTop = 0;
+      var originX = 0;
+      var originY = 0;
       canvas.addEventListener('mousedown', function (event) {
         panning = true;
         startX = event.clientX;
         startY = event.clientY;
-        startLeft = canvas.scrollLeft;
-        startTop = canvas.scrollTop;
+        originX = state.tx;
+        originY = state.ty;
         canvas.classList.add('panning');
+        event.preventDefault();
       });
       window.addEventListener('mousemove', function (event) {
         if (!panning) return;
-        canvas.scrollLeft = startLeft - (event.clientX - startX);
-        canvas.scrollTop = startTop - (event.clientY - startY);
+        state.tx = originX + (event.clientX - startX);
+        state.ty = originY + (event.clientY - startY);
+        apply();
       });
       window.addEventListener('mouseup', function () {
+        if (!panning) return;
         panning = false;
         canvas.classList.remove('panning');
       });
@@ -576,7 +569,8 @@ const DIAGRAM_TOOLS_SCRIPT = `
       var download = block.querySelector('[data-diagram-download]');
       if (download) download.addEventListener('click', function () {
         var clone = svg.cloneNode(true);
-        clone.style.zoom = '';
+        clone.style.transform = '';
+        clone.style.maxWidth = '';
         var data = new XMLSerializer().serializeToString(clone);
         var link = document.createElement('a');
         link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);

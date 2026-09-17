@@ -13,6 +13,7 @@ export interface FormField {
   hint?: string
   required?: boolean
   mono?: boolean
+  deriveFrom?: string
   options?: FormOption[]
   showWhen?: { field: string; equals: string }
 }
@@ -34,6 +35,7 @@ function fieldHtml(field: FormField): string {
   const attributes = [`data-field="${escapeHtml(field.name)}"`, `data-label="${escapeHtml(field.label)}"`]
   if (field.required) attributes.push('data-required="1"')
   if (field.type === 'text' || field.type === 'textarea') attributes.push('data-text="1"')
+  if (field.deriveFrom) attributes.push(`data-derive-field="${escapeHtml(field.deriveFrom)}"`)
   if (field.showWhen) {
     attributes.push(`data-show-field="${escapeHtml(field.showWhen.field)}"`, `data-show-value="${escapeHtml(field.showWhen.equals)}"`)
   }
@@ -141,8 +143,27 @@ ${fields}
       field.style.display = current === expected ? '' : 'none';
     });
   }
+  function slugify(text) {
+    return (text || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+  }
+  function wireDerivations() {
+    fields().forEach(function (field) {
+      var sourceName = field.getAttribute('data-derive-field');
+      if (!sourceName) return;
+      var control = field.querySelector('input, textarea');
+      var source = document.querySelector('[data-field="' + sourceName + '"]');
+      var sourceControl = source ? source.querySelector('input, textarea') : null;
+      if (!control || !sourceControl) return;
+      var dirty = control.value.trim().length > 0;
+      control.addEventListener('input', function () { dirty = control.value.trim().length > 0; });
+      sourceControl.addEventListener('input', function () {
+        if (!dirty) control.value = slugify(sourceControl.value);
+      });
+    });
+  }
   form.addEventListener('input', refreshVisibility);
   form.addEventListener('change', refreshVisibility);
+  wireDerivations();
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     errorBox.style.display = 'none';

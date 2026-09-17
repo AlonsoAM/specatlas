@@ -1,6 +1,6 @@
 {
   "name": "@specatlas/render",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Renderizador de documentos de SpecAtlas: markdown, código resaltado, mermaid y tokens de diseño",
   "license": "MIT",
   "type": "module",

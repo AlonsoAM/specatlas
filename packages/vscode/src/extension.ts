@@ -821,7 +821,7 @@ export function activate(context: vscode.ExtensionContext): void {
         ],
       },
       { name: 'title', label: 'Título', type: 'text', required: true, placeholder: 'Completar tareas', hint: 'Título corto en lenguaje de negocio' },
-      { name: 'slug', label: 'Slug (carpeta)', type: 'text', mono: true, placeholder: 'se propone del título', hint: 'Minúsculas, números y guiones (2-50 caracteres)' },
+      { name: 'slug', label: 'Slug (carpeta)', type: 'text', mono: true, deriveFrom: 'title', placeholder: 'se genera del título', hint: 'Se genera del título; puedes editarlo (minúsculas, números y guiones)' },
       {
         name: 'domain',
         label: 'Dominio',
@@ -829,7 +829,7 @@ export function activate(context: vscode.ExtensionContext): void {
         required: true,
         value: knownDomains[0] ?? 'general',
         options: knownDomains.map((domain) => ({ value: domain, label: domain })),
-        hint: `Existentes: ${knownDomains.join(', ') || 'ninguno'}. Reutilízalo para no dividir las specs vivas.`,
+        hint: `Elige uno existente o escribe uno nuevo (se creará). Existentes: ${knownDomains.join(', ') || 'ninguno'}.`,
       },
     ]
     await openForm(
