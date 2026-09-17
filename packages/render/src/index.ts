@@ -182,7 +182,7 @@ small, .muted { color: var(--atlas-muted); }
 .diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
 .diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
 .diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
-.diagram-canvas { overflow: auto; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; }
+.diagram-canvas { overflow: hidden; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; }
 .diagram-canvas.panning { cursor: grabbing; user-select: none; }
 .diagram-canvas pre.mermaid { margin: 0; background: transparent; }
 .diagram-canvas svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
@@ -504,10 +504,30 @@ const DIAGRAM_TOOLS_SCRIPT = `
       var level = block.querySelector('[data-diagram-level]');
       var fitButton = block.querySelector('[data-diagram-fit]');
       var state = { zoom: 1, tx: 0, ty: 0, fit: true };
+      function clampPan() {
+        var pad = 24;
+        var cw = Math.max(0, canvas.clientWidth - pad);
+        var ch = Math.max(0, canvas.clientHeight - pad);
+        var baseW = svg.offsetWidth || svg.getBoundingClientRect().width;
+        var baseH = svg.offsetHeight || svg.getBoundingClientRect().height;
+        var contentW = baseW * state.zoom;
+        var contentH = baseH * state.zoom;
+        if (contentW <= cw) {
+          state.tx = (cw - contentW) / 2;
+        } else {
+          state.tx = Math.max(cw - contentW, Math.min(0, state.tx));
+        }
+        if (contentH <= ch) {
+          state.ty = (ch - contentH) / 2;
+        } else {
+          state.ty = Math.max(ch - contentH, Math.min(0, state.ty));
+        }
+      }
       function apply() {
         svg.style.transformOrigin = '0 0';
         svg.style.maxWidth = state.fit && state.zoom === 1 ? '100%' : 'none';
-        var moved = state.zoom !== 1 || state.tx !== 0 || state.ty !== 0;
+        clampPan();
+        var moved = state.zoom !== 1 || Math.abs(state.tx) > 0.5 || Math.abs(state.ty) > 0.5;
         svg.style.transform = moved ? 'translate(' + state.tx + 'px,' + state.ty + 'px) scale(' + state.zoom + ')' : '';
         if (fitButton) fitButton.classList.toggle('active', state.fit && state.zoom === 1);
         if (level) level.textContent = state.zoom === 1 ? (state.fit ? 'Ajustar' : '100%') : Math.round(state.zoom * 100) + '%';

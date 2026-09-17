@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
