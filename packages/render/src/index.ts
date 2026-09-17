@@ -581,11 +581,36 @@ const DIAGRAM_TOOLS_SCRIPT = `
         panning = false;
         canvas.classList.remove('panning');
       });
+      var preFullscreen = null;
       var fullscreen = block.querySelector('[data-diagram-fullscreen]');
       if (fullscreen) fullscreen.addEventListener('click', function () {
-        var active = block.classList.toggle('diagram-fullscreen');
-        document.body.style.overflow = active ? 'hidden' : '';
+        if (!block.classList.contains('diagram-fullscreen')) {
+          preFullscreen = { zoom: state.zoom, tx: state.tx, ty: state.ty, fit: state.fit };
+          block.classList.add('diagram-fullscreen');
+          document.body.style.overflow = 'hidden';
+          state.zoom = 1;
+          state.tx = 0;
+          state.ty = 0;
+          state.fit = true;
+        } else {
+          block.classList.remove('diagram-fullscreen');
+          document.body.style.overflow = '';
+          if (preFullscreen) {
+            state.zoom = preFullscreen.zoom;
+            state.tx = preFullscreen.tx;
+            state.ty = preFullscreen.ty;
+            state.fit = preFullscreen.fit;
+            preFullscreen = null;
+          }
+        }
+        apply();
       });
+      canvas.addEventListener('dblclick', function () {
+        state.fit = !state.fit;
+        if (state.fit) { state.zoom = 1; state.tx = 0; state.ty = 0; }
+        apply();
+      });
+      window.addEventListener('resize', function () { apply(); });
       var download = block.querySelector('[data-diagram-download]');
       if (download) download.addEventListener('click', function () {
         var clone = svg.cloneNode(true);
@@ -603,8 +628,10 @@ const DIAGRAM_TOOLS_SCRIPT = `
   }
   document.addEventListener('keydown', function (event) {
     if (event.key !== 'Escape') return;
-    Array.prototype.slice.call(document.querySelectorAll('.diagram-fullscreen')).forEach(function (block) { block.classList.remove('diagram-fullscreen'); });
-    document.body.style.overflow = '';
+    Array.prototype.slice.call(document.querySelectorAll('.diagram-fullscreen')).forEach(function (block) {
+      var button = block.querySelector('[data-diagram-fullscreen]');
+      if (button) button.click();
+    });
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
 })()
