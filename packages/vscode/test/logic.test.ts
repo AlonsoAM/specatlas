@@ -357,4 +357,34 @@ El sistema DEBE permitir otra cosa.
     const nuevo = matrix.requirements.find((requirement) => requirement.id === 'REQ-AUTH-900')!
     expect(nuevo.scenarios[0]!.tasks).toContain('T1.1')
   })
+
+  it('dos cambios archivados que reutilizan T1.1 conservan ambas coberturas en la matriz', async () => {
+    const root = await makeWorkspace(true)
+    await archiveChange({ root, slug: 'reset-password' })
+
+    await createChange({ root, slug: 'otro-cambio', lane: 'standard', domain: 'auth', title: 'Otro cambio' })
+    const dir = path.join(root, '.sdd', 'changes', 'otro-cambio')
+    await fs.writeFile(
+      path.join(dir, 'spec.md'),
+      `## Requisitos agregados
+
+### Requisito: REQ-AUTH-002 — Otra cosa
+El sistema DEBE permitir otra cosa.
+
+#### Escenario: REQ-AUTH-002-S1 — Caso
+- **CUANDO** la persona pide otra cosa
+- **ENTONCES** ocurre
+`,
+      'utf8',
+    )
+    await fs.writeFile(path.join(dir, 'tasks.md'), '## Bloque 1 — X\n\n- [x] T1.1 Otra tarea · Archivos: src/otra.ts · Cubre: REQ-AUTH-002-S1 · Reversión: borrar\n', 'utf8')
+    await signApproval({ root, artifact: 'changes/otro-cambio/spec.md', by: 'Maria Perez', channel: 'editor' })
+    await archiveChange({ root, slug: 'otro-cambio' })
+
+    const matrix = await buildMatrix(root)
+    const primero = matrix.requirements.find((requirement) => requirement.id === 'REQ-AUTH-001')!
+    const segundo = matrix.requirements.find((requirement) => requirement.id === 'REQ-AUTH-002')!
+    expect(primero.scenarios[0]!.tasks).toContain('T1.1')
+    expect(segundo.scenarios[0]!.tasks).toContain('T1.1')
+  })
 })

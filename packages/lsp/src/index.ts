@@ -110,7 +110,12 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
     if (change.tasks) {
       for (const block of change.tasks.blocks) {
         for (const task of block.tasks) {
-          if (tasks.has(task.id)) continue
+          const existing = tasks.get(task.id)
+          if (existing) {
+            existing.covers = [...new Set([...existing.covers, ...task.covers])]
+            existing.dependsOn = [...new Set([...existing.dependsOn, ...task.dependsOn])]
+            continue
+          }
           tasks.set(task.id, {
             id: task.id,
             text: task.text,

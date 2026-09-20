@@ -14,4 +14,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-3 cambio(s) en `changes/archive/`.
+5 cambio(s) en `changes/archive/`.

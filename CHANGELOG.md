@@ -23,6 +23,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **Matriz de trazabilidad sin falsos huecos entre cambios archivados**: cuando varios cambios reutilizan los mismos ids de tarea (T1.1, T1.2…), la cobertura de los cambios archivados anteriores se descartaba y escenarios ya cubiertos y verificados aparecían como «sin tarea». Ahora las coberturas y dependencias se fusionan también entre archivados, igual que ya se hacía entre activos.
+- **Paneles con refresco en vivo**: la Matriz, el Tablero, las Métricas y las previsualizaciones se reconstruyen solas cuando cambia `.sdd/` (debounce 300 ms), sin cerrar y reabrir; los paneles ocultos se actualizan al volver a mostrarse, un fallo al reconstruir se aísla en el canal de salida y reabrir un panel reutiliza el existente en lugar de duplicarlo.
 - **Ciclo de vida con tareas y hallazgos pendientes**: un cambio con tareas hechas y hallazgos bloqueantes ya no se muestra como «spec en borrador»: pasa a «construido» (siguiente: registrar evidencia) y, con tareas pendientes, a «construyendo» (siguiente: construir en olas).
 - **Gate de revisión del carril `full`**: se resolvía con `verify.md` en vez del artefacto de revisión. Ahora se carga `review.md` en el modelo y el gate exige `/satlas.review` (con `gates.review.mode: blocking`) hasta que exista; en el árbol aparece el nodo «Revisión».
 - **`satlas archive` sin `--yes`** ya no se muestra como ERROR: es una **confirmación requerida** (aviso + exit 2) e indica el comando exacto con el slug (`--dry-run` para revisar, `--yes` para confirmar).

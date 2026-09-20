@@ -47,6 +47,7 @@ import {
 } from './logic.js'
 import { formHtml, type FormField } from './forms.js'
 import { boardHtml, matrixHtml, metricsHtml } from './panels.js'
+import { findLivePanel, refreshLivePanels, updateLivePanel, type LivePanelEntry, type LivePanelSurface } from './live.js'
 import { startLanguageClient } from './client.js'
 import type { LanguageClient } from 'vscode-languageclient/node'
 
@@ -445,6 +446,51 @@ export function activate(context: vscode.ExtensionContext): void {
   })
 
   let refreshTimer: NodeJS.Timeout | undefined
+  const livePanels = new Set<LivePanelEntry<vscode.WebviewPanel>>()
+
+  function surfaceOf(panel: vscode.WebviewPanel): LivePanelSurface {
+    return {
+      get visible() {
+        return panel.visible
+      },
+      get title() {
+        return panel.title
+      },
+      set title(value: string) {
+        panel.title = value
+      },
+      setHtml(html: string) {
+        panel.webview.html = html
+      },
+    }
+  }
+
+  function openLivePanel(opts: {
+    key: string
+    viewType: string
+    title: string
+    viewColumn: vscode.ViewColumn
+    options: vscode.WebviewPanelOptions & vscode.WebviewOptions
+    build: (panel: vscode.WebviewPanel) => Promise<{ title?: string; html: string } | undefined>
+  }): vscode.WebviewPanel {
+    const existing = findLivePanel(livePanels, opts.key)
+    if (existing) {
+      existing.target.reveal(opts.viewColumn)
+      void updateLivePanel(existing, (message) => output.appendLine(`[paneles] ${message}`))
+      return existing.target
+    }
+    const panel = vscode.window.createWebviewPanel(opts.viewType, opts.title, opts.viewColumn, opts.options)
+    panel.iconPath = panelIcon
+    const entry: LivePanelEntry<vscode.WebviewPanel> = { key: opts.key, target: panel, surface: surfaceOf(panel), build: opts.build }
+    livePanels.add(entry)
+    panel.onDidDispose(() => livePanels.delete(entry))
+    panel.onDidChangeViewState(() => {
+      if (panel.visible) void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+    })
+    void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+    return panel
+  }
+
   const refresh = async (): Promise<void> => {
     const folders = vscode.workspace.workspaceFolders ?? []
     const snapshots: Snapshot[] = []
@@ -489,6 +535,8 @@ export function activate(context: vscode.ExtensionContext): void {
       status.tooltip = 'Inicializa el proyecto con el botón de la vista SpecAtlas'
       treeView.badge = undefined
     }
+
+    await refreshLivePanels(livePanels, (message) => output.appendLine(`[paneles] ${message}`))
   }
 
   const debouncedRefresh = (): void => {
@@ -1091,12 +1139,17 @@ export function activate(context: vscode.ExtensionContext): void {
       return
     }
     if (target.endsWith('.html') || target.endsWith('.htm')) {
-      const panel = vscode.window.createWebviewPanel('specatlas.preview', path.basename(target), vscode.ViewColumn.Beside, {
-        enableScripts: true,
-        localResourceRoots: [vscode.Uri.file(path.dirname(target))],
+      openLivePanel({
+        key: `preview:${target}`,
+        viewType: 'specatlas.preview',
+        title: path.basename(target),
+        viewColumn: vscode.ViewColumn.Beside,
+        options: {
+          enableScripts: true,
+          localResourceRoots: [vscode.Uri.file(path.dirname(target))],
+        },
+        build: async (panel) => ({ html: await rewriteLocalHtml(panel, target) }),
       })
-      panel.iconPath = panelIcon
-      panel.webview.html = await rewriteLocalHtml(panel, target)
       return
     }
     if (target.endsWith('.md')) {
@@ -1110,25 +1163,32 @@ export function activate(context: vscode.ExtensionContext): void {
         }
       }
       {
-        const content = (await readTextIfExists(target)) ?? ''
         const mediaRoot = vscode.Uri.joinPath(context.extensionUri, 'media')
-        const panel = vscode.window.createWebviewPanel('specatlas.preview', path.basename(target), vscode.ViewColumn.Beside, {
-          enableScripts: true,
-          localResourceRoots: [mediaRoot],
-        })
-        panel.iconPath = panelIcon
-        const mermaidAsset = vscode.Uri.joinPath(mediaRoot, 'mermaid.min.js')
-        let mermaidUri: string | undefined
-        try {
-          await vscode.workspace.fs.stat(mermaidAsset)
-          mermaidUri = panel.webview.asWebviewUri(mermaidAsset).toString()
-        } catch {
-          mermaidUri = undefined
-        }
-        panel.webview.html = previewHtml(path.basename(target), content, {
-          cspSource: panel.webview.cspSource,
-          nonce: String(Date.now()),
-          ...(mermaidUri ? { mermaidUri } : {}),
+        openLivePanel({
+          key: `preview:${target}`,
+          viewType: 'specatlas.preview',
+          title: path.basename(target),
+          viewColumn: vscode.ViewColumn.Beside,
+          options: { enableScripts: true, localResourceRoots: [mediaRoot] },
+          build: async (panel) => {
+            const content = await readTextIfExists(target)
+            if (content === undefined) return undefined
+            const mermaidAsset = vscode.Uri.joinPath(mediaRoot, 'mermaid.min.js')
+            let mermaidUri: string | undefined
+            try {
+              await vscode.workspace.fs.stat(mermaidAsset)
+              mermaidUri = panel.webview.asWebviewUri(mermaidAsset).toString()
+            } catch {
+              mermaidUri = undefined
+            }
+            return {
+              html: previewHtml(path.basename(target), content, {
+                cspSource: panel.webview.cspSource,
+                nonce: panelNonce(),
+                ...(mermaidUri ? { mermaidUri } : {}),
+              }),
+            }
+          },
         })
         return
       }
@@ -1180,37 +1240,50 @@ export function activate(context: vscode.ExtensionContext): void {
   register('specatlas.matrix', async () => {
     const root = workspaceRoot()
     if (!root) return
-    const model = await buildMatrix(root)
-    const panel = vscode.window.createWebviewPanel('specatlas.matrix', 'Matriz de trazabilidad', vscode.ViewColumn.Active, {
-      enableScripts: true,
-      enableCommandUris: true,
+    openLivePanel({
+      key: 'matrix',
+      viewType: 'specatlas.matrix',
+      title: 'Matriz de trazabilidad',
+      viewColumn: vscode.ViewColumn.Active,
+      options: { enableScripts: true, enableCommandUris: true },
+      build: async () => {
+        const model = await buildMatrix(root)
+        return { html: matrixHtml(model, panelNonce()) }
+      },
     })
-    panel.iconPath = panelIcon
-    panel.webview.html = matrixHtml(model, panelNonce())
   })
 
   register('specatlas.board', async () => {
-    await refresh()
-    const snapshot = provider.snapshotOf(0)
-    if (!snapshot) return
-    const panel = vscode.window.createWebviewPanel('specatlas.board', `Tablero — ${snapshot.projectName}`, vscode.ViewColumn.Active, {
-      enableScripts: true,
-      enableCommandUris: true,
+    const root = workspaceRoot()
+    if (!root) return
+    openLivePanel({
+      key: 'board',
+      viewType: 'specatlas.board',
+      title: 'Tablero',
+      viewColumn: vscode.ViewColumn.Active,
+      options: { enableScripts: true, enableCommandUris: true },
+      build: async () => {
+        const snapshot = await buildSnapshot(root)
+        if (!snapshot) return undefined
+        return { title: `Tablero — ${snapshot.projectName}`, html: boardHtml(snapshot, panelNonce()) }
+      },
     })
-    panel.iconPath = panelIcon
-    panel.webview.html = boardHtml(snapshot, panelNonce())
   })
 
   register('specatlas.metrics', async () => {
     const root = workspaceRoot()
     if (!root) return
-    const metrics = await collectMetrics(root)
-    const panel = vscode.window.createWebviewPanel('specatlas.metrics', `Métricas — ${metrics.project}`, vscode.ViewColumn.Active, {
-      enableScripts: false,
-      enableCommandUris: true,
+    openLivePanel({
+      key: 'metrics',
+      viewType: 'specatlas.metrics',
+      title: 'Métricas',
+      viewColumn: vscode.ViewColumn.Active,
+      options: { enableScripts: false, enableCommandUris: true },
+      build: async () => {
+        const metrics = await collectMetrics(root)
+        return { title: `Métricas — ${metrics.project}`, html: metricsHtml(metrics) }
+      },
     })
-    panel.iconPath = panelIcon
-    panel.webview.html = metricsHtml(metrics)
   })
 
   void refresh()
