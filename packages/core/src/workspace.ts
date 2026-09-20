@@ -10,6 +10,7 @@ import { parseDelta } from './parse/delta.js'
 import { parseTasksFile } from './parse/tasks.js'
 import { parseVerifyFile } from './parse/evidence.js'
 import { parseApprovals, parseChangeMeta } from './parse/meta.js'
+import { parseClarify } from './parse/clarify.js'
 import { parseFixCovers } from './fixes.js'
 
 export const SDD_DIR = '.sdd'
@@ -109,6 +110,21 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
     diagnostics.push(...change.fix.diagnostics)
     change.fixCovers = parseFixCovers(fixRaw)
   }
+
+  const clarifyFile = path.join(dir, 'clarify.md')
+  const clarifyRaw = await readTextIfExists(clarifyFile)
+  if (clarifyRaw !== undefined) {
+    change.clarify = parseClarify(clarifyRaw, clarifyFile)
+    change.clarifyPath = clarifyFile
+    diagnostics.push(...change.clarify.diagnostics)
+  }
+
+  const docsPaths: string[] = []
+  for (const name of ['tecnica.md', 'manual.md']) {
+    const docFile = path.join(dir, 'docs', name)
+    if (await exists(docFile)) docsPaths.push(docFile)
+  }
+  if (docsPaths.length > 0) change.docsPaths = docsPaths
 
   const mockupManifest = path.join(dir, 'mockups', 'manifest.yaml')
   if (await exists(mockupManifest)) change.mockupManifestPath = mockupManifest

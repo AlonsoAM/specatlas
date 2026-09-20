@@ -15,6 +15,8 @@ export const CATALOG: CommandSpec[] = [
   { name: 'trace', description: 'Verifica la trazabilidad requisito → escenario → tarea → evidencia', flags: ['change', 'require-evidence', 'json'], usage: 'satlas trace [--change <slug>] [--require-evidence] [--json]' },
   { name: 'waves', description: 'Calcula las olas paralelas de construcción', flags: ['change', 'max-parallel', 'json'], usage: 'satlas waves [--change <slug>] [--max-parallel N] [--json]' },
   { name: 'doctor', description: 'Diagnóstico de salud del workspace', flags: ['json'], usage: 'satlas doctor [--json]' },
+  { name: 'clarify', description: 'Preguntas abiertas y aclaraciones del cambio (informe; aclarar es fase del agente)', flags: ['json'], usage: 'satlas clarify <slug>' },
+  { name: 'docs', description: 'Genera la documentación técnica y manual del cambio (carril completo) desde la evidencia', flags: ['tipo', 'json'], usage: 'satlas docs <slug> [--tipo tecnica|manual|all]' },
   { name: 'upgrade', description: 'Actualiza el estado del proyecto a la versión vigente (vista previa por defecto)', flags: ['apply', 'rollback', 'json'], usage: 'satlas upgrade [--apply | --rollback] [--json]' },
   { name: 'approve', description: 'Firma la aprobación de un artefacto (spec): local o desde la etiqueta de un issue de GitHub', flags: ['by', 'channel', 'note', 'dry-run', 'from-github', 'label', 'json'], usage: 'satlas approve <slug|ruta> --by "<nombre>" | satlas approve <slug> --from-github' },
   { name: 'issue', description: 'Sincroniza el cambio con un issue de GitHub (tracker, no gate)', flags: ['labels', 'json'], usage: 'satlas issue sync <slug> [--labels a,b] | satlas issue status <slug>' },

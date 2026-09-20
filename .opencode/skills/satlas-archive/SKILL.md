@@ -1,6 +1,6 @@
 ---
 name: satlas-archive
-description: Cierra el cambio: pliega los deltas en la spec viva y mueve el cambio al histórico. Usar cuando el usuario pide archivar, cerrar o dar por terminado un cambio.
+description: "Cierra el cambio: pliega los deltas en la spec viva y mueve el cambio al histórico. Usar cuando el usuario pide archivar, cerrar o dar por terminado un cambio."
 ---
 
 # Fase: Archivar

@@ -389,6 +389,26 @@ El sistema DEBE permitir otra cosa.
   })
 })
 
+describe('artefactos de aclaración y documentación', () => {
+  it('aparecen entre los archivos del cambio con su existencia (REQ-FASES-003-S1)', async () => {
+    const root = await makeWorkspace(true)
+    const dir = path.join(root, '.sdd', 'changes', 'reset-password')
+    await fs.writeFile(path.join(dir, 'clarify.md'), '# Aclaraciones\n\n- [ ] ¿Algo pendiente?\n', 'utf8')
+    await fs.mkdir(path.join(dir, 'docs'), { recursive: true })
+    await fs.writeFile(path.join(dir, 'docs', 'tecnica.md'), '# Técnica\n', 'utf8')
+    await fs.writeFile(path.join(dir, 'docs', 'manual.md'), '# Manual\n', 'utf8')
+
+    const snapshot = await buildSnapshot(root)
+    const files = snapshot!.changes[0]!.files
+    expect(files.filter((file) => file.kind === 'clarify')).toHaveLength(1)
+    expect(files.filter((file) => file.kind === 'docs')).toHaveLength(2)
+    const byLabel = new Map(files.map((file) => [file.label, file.exists]))
+    expect(byLabel.get('Aclaraciones')).toBe(true)
+    expect(byLabel.get('Documentación técnica')).toBe(true)
+    expect(byLabel.get('Manual')).toBe(true)
+  })
+})
+
 describe('fixes vivos y procedencia', () => {
   const FIX = `# Fix — Arreglo de login
 

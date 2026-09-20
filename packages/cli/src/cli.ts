@@ -19,6 +19,8 @@ import { runAnalyzeCommand } from './commands/analyze.js'
 import { runApprove } from './commands/approve.js'
 import { runArchive } from './commands/archive.js'
 import { runCi } from './commands/ci.js'
+import { runClarify } from './commands/clarify.js'
+import { runDocs } from './commands/docs.js'
 import { runProfile } from './commands/profile.js'
 import { runDoctorCommand } from './commands/doctor.js'
 import { runHash } from './commands/hash.js'
@@ -74,6 +76,8 @@ const HANDLERS: Record<string, CommandHandler> = {
   trace: runTrace,
   waves: runWaves,
   doctor: runDoctorCommand,
+  clarify: runClarify,
+  docs: runDocs,
   upgrade: runUpgrade,
   approve: runApprove,
   issue: runIssue,

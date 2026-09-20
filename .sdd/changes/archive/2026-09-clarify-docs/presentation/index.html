@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta — Aclarar la especificación antes de planificar y documentar el cambio</title>
+<style>:root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#0f766e; --accent-soft:#ccfbf1; --warn:#b45309; --ok:#15803d; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#111a2c; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#2dd4bf; --accent-soft:#134e4a; --warn:#f59e0b; --ok:#4ade80; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+.hero { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: white; border-radius: 18px; padding: 28px; margin-bottom: 28px; }
+.hero h1 { margin: 6px 0 10px; font-size: 30px; line-height: 1.2; }
+.kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; opacity: .9; margin: 0; }
+.meta { margin: 0; font-size: 13px; opacity: .95; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+section h2 { margin-top: 0; font-size: 20px; }
+h3 { margin-bottom: 4px; }
+h4 { margin: 14px 0 6px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: #0b1220; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow:auto; font-size: 13px; }
+pre code { background: transparent; color: inherit; }
+.badge { display:inline-block; font-size: 11px; text-transform: uppercase; letter-spacing:.08em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-left: 8px; }
+.req { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.req:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.rules { color: var(--muted); font-size: 14px; }
+.scenario { margin: 8px 0 8px 0; }
+.when { color: var(--muted); }
+.then { font-weight: 600; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.pass { color: var(--ok); border-color: var(--ok); }
+.pill.fail { color: #dc2626; border-color: #dc2626; }
+.pill.skipped, .pill.pending { color: var(--warn); border-color: var(--warn); }
+.mockups { display:grid; gap: 18px; }
+.mockup { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mockup header { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.mockup iframe { width: 100%; height: 560px; border: 0; background: white; }
+.mockup.phone iframe { max-width: 420px; margin: 0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid-shots img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+footer { color: var(--muted); font-size: 13px; text-align:center; }
+.callout { border-left: 4px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, transparent); padding: 12px 14px; border-radius: 8px; }
+@media print { body { background: white; } section { break-inside: avoid; } .hero { background: #0f766e; } }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Propuesta · fases · standard</p>
+    <h1>Aclarar la especificación antes de planificar y documentar el cambio</h1>
+    <p class="meta">SpecAtlas · Hash 30ca9513 · Generado 2026-09-20 14:51:38 -05:00</p>
+  </header>
+
+  <section>
+    <h2>Resumen de negocio</h2>
+    <h1 id="propuesta-aclarar-la-especificacion-antes-de-planificar-y-documentar-el-cambio">Propuesta — Aclarar la especificación antes de planificar y documentar el cambio</h1>
+<h2 id="por-que">Por qué</h2>
+<p>Hoy una especificación puede quedar con supuestos y preguntas abiertas que nadie vacía: se aprueba y se planifica sobre huecos, y los huecos aparecen construyendo. Y en el carril completo el cierre no deja documentación: quien mantiene el sistema tiene que reconstruir lo hecho leyendo el historial. La arquitectura ya promete ambas fases; faltan.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<ul><li><strong>Aclarar</strong> (después de especificar, antes de aprobar y planificar): entrevista que resuelve supuestos, dependencias y preguntas abiertas; las respuestas quedan registradas en el cambio, el resumen se refleja en la propuesta y, si una respuesta cambia lo especificado, la firma queda obsoleta hasta volver a aprobar.</li><li><strong>Aviso de aclaración pendiente</strong> configurable (apagado · aviso · bloqueante): en aviso no frena el avance; en bloqueante no se llega a plan mientras queden preguntas.</li><li><strong>Documentar</strong> (carril completo): documento técnico y manual en el cambio, construidos desde plantillas y la <strong>evidencia real</strong>; sin evidencia se señala lo que falta; regenerar no duplica secciones ni pierde lo editado a mano.</li><li><strong>Documentación pendiente</strong> bloquea el archivado del carril completo cuando el modo es bloqueante; en el carril estándar no estorba.</li><li>Las dos fases quedan disponibles <strong>para el agente y para la terminal</strong>, con la misma semántica sobre el mismo cambio.</li></ul>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>Exportar la documentación a otros formatos (PDF/HTML) o publicarla fuera del repositorio.</li><li>Reescribir especificaciones aprobadas sin pasar por la firma: la aclaración obliga a re-aprobar.</li><li>Documentación automática del código fuente.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Un cambio con preguntas abiertas no llega a plan sin que alguien las haya respondido o aceptado (según el modo configurado).</li><li>En carril completo no se archiva sin los dos documentos (según el modo) y ambos salen de la evidencia registrada.</li><li>Aclarar y documentar se lanzan desde la terminal y desde el agente con el mismo resultado.</li></ul>
+  </section>
+
+  <section>
+    <h2>Criterios de aceptación</h2>
+    <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-FASES-001-S1</code></td><td>Especificación con preguntas abiertas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-001-S2</code></td><td>Sin preguntas abiertas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-001-S3</code></td><td>Una respuesta cambia lo especificado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-001-S4</code></td><td>Lo aclarado se refleja en la propuesta</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-002-S1</code></td><td>Modo aviso con preguntas abiertas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-002-S2</code></td><td>Modo bloqueante con preguntas abiertas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-002-S3</code></td><td>Modo apagado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-002-S4</code></td><td>Sin preguntas abiertas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-003-S1</code></td><td>Documentación completa</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-003-S2</code></td><td>Solo uno de los documentos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-003-S3</code></td><td>Cambio sin evidencia</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-003-S4</code></td><td>Regenerar la documentación</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-004-S1</code></td><td>Carril completo sin documentación y modo bloqueante</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-004-S2</code></td><td>Carril completo con documentación</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-004-S3</code></td><td>Carril estándar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-004-S4</code></td><td>Modo aviso o apagado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-005-S1</code></td><td>Aclarar desde la terminal</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-005-S2</code></td><td>Documentar desde la terminal con tipo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-005-S3</code></td><td>Fases disponibles para el agente</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FASES-005-S4</code></td><td>Cambio inexistente</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Requisitos y escenarios</h2>
+    <div class="req"><h3>REQ-FASES-001 — Vaciar las preguntas abiertas antes de planificar<span class="badge">agregado</span></h3><p>El equipo necesita que, después de escribir la especificación y antes de invertir en el plan técnico, los supuestos, las dependencias y las preguntas abiertas queden resueltos o aceptados de forma explícita, para no planificar sobre huecos ni descubrirlos construyendo.</p><ul class="rules"><li><code>BR-FASES-001</code> — La aclaración es una entrevista: las respuestas quedan registradas en el cambio, separadas de la especificación de negocio.</li><li><code>BR-FASES-002</code> — La aclaración no cambia el comportamiento por sí sola: si una respuesta cambia lo especificado, la especificación se corrige y su firma queda obsoleta hasta volver a aprobarse.</li></ul><div class="scenario"><h4>REQ-FASES-001-S1 — Especificación con preguntas abiertas</h4><div class="when">CUANDO el equipo aclara un cambio cuya especificación dejó preguntas abiertas</div><div class="then">ENTONCES la fase pregunta una a una y registra cada respuesta en el cambio, junto al estado de lo que queda pendiente</div></div><div class="scenario"><h4>REQ-FASES-001-S2 — Sin preguntas abiertas</h4><div class="when">CUANDO el equipo aclara un cambio que no dejó preguntas abiertas</div><div class="then">ENTONCES la fase lo indica y no inventa preguntas ni respuestas</div></div><div class="scenario"><h4>REQ-FASES-001-S3 — Una respuesta cambia lo especificado</h4><div class="when">CUANDO una respuesta cambia el comportamiento especificado</div><div class="then">ENTONCES la especificación se corrige, la firma anterior queda obsoleta y se indica que hay que volver a aprobarla</div></div><div class="scenario"><h4>REQ-FASES-001-S4 — Lo aclarado se refleja en la propuesta</h4><div class="when">CUANDO termina una ronda de aclaración con decisiones</div><div class="then">ENTONCES el resumen de lo decidido queda reflejado en la propuesta del cambio</div></div></div><div class="req"><h3>REQ-FASES-002 — Aviso de aclaración pendiente, configurable<span class="badge">agregado</span></h3><p>El equipo necesita que la herramienta avise cuando quedan preguntas sin aclarar, con la posibilidad de exigir que se vacíen antes de planificar, sin imponerlo a todos los proyectos.</p><ul class="rules"><li><code>BR-FASES-003</code> — El aviso indica cuántas preguntas quedan y la acción para aclararlas; el modo se configura por proyecto (apagado, aviso o bloqueante).</li><li><code>BR-FASES-004</code> — Con el modo bloqueante no se avanza a plan mientras queden preguntas abiertas.</li></ul><div class="scenario"><h4>REQ-FASES-002-S1 — Modo aviso con preguntas abiertas</h4><div class="when">CUANDO el cambio tiene preguntas abiertas y el modo es aviso</div><div class="then">ENTONCES el estado avisa cuántas quedan y la acción para aclararlas, sin bloquear el avance</div></div><div class="scenario"><h4>REQ-FASES-002-S2 — Modo bloqueante con preguntas abiertas</h4><div class="when">CUANDO el cambio tiene preguntas abiertas y el modo es bloqueante</div><div class="then">ENTONCES el avance a plan queda bloqueado y se indica la acción que lo desbloquea</div></div><div class="scenario"><h4>REQ-FASES-002-S3 — Modo apagado</h4><div class="when">CUANDO el modo es apagado y el cambio tiene preguntas abiertas</div><div class="then">ENTONCES no se emite ningún aviso de aclaración</div></div><div class="scenario"><h4>REQ-FASES-002-S4 — Sin preguntas abiertas</h4><div class="when">CUANDO el cambio no tiene preguntas abiertas</div><div class="then">ENTONCES no hay aviso en ningún modo</div></div></div><div class="req"><h3>REQ-FASES-003 — Documentación del cambio en el carril completo<span class="badge">agregado</span></h3><p>El equipo necesita que un cambio del carril completo deje documentación técnica y manual construida desde lo real, para que quien mantiene el sistema no dependa de reconstruir lo hecho leyendo el historial.</p><ul class="rules"><li><code>BR-FASES-005</code> — La documentación se construye desde las plantillas y la evidencia registrada; lo que no tiene evidencia no se documenta como hecho.</li><li><code>BR-FASES-006</code> — La documentación vive en el cambio y no altera la especificación, el plan ni las tareas.</li></ul><div class="scenario"><h4>REQ-FASES-003-S1 — Documentación completa</h4><div class="when">CUANDO el equipo documenta un cambio y pide ambos documentos</div><div class="then">ENTONCES quedan en el cambio el documento técnico y el manual, con las secciones de la plantilla y los datos reales del cambio, sus requisitos, sus tareas y su evidencia</div></div><div class="scenario"><h4>REQ-FASES-003-S2 — Solo uno de los documentos</h4><div class="when">CUANDO el equipo pide solo el documento técnico o solo el manual</div><div class="then">ENTONCES se genera el pedido y el otro documento no se toca</div></div><div class="scenario"><h4>REQ-FASES-003-S3 — Cambio sin evidencia</h4><div class="when">CUANDO se documenta un cambio que aún no tiene evidencia registrada</div><div class="then">ENTONCES la documentación se genera igualmente y señala expresamente lo que queda sin evidencia, sin inventarlo</div></div><div class="scenario"><h4>REQ-FASES-003-S4 — Regenerar la documentación</h4><div class="when">CUANDO se vuelve a documentar un cambio ya documentado</div><div class="then">ENTONCES la documentación se actualiza sin duplicar secciones ni perder lo escrito a mano</div></div></div><div class="req"><h3>REQ-FASES-004 — Documentación pendiente y archivado, configurable<span class="badge">agregado</span></h3><p>El equipo necesita que, en el carril completo, no se archive sin documentación cuando así lo exija la configuración, y que en los demás carriles la documentación no estorbe.</p><ul class="rules"><li><code>BR-FASES-007</code> — Con el modo bloqueante, el carril completo no se archiva hasta que exista la documentación; el modo se configura por proyecto.</li></ul><div class="scenario"><h4>REQ-FASES-004-S1 — Carril completo sin documentación y modo bloqueante</h4><div class="when">CUANDO un cambio del carril completo no tiene documentación y el modo es bloqueante</div><div class="then">ENTONCES el archivado queda bloqueado y se indica la acción para documentarlo</div></div><div class="scenario"><h4>REQ-FASES-004-S2 — Carril completo con documentación</h4><div class="when">CUANDO un cambio del carril completo ya tiene su documentación</div><div class="then">ENTONCES el archivado sigue sin bloqueo por documentación</div></div><div class="scenario"><h4>REQ-FASES-004-S3 — Carril estándar</h4><div class="when">CUANDO un cambio del carril estándar no tiene documentación y el modo es bloqueante</div><div class="then">ENTONCES el archivado no se bloquea por documentación</div></div><div class="scenario"><h4>REQ-FASES-004-S4 — Modo aviso o apagado</h4><div class="when">CUANDO la documentación falta y el modo es aviso o apagado</div><div class="then">ENTONCES el archivado no se bloquea y, en modo aviso, se informa de lo que falta</div></div></div><div class="req"><h3>REQ-FASES-005 — Aclarar y documentar también desde la terminal y los asistentes<span class="badge">agregado</span></h3><p>El equipo necesita que las dos fases existan como acciones del ciclo, tanto para el trabajo con agentes como para la terminal, con la misma semántica.</p><ul class="rules"><li><code>BR-FASES-008</code> — Cada fase tiene una acción en la terminal y su fase equivalente para el agente; ambas trabajan sobre el mismo cambio y los mismos artefactos.</li></ul><div class="scenario"><h4>REQ-FASES-005-S1 — Aclarar desde la terminal</h4><div class="when">CUANDO el equipo ejecuta la acción de aclarar sobre un cambio existente</div><div class="then">ENTONCES la acción informa las preguntas abiertas y el estado de lo aclarado</div></div><div class="scenario"><h4>REQ-FASES-005-S2 — Documentar desde la terminal con tipo</h4><div class="when">CUANDO el equipo ejecuta la acción de documentar indicando el tipo de documento</div><div class="then">ENTONCES se genera exactamente el tipo pedido</div></div><div class="scenario"><h4>REQ-FASES-005-S3 — Fases disponibles para el agente</h4><div class="when">CUANDO se enumeran las fases disponibles para el agente</div><div class="then">ENTONCES aclarar y documentar aparecen entre ellas con su descripción</div></div><div class="scenario"><h4>REQ-FASES-005-S4 — Cambio inexistente</h4><div class="when">CUANDO se ejecuta cualquiera de las dos acciones sobre un cambio que no existe</div><div class="then">ENTONCES se recibe un aviso explícito y nada se modifica</div></div></div>
+  </section>
+
+  <section>
+    <h2>Mockups</h2>
+    <p><em>Este cambio no declara mockups.</em></p>
+    
+  </section>
+
+  <section>
+    <h2>Aprobación</h2>
+    <div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ Aprobada por Alonso Anchante el 2026-09-20 14:51:38 -05:00. Cualquier cambio posterior invalida la firma.</div>
+  </section>
+
+  <footer>SpecAtlas · SpecAtlas · 2026-09-20 14:51:38 -05:00</footer>
+</div>
+</body>
+</html>

@@ -1,6 +1,8 @@
 import path from 'node:path'
 import type { AtlasConfig } from './config.js'
 import type { Change, ChangeMeta, Lane } from './model.js'
+import type { Diagnostic } from './diagnostics.js'
+import { diag } from './diagnostics.js'
 import { artifactHash } from './hash.js'
 
 export type ChangeState =
@@ -13,6 +15,7 @@ export type ChangeState =
   | 'building'
   | 'built'
   | 'verified'
+  | 'reviewed'
   | 'ready'
   | 'archived'
 
@@ -65,6 +68,32 @@ export function requiresMockups(meta: ChangeMeta | undefined, cfg: AtlasConfig):
 
 function mockupOverride(change: Change): boolean {
   return (change.meta?.overrides ?? []).some((override) => override.gate === 'mockup')
+}
+
+export function docsReady(change: Change): boolean {
+  const paths = change.docsPaths ?? []
+  return paths.some((p) => p.endsWith('tecnica.md')) && paths.some((p) => p.endsWith('manual.md'))
+}
+
+export function clarifyAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] {
+  const open = change.clarify?.open.length ?? 0
+  if (cfg.gates.clarify.mode !== 'advisory' || open === 0) return []
+  return [
+    diag('ATLAS-CLARIFY-001', 'warning', `El cambio "${change.slug}" tiene ${open} pregunta(s) sin aclarar`, {
+      ...(change.clarifyPath !== undefined ? { path: change.clarifyPath } : {}),
+      suggestion: `Aclara antes de planificar: /satlas.clarify ${change.slug} (o satlas clarify ${change.slug})`,
+    }),
+  ]
+}
+
+export function docsAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] {
+  const lane = change.meta?.lane ?? cfg.lanes.default
+  if (lane !== 'full' || cfg.gates.docs.mode !== 'advisory' || docsReady(change)) return []
+  return [
+    diag('ATLAS-DOCS-001', 'warning', `El cambio "${change.slug}" (carril completo) no tiene su documentación técnica y manual`, {
+      suggestion: `Genera la documentación: satlas docs ${change.slug} (o /satlas.docs ${change.slug})`,
+    }),
+  ]
 }
 
 export function deriveState(input: DeriveInput): DerivedState {
@@ -139,6 +168,16 @@ export function deriveState(input: DeriveInput): DerivedState {
   }
 
   if (!change.planPath && !change.tasks) {
+    const openQuestions = change.clarify?.open.length ?? 0
+    if (openQuestions > 0 && cfg.gates.clarify.mode === 'blocking') {
+      blockedBy.push(`aclaración pendiente (${openQuestions})`)
+      return {
+        state: 'approved',
+        blockedBy,
+        nextAction: next(`/satlas.clarify ${change.slug}`, `Aclarar ${openQuestions} pregunta(s) antes de planificar`, true),
+        progress,
+      }
+    }
     return { state: 'approved', blockedBy, nextAction: next(`/satlas.plan ${change.slug}`, 'Crear el plan técnico y las tareas', true), progress }
   }
 
@@ -156,6 +195,11 @@ export function deriveState(input: DeriveInput): DerivedState {
     return { state: 'verified', blockedBy, nextAction: next(`/satlas.review ${change.slug}`, 'Revisión de código', true), progress }
   }
 
+  if (lane === 'full' && cfg.gates.docs.mode === 'blocking' && !docsReady(change)) {
+    blockedBy.push('documentación pendiente')
+    return { state: 'reviewed', blockedBy, nextAction: next(`/satlas.docs ${change.slug}`, 'Generar la documentación técnica y manual del cambio', true), progress }
+  }
+
   return { state: 'ready', blockedBy, nextAction: next(`satlas archive ${change.slug}`, 'Archivar el cambio y plegar los deltas'), progress }
 }
 
@@ -170,6 +214,7 @@ export function stateLabel(state: ChangeState): string {
     building: 'construyendo',
     built: 'construido',
     verified: 'verificado',
+    reviewed: 'revisado',
     ready: 'listo para archivar',
     archived: 'archivado',
   }

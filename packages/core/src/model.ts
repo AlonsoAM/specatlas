@@ -169,6 +169,19 @@ export interface MockupManifest {
   screens: MockupScreen[]
 }
 
+export interface ClarifyItem {
+  text: string
+  line: number
+  answer?: string
+}
+
+export interface ClarifyFile {
+  path: string
+  open: ClarifyItem[]
+  resolved: ClarifyItem[]
+  diagnostics: Diagnostic[]
+}
+
 export interface Change {
   slug: string
   dir: string
@@ -178,6 +191,9 @@ export interface Change {
   verify?: VerifyFile
   fix?: VerifyFile
   fixCovers?: string[]
+  clarify?: ClarifyFile
+  clarifyPath?: string
+  docsPaths?: string[]
   planPath?: string
   reviewPath?: string
   presentationPath?: string

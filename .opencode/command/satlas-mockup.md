@@ -1,5 +1,5 @@
 ---
-description: Genera mockups profesionales (web/mobile) como contrato visual de la propuesta: alta fidelidad, estados, responsive y accesibles. Usar cuando el usuario pide mockups, prototipos visuales o la propuesta visual del cambio.
+description: "Genera mockups profesionales (web/mobile) como contrato visual de la propuesta: alta fidelidad, estados, responsive y accesibles. Usar cuando el usuario pide mockups, prototipos visuales o la propuesta visual del cambio."
 ---
 
 # Fase: Mockups (contrato visual)
@@ -8,10 +8,10 @@ El contenido se escribe en **español**.
 
 ## Pasos
 
-1. Prepara el plan y el manifiesto:
+1. Prepara el plan y el manifiesto (y marca el cambio como que exige mockups si aún no lo declara):
 
 ```
-satlas mockup $ARGUMENTS
+satlas mockup $ARGUMENTS --require
 ```
 
 2. Lee el plan (`changes/$ARGUMENTS/mockups/plan.yaml`), la spec, el glosario y, si existen, `design/tokens.json` o `DESIGN.md` (sistema de diseño del proyecto).

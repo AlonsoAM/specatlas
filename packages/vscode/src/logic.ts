@@ -8,6 +8,8 @@ import {
   lintDelta,
   loadApprovals,
   loadLivingFixes,
+  clarifyAdvisory,
+  docsAdvisory,
   loadWorkspace,
   evaluatePacks,
   mockupsReady,
@@ -36,7 +38,7 @@ export interface FlatDiagnostic {
   suggestion?: string
 }
 
-export type FileKind = 'proposal' | 'spec' | 'plan' | 'tasks' | 'verify' | 'review' | 'fix' | 'analyze' | 'presentation' | 'mockup'
+export type FileKind = 'proposal' | 'spec' | 'plan' | 'tasks' | 'verify' | 'review' | 'fix' | 'analyze' | 'presentation' | 'mockup' | 'clarify' | 'docs'
 
 export interface SnapshotTaskItem {
   id: string
@@ -130,7 +132,8 @@ export const STATE_PRIORITY: Record<string, number> = {
   building: 4,
   built: 5,
   verified: 6,
-  ready: 7,
+  reviewed: 7,
+  ready: 8,
 }
 
 export function sortChanges(changes: SnapshotChange[]): SnapshotChange[] {
@@ -212,7 +215,8 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
     })
 
-    for (const finding of [...lintFindings, ...trace.findings]) diagnostics.push(toFlat(finding))
+    const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config)]
+    for (const finding of [...lintFindings, ...trace.findings, ...phaseAdvisories]) diagnostics.push(toFlat(finding))
     if (packEvaluation) {
       const evaluations = evaluatePacks(packEvaluation.packs, change, config)
       for (const finding of packFindings(evaluations, change)) diagnostics.push(toFlat(finding))
@@ -332,10 +336,13 @@ async function changeFiles(change: Change, screens: SnapshotMockupItem[]): Promi
   const candidates: Array<{ label: string; rel: string; kind: FileKind; description?: string }> = [
     { label: 'Propuesta', rel: 'proposal.md', kind: 'proposal' },
     { label: 'Spec (delta)', rel: 'spec.md', kind: 'spec' },
+    { label: 'Aclaraciones', rel: 'clarify.md', kind: 'clarify', description: 'preguntas abiertas y respuestas' },
     { label: 'Plan técnico', rel: 'plan.md', kind: 'plan', description: 'incluye diagramas mermaid' },
     { label: 'Tareas', rel: 'tasks.md', kind: 'tasks' },
     { label: 'Verificación', rel: 'verify.md', kind: 'verify' },
     { label: 'Revisión', rel: 'review.md', kind: 'review' },
+    { label: 'Documentación técnica', rel: path.join('docs', 'tecnica.md'), kind: 'docs' },
+    { label: 'Manual', rel: path.join('docs', 'manual.md'), kind: 'docs' },
     { label: 'Fix', rel: 'fix.md', kind: 'fix' },
     { label: 'Análisis', rel: 'analyze.md', kind: 'analyze' },
     { label: 'Presentación', rel: path.join('presentation', 'index.html'), kind: 'presentation' },

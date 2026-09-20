@@ -8,10 +8,10 @@ El contenido se escribe en **español**.
 
 ## Pasos
 
-1. Prepara el plan y el manifiesto:
+1. Prepara el plan y el manifiesto (y marca el cambio como que exige mockups si aún no lo declara):
 
 ```
-satlas mockup <slug>
+satlas mockup <slug> --require
 ```
 
 2. Lee el plan (`changes/<slug>/mockups/plan.yaml`), la spec, el glosario y, si existen, `design/tokens.json` o `DESIGN.md` (sistema de diseño del proyecto).

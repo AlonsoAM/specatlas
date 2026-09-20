@@ -1,7 +1,9 @@
 import path from 'node:path'
 import {
   checkTrace,
+  clarifyAdvisory,
   deriveState,
+  docsAdvisory,
   lintDelta,
   mockupsReady,
   readTextIfExists,
@@ -65,5 +67,7 @@ export async function evaluateChange(
     ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
   })
 
-  return { change, approval, lintFindings, trace, blocking, state }
+  const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config)]
+
+  return { change, approval, lintFindings: [...lintFindings, ...phaseAdvisories], trace, blocking, state }
 }

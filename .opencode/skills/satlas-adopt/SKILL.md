@@ -1,6 +1,6 @@
 ---
 name: satlas-adopt
-description: Recupera las specs de un proyecto existente: lee el inventario y las anclas, entrevista al usuario y redacta requisitos AS-IS. Usar cuando el usuario pide adoptar, documentar o recuperar las specs de un proyecto que ya existe.
+description: "Recupera las specs de un proyecto existente: lee el inventario y las anclas, entrevista al usuario y redacta requisitos AS-IS. Usar cuando el usuario pide adoptar, documentar o recuperar las specs de un proyecto que ya existe."
 ---
 
 # Fase: Adoptar (brownfield)

@@ -1,25 +1,25 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-15T21:29:28.511Z",
-  "sourceHash": "sha256:f2c48b2128b80eea7f9548fcde1c32d0b3dc9b36b533f5b2de6f7ae59c447967",
+  "generatedAt": "2026-09-20T21:06:00.946Z",
+  "sourceHash": "sha256:8b5acbf4663b031c344d29b1290d4fabc5a3c7ad727d748075ebab22d1b93683",
   "language": "es",
   "targets": {
     "opencode": [
       {
         "path": ".opencode/command/satlas-adopt.md",
-        "hash": "sha256:844ebd43b3cad4aa6212cbcf015f997b348d8e474a05cdeb139d644e4c9997c2"
+        "hash": "sha256:716ff5aab63620fd782a72238d2a6e5961506d40e7888fee97bc20a2724c5c94"
       },
       {
         "path": ".opencode/skills/satlas-adopt/SKILL.md",
-        "hash": "sha256:ac01d94c41cdd57ada3f81bc0d589b3707ce86ce532042de56d4851a45c70a34"
+        "hash": "sha256:44dc19a7663221c3191631ecba08221121a3b82e0feb60708194dd916c6537ae"
       },
       {
         "path": ".opencode/command/satlas-archive.md",
-        "hash": "sha256:f6bfc3136734405c7a011e67312abbb52ac74292a9f827a78652aff3be7da8e9"
+        "hash": "sha256:74d606c3dd106de41ac7513698d4d3ff177661a50cc8d2721e2d27236cbe733a"
       },
       {
         "path": ".opencode/skills/satlas-archive/SKILL.md",
-        "hash": "sha256:6d0508eaa3b6af39cf5832342ee24ea0807158553e7733add5ecdc23758c5ec7"
+        "hash": "sha256:777cc2549fa4a866d09fe9a20eafc6f1a3a0cb661c8468396b20c548fd59b112"
       },
       {
         "path": ".opencode/command/satlas-build.md",
@@ -30,28 +30,44 @@
         "hash": "sha256:96e28c4e69fe7be1dbddd0b7c85bb2b44405e4197e179288ea399ad7e7f883f4"
       },
       {
+        "path": ".opencode/command/satlas-clarify.md",
+        "hash": "sha256:4fcab8c1be85baeebe62fc138a748f045aff31656285d624abfa507aaa9efc44"
+      },
+      {
+        "path": ".opencode/skills/satlas-clarify/SKILL.md",
+        "hash": "sha256:939fcb23c694dc23aa216ce2615db405f6de7d29fc961536dd3a5b520a20a73c"
+      },
+      {
+        "path": ".opencode/command/satlas-docs.md",
+        "hash": "sha256:ae53922912edaaed24569b9a055d8a226a0289886ed8767d0f51bbb0c0861a48"
+      },
+      {
+        "path": ".opencode/skills/satlas-docs/SKILL.md",
+        "hash": "sha256:a376a781adc17659218225c6819c476d64955bcaea27af33e156dc9ae53bb8b0"
+      },
+      {
         "path": ".opencode/command/satlas-fix.md",
-        "hash": "sha256:27673ce7084c788fac62dc6a6a0d13fe9c38ca82675a92cfd539d6a127122ab0"
+        "hash": "sha256:55775ccb37ad46b1a049e97415ac77f082612f2e84927c8eadecdc0f60f11833"
       },
       {
         "path": ".opencode/skills/satlas-fix/SKILL.md",
-        "hash": "sha256:a67cf67e399fb23e168baf89cc4dd9aba5f06147d594aeed14046c902fdc4f86"
+        "hash": "sha256:36523a11d414abd72a1a7851f2521472df9e2dadae720ea1d080d2e1611bb509"
       },
       {
         "path": ".opencode/command/satlas-mockup.md",
-        "hash": "sha256:5a65708c709498d9dd641a00adcfa59ef0ab3713b28fce92b30b4d14494b70dd"
+        "hash": "sha256:7f57812aac3cc5f1ad3cf1870a34e9da74b2feeb1e6bc5916c7306f2e9a6d0a2"
       },
       {
         "path": ".opencode/skills/satlas-mockup/SKILL.md",
-        "hash": "sha256:1c63d81c9552fbf69815ac474fe37af657c71902972cdb30d78d1ebc8abf2e75"
+        "hash": "sha256:6bdef14c3ac52e20c1c8e2b0eb4d93b76a6969b18de52e30e3749496ecc8f1fb"
       },
       {
         "path": ".opencode/command/satlas-plan.md",
-        "hash": "sha256:c789be80bcfa77b940805ee43fcd81d9f3704a9d00d7100f8cd7c40d91727136"
+        "hash": "sha256:44b606956bd65aefc9002ecafd457cb4a1145e9bc53fba71bf26eac02aa3a046"
       },
       {
         "path": ".opencode/skills/satlas-plan/SKILL.md",
-        "hash": "sha256:dc3fca5d62b58b3647cbc3378a298e9f4bcee4434a87fc01f38df069543a0d9d"
+        "hash": "sha256:3545dd573770d855d80c5f7e0f5cf1c129cc67757b2dd7e5d9a559e4ac727b89"
       },
       {
         "path": ".opencode/command/satlas-review.md",
@@ -63,11 +79,11 @@
       },
       {
         "path": ".opencode/command/satlas-specify.md",
-        "hash": "sha256:b5dd14072edf09d588d327a06e209d827f1a962c34719716a9657190b198fd30"
+        "hash": "sha256:d040911f0caec6e636dc17bed22d7295a0f4c5c0d5a14ee5f66470e3b2142c41"
       },
       {
         "path": ".opencode/skills/satlas-specify/SKILL.md",
-        "hash": "sha256:7db8caaeac94f0b0bdd6795fdcdd8abe9fb6efe6cf3d52f4f972d80bbc9ca283"
+        "hash": "sha256:0a54ff25c51bcb2e63a48f13ee4823249ac703e2dc07841369f45b11b6c51e7d"
       },
       {
         "path": ".opencode/command/satlas-verify.md",
@@ -92,16 +108,24 @@
         "hash": "sha256:2af02e4355906e992e28ae694ad6715af860e92f396539bfeca07fc69981e7e1"
       },
       {
+        "path": "prompts/satlas-clarify.md",
+        "hash": "sha256:0a520a6a08bfc18a11030b0cc1ce99cdc4639cd7edbb620342b6bb4298df2871"
+      },
+      {
+        "path": "prompts/satlas-docs.md",
+        "hash": "sha256:9f653b7f570250cd167d8a13d0610a4605298797fe412f21ca0ec45a2ae6ffb3"
+      },
+      {
         "path": "prompts/satlas-fix.md",
         "hash": "sha256:95c37ce954bd1dc0d5eb6d30695f9fa70a6fc3a6851bff4f393e10715a24c0a5"
       },
       {
         "path": "prompts/satlas-mockup.md",
-        "hash": "sha256:76e9d314d7f1e7e2fea8212696e6544ac2812e2f7558b1fb6646362d0f7a4fa1"
+        "hash": "sha256:5ae911ba03ca13b762a94c98f7ba45fe7387303263bbe36af18b3395afada080"
       },
       {
         "path": "prompts/satlas-plan.md",
-        "hash": "sha256:1f7f40336f07f61a140f3ac6710799df78a65fd5921351d36c1eabcc759e6846"
+        "hash": "sha256:4c4b7f80cfdee8aaaf876ec0e0f6af1eb2b281d9591efd8d728db8763c2ae666"
       },
       {
         "path": "prompts/satlas-review.md",
@@ -109,7 +133,7 @@
       },
       {
         "path": "prompts/satlas-specify.md",
-        "hash": "sha256:3ccea353ccbef8a396a1a9f1f1237f0deede2fc69631214329e6ce99aaeee7ec"
+        "hash": "sha256:2fc537e9fceeeb9c3d721e452bd0ce0210ee6b12518cd46a86efa47367495c94"
       },
       {
         "path": "prompts/satlas-verify.md",
@@ -117,7 +141,7 @@
       },
       {
         "path": "AGENTS.md",
-        "hash": "sha256:27cec060e26a814261f28ee8c61b443adefd3cfdf237786d1b2bdb04529de13b"
+        "hash": "sha256:9d67a0d76a04074f251074bc014e37793607c7ff3b3615426329dc62b2bfc730"
       }
     ]
   }

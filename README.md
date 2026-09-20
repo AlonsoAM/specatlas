@@ -21,7 +21,7 @@ F0 (fundaciones) en desarrollo:
 | CLI `specatlas` / `satlas` (`init`, `new`, `approve`, `status`, `next`, `validate`, `trace`, `waves`, `doctor`, `archive`) | ✅ |
 | Perfiles de stack (`generic`, `node-ts`, `python`, `dotnet-sqlserver`) + detección | ✅ |
 | Plantillas es/en (es por defecto), `meta.yaml`, evidencia por escenario | ✅ |
-| Tests (vitest, 230 casos) y typecheck | ✅ |
+| Tests (vitest, 253 casos) y typecheck | ✅ |
 | Compilador de adaptadores (`@specatlas/adapters`: opencode, Claude Code, genérico) + manifiesto y `--check` | ✅ |
 | Comandos `adapters`, `profile`, `hash` | ✅ |
 | Fixtures multi-stack (node-ts, python, dotnet) | ✅ |
@@ -39,6 +39,7 @@ F0 (fundaciones) en desarrollo:
 | F3: `satlas upgrade` (migraciones de esquema): aviso pasivo, vista previa, aplicación con respaldo recuperable, reversión y `--json` | ✅ |
 | F3: informe de hallazgos **SARIF** (`satlas ci --sarif`) y **Action oficial** en el repo (`uses: AlonsoAM/specatlas@v1`) con gate real en cada PR | ✅ |
 | F3: **fixes vivos** (`.sdd/fixes/`), grupos Fixes/Histórico en el editor, procedencia de cambios y fixes en la Matriz y `atlas_fixes` en la vía de consulta | ✅ |
+| F3: fases **aclarar** y **documentar** (carril completo) con modos configurables, comandos `satlas clarify`/`satlas docs` y artefactos en el editor | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -181,6 +182,11 @@ Al archivar un fix (`satlas new <slug> --lane fix` → `satlas archive <slug> --
 - El árbol de VS Code muestra los grupos **Fixes** (fecha, dominio y resultado; un clic lo abre) e **Histórico de cambios** (qué se cerró, cuándo y con qué evidencia; la historia, no el comportamiento vigente). Los fixes archivados por versiones anteriores también aparecen en **Fixes** (se leen del histórico).
 - La **Matriz de trazabilidad** muestra por requisito qué **cambios** y **fixes** lo tocaron, con filtro por procedencia; un fix puede declarar `Cubre: REQ-…` (opcional) en su `fix.md` — si el requisito no existe se avisa (`TRACE-011`) y el fix sigue siendo válido.
 - `satlas status` lista los fixes vivos y la vía de consulta para asistentes expone `atlas_fixes` (solo lectura).
+
+## Aclarar antes de planificar y documentar el cambio
+
+- **Aclarar** (`/satlas.clarify <slug>` · `satlas clarify <slug>`): después de especificar y antes de aprobar/planificar, resuelve supuestos, dependencias y preguntas abiertas. Las respuestas quedan en `clarify.md` (`- [ ]` abiertas, `- [x] pregunta — respuesta` aclaradas) y el resumen se refleja en la propuesta. Modo: `gates.clarify.mode: off | advisory | blocking` (**aviso** por defecto); en bloqueante no se avanza a plan con preguntas abiertas.
+- **Documentar** (`/satlas.docs <slug>` · `satlas docs <slug> [--tipo tecnica|manual|all]`): carril completo. Genera `docs/tecnica.md` y `docs/manual.md` desde plantillas y la **evidencia real** (lo que no tiene evidencia se señala); el contenido generado vive entre marcadores y **regenerar conserva lo escrito a mano**. Modo: `gates.docs.mode: off | advisory | blocking` (**bloqueante** por defecto en carril completo: no se archiva sin los dos documentos).
 
 ## Integración con GitHub (opcional, nunca un gate por defecto)
 

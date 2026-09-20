@@ -145,7 +145,7 @@ Prosa.
 
   it('el carril full exige review.md cuando el gate de revisión está en blocking', () => {
     const baseCfg = defaultConfig()
-    const cfg = { ...baseCfg, gates: { ...baseCfg.gates, review: { mode: 'blocking' as const } } }
+    const cfg = { ...baseCfg, gates: { ...baseCfg.gates, review: { mode: 'blocking' as const }, docs: { mode: 'off' as const } } }
     const delta = parseDelta('## Requisitos agregados\n\n### Requisito: REQ-A-001 — X\nProsa.\n\n#### Escenario: REQ-A-001-S1 — Caso\n- **CUANDO** a\n- **ENTONCES** b\n', 'changes/x/spec.md')
     const meta = parseChangeMeta('schema_version: 1\nslug: x\nlane: full\ndomain: auth\n', 'meta.yaml').meta
     const tasks = parseTasksFile('## Bloque 1 — X\n- [x] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
@@ -165,7 +165,7 @@ Prosa.
     expect(reviewed.state).toBe('ready')
     expect(reviewed.nextAction.command).toContain('satlas archive')
 
-    const advisory = deriveState({ change, cfg: baseCfg, approval, blockingFindings: 0 })
+    const advisory = deriveState({ change, cfg: { ...baseCfg, gates: { ...baseCfg.gates, docs: { mode: 'off' as const } } }, approval, blockingFindings: 0 })
     expect(advisory.state).toBe('ready')
   })
 

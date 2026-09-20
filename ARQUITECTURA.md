@@ -244,8 +244,9 @@ La derivación es una función pura sobre `ChangeContext = { meta, spec?, delta?
 | Evidencia por escenario | manual aceptada | ✅ | ✅ |
 | Mockup aprobado (dominio UI) | — | ✅ | ✅ + comparación en verify |
 | `review` | — | advisory | ✅ bloqueante |
+| Aclaración (preguntas abiertas) | — | configurable (`gates.clarify.mode`) | configurable (`gates.clarify.mode`) |
 
-| Docs | — | — | ✅ |
+| Docs | — | — | ✅ configurable (`gates.docs.mode`) |
 | Archivo | ✅ | ✅ | ✅ |
 
 `fix.md` es el único artefacto del carril fix; su `verify` se registra en el mismo archivo con un bloque `evidence` por escenario afectado o `manual` justificado.
@@ -439,6 +440,20 @@ export async function writeLivingFix(root: string, input: WriteLivingFixInput): 
 - El archivado del carril `fix` sella el fix vivo (encabezado con identidad + contenido íntegro) antes de mover el cambio al histórico; si el movimiento falla, elimina el fix recién creado (todo-o-nada) y las specs vivas no se tocan.
 - `Change.fixCovers` alimenta la trazabilidad: `checkTrace` avisa con `TRACE-011` si un fix declara un requisito que no existe (el fix sigue válido).
 - El registro `.sdd/INDEX.md` incluye la sección «Fixes vivos».
+
+### 5.18 `docs` y `parse/clarify` (fases aclarar y documentar)
+
+```ts
+export function parseClarify(content: string, filePath: string): ClarifyFile        // `- [ ]` abiertas · `- [x] pregunta — respuesta` aclaradas
+export async function generateDocs(opts: GenerateDocsOptions): Promise<GenerateDocsResult>  // técnica + manual desde plantillas + evidencia
+export function clarifyAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[]    // ATLAS-CLARIFY-001 (modo advisory)
+export function docsAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[]       // ATLAS-DOCS-001 (modo advisory)
+export function docsReady(change: Change): boolean                                 // técnica + manual presentes
+```
+
+- `gates.clarify.mode` (`off|advisory|blocking`, por defecto `advisory`) y `gates.docs.mode` (`off|advisory|blocking`, por defecto `blocking`; solo aplica al carril `full`).
+- La aclaración bloquea el paso a plan (`approved` → `/satlas.clarify`); la documentación pendiente deja el cambio en `reviewed` con `next /satlas.docs`.
+- El contenido generado vive entre `<!-- specatlas:generado:inicio -->` y `<!-- specatlas:generado:fin -->`: regenerar reemplaza solo ese bloque y conserva lo escrito a mano.
 
 ---
 

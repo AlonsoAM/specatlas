@@ -412,6 +412,8 @@ function stateIcon(state: string): vscode.ThemeIcon {
       return new vscode.ThemeIcon('beaker', new vscode.ThemeColor('charts.yellow'))
     case 'verified':
       return new vscode.ThemeIcon('verified-filled', new vscode.ThemeColor('charts.green'))
+    case 'reviewed':
+      return new vscode.ThemeIcon('check-all', new vscode.ThemeColor('charts.green'))
     case 'archived':
       return new vscode.ThemeIcon('archive', new vscode.ThemeColor('charts.foreground'))
     default:
@@ -422,10 +424,12 @@ function stateIcon(state: string): vscode.ThemeIcon {
 const KIND_LABELS: Record<SnapshotFile['kind'], string> = {
   proposal: 'propuesta',
   spec: 'delta',
+  clarify: 'aclaraciones',
   plan: 'plan técnico',
   tasks: 'tareas',
   verify: 'verificación',
   review: 'revisión de código',
+  docs: 'documentación',
   fix: 'fix',
   analyze: 'análisis',
   presentation: 'propuesta HTML',
@@ -444,6 +448,10 @@ function fileIcon(kind: SnapshotFile['kind']): vscode.ThemeIcon {
       return new vscode.ThemeIcon('beaker', new vscode.ThemeColor('charts.yellow'))
     case 'review':
       return new vscode.ThemeIcon('eye', new vscode.ThemeColor('charts.red'))
+    case 'clarify':
+      return new vscode.ThemeIcon('comment-discussion', new vscode.ThemeColor('charts.blue'))
+    case 'docs':
+      return new vscode.ThemeIcon('book', new vscode.ThemeColor('charts.orange'))
     case 'fix':
       return new vscode.ThemeIcon('wrench', new vscode.ThemeColor('charts.orange'))
     case 'analyze':

@@ -1,5 +1,5 @@
 ---
-description: Carril express para incidentes (bug, hotfix, configuración): un solo artefacto, con causa raíz, cambio mínimo y evidencia. Usar cuando el usuario pide arreglar un bug, un hotfix o un cambio pequeño sin ceremonia completa.
+description: "Carril express para incidentes (bug, hotfix, configuración): un solo artefacto, con causa raíz, cambio mínimo y evidencia. Usar cuando el usuario pide arreglar un bug, un hotfix o un cambio pequeño sin ceremonia completa."
 ---
 
 # Fase: Fix express (incidente)

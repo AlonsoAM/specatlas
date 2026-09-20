@@ -6,6 +6,7 @@
 
 - `ci` — 5 requisitos
 - `esquema` — 5 requisitos
+- `fases` — 5 requisitos
 - `fixes` — 5 requisitos
 - `mcp` — 6 requisitos
 
@@ -21,4 +22,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-7 cambio(s) en `changes/archive/`.
+8 cambio(s) en `changes/archive/`.

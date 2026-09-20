@@ -10,6 +10,8 @@ export interface TemplateSet {
   tasks: string
   verify: string
   fix: string
+  docTecnica: string
+  docManual: string
 }
 
 const ES: TemplateSet = {
@@ -182,6 +184,44 @@ o, si es manual:
 satlas verify <slug> --file fix --scenario REQ-DOMINIO-001-S1 --method manual --result pass --by "<nombre>" --notes "<cómo se comprobó>"
 -->
 `,
+  docTecnica: `# Documentación técnica — {{TITLE}}
+
+## Resumen del cambio
+
+- **Cambio**: \`{{SLUG}}\` · dominio \`{{DOMAIN}}\` · carril \`{{LANE}}\`
+- **Actualizado**: {{DATE}}
+- **Tareas**: {{TASKS}}
+
+## Requisitos y escenarios
+
+{{REQUIREMENTS}}
+
+## Evidencia registrada
+
+{{EVIDENCE}}
+
+## Pendiente de evidencia
+
+{{PENDING}}
+`,
+  docManual: `# Manual — {{TITLE}}
+
+## Qué hace este cambio
+
+{{TITLE}} — dominio \`{{DOMAIN}}\` (cambio \`{{SLUG}}\`, carril \`{{LANE}}\`).
+
+## Cómo se usa
+
+{{SCENARIOS}}
+
+## Cómo se comprobó
+
+{{EVIDENCE}}
+
+## Pendiente de comprobar
+
+{{PENDING}}
+`,
 }
 
 const EN: TemplateSet = {
@@ -307,6 +347,44 @@ Cubre: REQ-DOMAIN-001
 <!-- Register real evidence with:
 satlas verify <slug> --file fix --scenario REQ-DOMAIN-001-S1 --command "<command>" --by "<name>"
 -->
+`,
+  docTecnica: `# Technical documentation — {{TITLE}}
+
+## Change summary
+
+- **Change**: \`{{SLUG}}\` · domain \`{{DOMAIN}}\` · lane \`{{LANE}}\`
+- **Updated**: {{DATE}}
+- **Tasks**: {{TASKS}}
+
+## Requirements and scenarios
+
+{{REQUIREMENTS}}
+
+## Recorded evidence
+
+{{EVIDENCE}}
+
+## Pending evidence
+
+{{PENDING}}
+`,
+  docManual: `# Manual — {{TITLE}}
+
+## What this change does
+
+{{TITLE}} — domain \`{{DOMAIN}}\` (change \`{{SLUG}}\`, lane \`{{LANE}}\`).
+
+## How to use it
+
+{{SCENARIOS}}
+
+## How it was verified
+
+{{EVIDENCE}}
+
+## Pending verification
+
+{{PENDING}}
 `,
 }
 

@@ -16,6 +16,8 @@ import { runAnalyzeCommand } from '../src/commands/analyze'
 import { runApprove } from '../src/commands/approve'
 import { runArchive } from '../src/commands/archive'
 import { runCi } from '../src/commands/ci'
+import { runClarify } from '../src/commands/clarify'
+import { runDocs } from '../src/commands/docs'
 import { runMockup } from '../src/commands/mockup'
 import { runPresentCommand } from '../src/commands/present'
 import { runProfile } from '../src/commands/profile'
@@ -62,6 +64,51 @@ function ctx(cwd: string, flags: Record<string, string | boolean> = {}, position
 }
 
 describe('CLI e2e (F0)', () => {
+  it('aclara (informe) y documenta (generación por tipo) (REQ-FASES-005-S1, REQ-FASES-005-S2, REQ-FASES-005-S4)', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-fases-'))
+    const init = await runInit(ctx(root))
+    expect(init.exitCode).toBe(0)
+    const created = await runNew(ctx(root, { lane: 'standard', domain: 'auth', title: 'Restablecer contraseña' }, ['reset-password']))
+    expect(created.exitCode).toBe(0)
+    const changeDir = path.join(root, '.sdd', 'changes', 'reset-password')
+    await fs.writeFile(path.join(changeDir, 'spec.md'), DELTA, 'utf8')
+    await fs.writeFile(path.join(changeDir, 'clarify.md'), '# Aclaraciones\n\n- [ ] ¿El enlace caduca al usarse?\n\n- [x] ¿Se reenvía? — Sí\n', 'utf8')
+
+    const clarify = await runClarify(ctx(root, {}, ['reset-password']))
+    expect(clarify.exitCode).toBe(0)
+    const clarifyData = clarify.data as { open: unknown[]; resolved: unknown[]; action?: string }
+    expect(clarifyData.open).toHaveLength(1)
+    expect(clarifyData.resolved).toHaveLength(1)
+    expect(clarifyData.action).toContain('/satlas.clarify')
+    expect((clarify.text ?? []).join('\n')).toContain('preguntas abiertas: 1')
+
+    const tecnica = await runDocs(ctx(root, { tipo: 'tecnica' }, ['reset-password']))
+    expect(tecnica.exitCode).toBe(0)
+    expect((tecnica.data as { files: Array<{ tipo: string; created: boolean }> }).files).toEqual([{ tipo: 'tecnica', created: true, path: expect.any(String) }])
+    expect(await exists(path.join(changeDir, 'docs', 'tecnica.md'))).toBe(true)
+    expect(await exists(path.join(changeDir, 'docs', 'manual.md'))).toBe(false)
+
+    const manual = await runDocs(ctx(root, { tipo: 'manual' }, ['reset-password']))
+    expect(manual.exitCode).toBe(0)
+    expect(await exists(path.join(changeDir, 'docs', 'manual.md'))).toBe(true)
+
+    const missingClarify = await runClarify(ctx(root, {}, ['no-existe']))
+    expect(missingClarify.exitCode).toBe(2)
+    const missingDocs = await runDocs(ctx(root, {}, ['no-existe']))
+    expect(missingDocs.exitCode).toBe(2)
+  })
+
+  it('las fases de aclarar y documentar están compiladas para el agente (REQ-FASES-005-S3, REQ-FASES-001-S3, REQ-FASES-001-S4)', async () => {
+    const expectations: Array<[string, string[]]> = [
+      ['clarify', ['satlas clarify', 'obsoleta', 'propuesta', 'clarify.md']],
+      ['docs', ['satlas docs', 'evidencia', 'marcadores']],
+    ]
+    for (const [phase, needles] of expectations) {
+      const prompt = await fs.readFile(new URL(`../../../prompts/satlas-${phase}.md`, import.meta.url), 'utf8')
+      for (const needle of needles) expect(prompt).toContain(needle)
+    }
+  })
+
   it('el carril fix deja un fix vivo y el estado lo lista (REQ-FIXES-005-S1)', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-fix-'))
     const init = await runInit(ctx(root))

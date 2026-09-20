@@ -23,6 +23,7 @@ const STATE_TONES: Record<string, Tone> = {
   building: 'blue',
   built: 'yellow',
   verified: 'green',
+  reviewed: 'green',
   ready: 'green',
   archived: 'gray',
 }
@@ -580,6 +581,7 @@ const BOARD_ORDER: Array<{ state: string; label: string }> = [
   { state: 'building', label: 'Construyendo' },
   { state: 'built', label: 'Construido' },
   { state: 'verified', label: 'Verificado' },
+  { state: 'reviewed', label: 'Revisado' },
   { state: 'ready', label: 'Listo para archivar' },
 ]
 
