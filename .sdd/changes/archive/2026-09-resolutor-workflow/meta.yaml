@@ -1,0 +1,7 @@
+# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.
+schema_version: 1
+slug: resolutor-workflow
+lane: fix
+title: El resolutor de workflow prefiere la copia empaquetada en dev
+domain: editor
+created: 2026-09-20
