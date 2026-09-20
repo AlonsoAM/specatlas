@@ -1,4 +1,5 @@
 import { errorResult, type McpHost, type ToolHandler, type ToolResult } from '../protocol.js'
+import { runAtlasFixes } from './fixes.js'
 import { runAtlasGlossary } from './glossary.js'
 import { runAtlasImpact } from './impact.js'
 import { runAtlasNext } from './next.js'
@@ -13,6 +14,7 @@ const HANDLERS: Record<string, ToolHandler> = {
   atlas_trace: runAtlasTrace,
   atlas_impact: runAtlasImpact,
   atlas_glossary: runAtlasGlossary,
+  atlas_fixes: runAtlasFixes,
 }
 
 export async function runToolByName(name: string, args: unknown, host: McpHost): Promise<ToolResult> {

@@ -62,6 +62,36 @@ function ctx(cwd: string, flags: Record<string, string | boolean> = {}, position
 }
 
 describe('CLI e2e (F0)', () => {
+  it('el carril fix deja un fix vivo y el estado lo lista (REQ-FIXES-005-S1)', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-fix-'))
+    const init = await runInit(ctx(root))
+    expect(init.exitCode).toBe(0)
+
+    const created = await runNew(ctx(root, { lane: 'fix', domain: 'auth', title: 'Arreglo de login' }, ['arreglo-login']))
+    expect(created.exitCode).toBe(0)
+    const fixFile = path.join(root, '.sdd', 'changes', 'arreglo-login', 'fix.md')
+    await fs.writeFile(
+      fixFile,
+      `# Fix — Arreglo de login\n\n## Síntoma\nFalla el ingreso.\n\n## Causa raíz\nZona horaria.\n\n## Cambio\nComparar en local.\n\n## Rollback\nRevertir.\n\n## Evidencia\n\n### REQ-AUTH-001-S1\n\n\`\`\`evidence\nmethod: manual\nresult: pass\ndate: 2026-09-20 10:00:00 -05:00\nby: Prueba\n\`\`\`\n`,
+      'utf8',
+    )
+
+    const before = await runStatus(ctx(root))
+    expect((before.data as { fixes: unknown[] }).fixes).toHaveLength(0)
+
+    const archive = await runArchive(ctx(root, { yes: true }, ['arreglo-login']))
+    expect(archive.exitCode).toBe(0)
+    expect((archive.data as { livingFix?: string }).livingFix).toBe('.sdd/fixes/2026-09-arreglo-login.md')
+
+    const status = await runStatus(ctx(root))
+    const data = status.data as { fixes: Array<{ slug: string; result: string; domain?: string }> }
+    expect(data.fixes).toHaveLength(1)
+    expect(data.fixes[0]?.slug).toBe('arreglo-login')
+    expect(data.fixes[0]?.result).toBe('pass')
+    expect(data.fixes[0]?.domain).toBe('auth')
+    expect((status.text ?? []).join('\n')).toContain('Fixes vivos: 1')
+  })
+
   it('init → new → validate → trace → waves → status → doctor → archive', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-'))
 

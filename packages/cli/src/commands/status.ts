@@ -1,4 +1,4 @@
-import { stateLabel, upgradeAdvisory } from '@specatlas/core'
+import { loadLivingFixes, stateLabel, upgradeAdvisory } from '@specatlas/core'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { evaluateChange } from '../evaluate.js'
 import { msg } from '../messages.js'
@@ -41,6 +41,17 @@ export async function runStatus(ctx: CliContext): Promise<CommandResult> {
     lines.push(`  ${spec.domain} — ${spec.spec.requirements.length} requisitos`)
   }
 
+  const fixes = await loadLivingFixes(root)
+  lines.push('')
+  lines.push(`${msg('status.fixes', ctx.language)}: ${fixes.length}`)
+  if (fixes.length === 0) {
+    lines.push('  (se llenan al archivar un fix)')
+  } else {
+    for (const fix of fixes) {
+      lines.push(`  ${fix.date || '—'}  ${(fix.domain ?? '—').padEnd(10)} ${fix.slug} — ${fix.result}`)
+    }
+  }
+
   const diagnostics = [...workspace.diagnostics, ...advisory.diagnostics]
   const errors = diagnostics.filter((d) => d.severity === 'error').length
   return {
@@ -49,6 +60,13 @@ export async function runStatus(ctx: CliContext): Promise<CommandResult> {
     data: {
       changes,
       specs: workspace.specs.map((s) => ({ domain: s.domain, requirements: s.spec.requirements.length })),
+      fixes: fixes.map((fix) => ({
+        slug: fix.slug,
+        date: fix.date,
+        result: fix.result,
+        ...(fix.domain !== undefined ? { domain: fix.domain } : {}),
+        covers: fix.covers,
+      })),
       upgrade: {
         currentVersion: advisory.plan.currentVersion,
         pending: advisory.plan.pending.length,

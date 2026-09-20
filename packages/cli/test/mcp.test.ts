@@ -346,6 +346,50 @@ describe('MCP: atlas_impact y atlas_glossary (REQ-MCP-004, REQ-MCP-005)', () => 
   })
 })
 
+describe('MCP: atlas_fixes (REQ-FIXES-005)', () => {
+  async function writeLivingFix(root: string, name: string, content: string): Promise<void> {
+    const dir = path.join(root, '.sdd', 'fixes')
+    await fs.mkdir(dir, { recursive: true })
+    await fs.writeFile(path.join(dir, name), content, 'utf8')
+  }
+
+  it('S2: devuelve cada fix vivo con identidad, contenido y requisitos declarados', async () => {
+    const root = await initWorkspace()
+    await writeLivingFix(
+      root,
+      '2026-09-arreglo.md',
+      `---\nslug: arreglo\ndate: 2026-09-20\nresult: pass\ndomain: auth\ncovers:\n  - REQ-AUTH-001\n---\n\n# Fix — Arreglo\n\n## Causa raíz\nComparación sin zona horaria.\n`,
+    )
+
+    const data = toolJson(await callTool(hostFor(root), 'atlas_fixes')) as {
+      fixes: Array<{ slug: string; date: string; result: string; domain?: string; covers: string[]; content: string }>
+    }
+    expect(data.fixes).toHaveLength(1)
+    expect(data.fixes[0]?.slug).toBe('arreglo')
+    expect(data.fixes[0]?.date).toBe('2026-09-20')
+    expect(data.fixes[0]?.result).toBe('pass')
+    expect(data.fixes[0]?.domain).toBe('auth')
+    expect(data.fixes[0]?.covers).toEqual(['REQ-AUTH-001'])
+    expect(data.fixes[0]?.content).toContain('Causa raíz')
+  })
+
+  it('S3: sin fixes vivos informa y sugiere crear uno', async () => {
+    const root = await initWorkspace()
+    const data = toolJson(await callTool(hostFor(root), 'atlas_fixes')) as { fixes: unknown[]; message: string; action: string }
+    expect(data.fixes).toHaveLength(0)
+    expect(data.message).toContain('No hay fixes vivos')
+    expect(data.action).toBe('satlas new <slug> --lane fix')
+  })
+
+  it('S3: con un fix activo sugiere archivarlo', async () => {
+    const root = await initWorkspace()
+    const created = await runNew(ctx(root, { lane: 'fix', domain: 'auth' }, ['arreglo-pendiente']))
+    expect(created.exitCode).toBe(0)
+    const data = toolJson(await callTool(hostFor(root), 'atlas_fixes')) as { action: string }
+    expect(data.action).toBe('satlas archive arreglo-pendiente')
+  })
+})
+
 describe('MCP: solo lectura (REQ-MCP-006)', () => {
   it('S1: el catálogo expone únicamente operaciones de consulta', async () => {
     const host = hostFor(await newRoot('atlas-mcp-ro-'))
@@ -372,6 +416,7 @@ describe('MCP: solo lectura (REQ-MCP-006)', () => {
     await callTool(host, 'atlas_impact', { target: 'REQ-AUTH-001' })
     await callTool(host, 'atlas_impact', { target: 'src/reset.ts' })
     await callTool(host, 'atlas_glossary')
+    await callTool(host, 'atlas_fixes')
     await handleRequest({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, host)
 
     const after = await snapshotHashes(root)

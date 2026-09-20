@@ -15,3 +15,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-20 12:49:48 -05:00
     channel: editor
+  - artifact: changes/fixes-vivos/spec.md
+    artifact_hash: sha256:b5c9f248e369c7285335caf0ab890469ff93f81fc40dd388e920dee2c6894a32
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-20 13:45:38 -05:00
+    channel: editor

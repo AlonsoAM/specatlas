@@ -172,6 +172,10 @@ notes: 12/12 casos
 
 ## Evidencia
 
+<!-- Opcional: declara los requisitos que este fix afecta (aparecen en su trazabilidad).
+Cubre: REQ-DOMINIO-001
+-->
+
 <!-- Registra la evidencia real con:
 satlas verify <slug> --file fix --scenario REQ-DOMINIO-001-S1 --command "<comando>" --by "<nombre>"
 o, si es manual:
@@ -296,6 +300,10 @@ by: your-name
 ## Rollback
 ## Evidence
 
+<!-- Optional: declare the requirements this fix affects (they show up in its traceability).
+Cubre: REQ-DOMAIN-001
+-->
+
 <!-- Register real evidence with:
 satlas verify <slug> --file fix --scenario REQ-DOMAIN-001-S1 --command "<command>" --by "<name>"
 -->
@@ -325,7 +333,14 @@ export function changeMetaYaml(meta: ChangeMeta): string {
   return `# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.\n` + stringifyYaml(doc, { lineWidth: 120 })
 }
 
-export function indexMarkdown(input: { projectName: string; language: Language; specs: Array<{ domain: string; requirements: number }>; changes: Array<{ slug: string; lane: Lane }>; archived: number }): string {
+export function indexMarkdown(input: {
+  projectName: string
+  language: Language
+  specs: Array<{ domain: string; requirements: number }>
+  changes: Array<{ slug: string; lane: Lane }>
+  fixes?: Array<{ slug: string; date: string; result: string; domain?: string }>
+  archived: number
+}): string {
   const es = input.language !== 'en'
   const lines: string[] = []
   lines.push(`# Índice — ${input.projectName}`)
@@ -336,6 +351,15 @@ export function indexMarkdown(input: { projectName: string; language: Language; 
   lines.push('')
   if (input.specs.length === 0) lines.push(es ? '_Sin specs todavía._' : '_No specs yet._')
   for (const spec of input.specs) lines.push(`- \`${spec.domain}\` — ${spec.requirements} ${es ? 'requisitos' : 'requirements'}`)
+  lines.push('')
+  lines.push(es ? '## Fixes vivos' : '## Living fixes')
+  lines.push('')
+  const fixes = input.fixes ?? []
+  if (fixes.length === 0) lines.push(es ? '_Sin fixes archivados todavía._' : '_No archived fixes yet._')
+  for (const fix of fixes) {
+    const parts = [fix.date, fix.domain ? `\`${fix.domain}\`` : '', `\`${fix.slug}\``, fix.result].filter((part) => part !== '')
+    lines.push(`- ${parts.join(' · ')}`)
+  }
   lines.push('')
   lines.push(es ? '## Cambios activos' : '## Active changes')
   lines.push('')

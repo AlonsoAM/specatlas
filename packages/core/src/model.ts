@@ -177,6 +177,7 @@ export interface Change {
   tasks?: TasksFile
   verify?: VerifyFile
   fix?: VerifyFile
+  fixCovers?: string[]
   planPath?: string
   reviewPath?: string
   presentationPath?: string

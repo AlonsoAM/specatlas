@@ -10,6 +10,7 @@ import { parseDelta } from './parse/delta.js'
 import { parseTasksFile } from './parse/tasks.js'
 import { parseVerifyFile } from './parse/evidence.js'
 import { parseApprovals, parseChangeMeta } from './parse/meta.js'
+import { parseFixCovers } from './fixes.js'
 
 export const SDD_DIR = '.sdd'
 
@@ -106,6 +107,7 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   if (fixRaw !== undefined) {
     change.fix = parseVerifyFile(fixRaw, fixFile)
     diagnostics.push(...change.fix.diagnostics)
+    change.fixCovers = parseFixCovers(fixRaw)
   }
 
   const mockupManifest = path.join(dir, 'mockups', 'manifest.yaml')
@@ -148,7 +150,7 @@ export async function loadWorkspace(root: string): Promise<{ workspace: Workspac
 
 export async function ensureSddDirs(sddDir: string): Promise<string[]> {
   const created: string[] = []
-  const dirs = ['specs', 'changes', 'runs', 'metrics', path.join('profiles', 'custom')]
+  const dirs = ['specs', 'changes', 'runs', 'metrics', 'fixes', path.join('profiles', 'custom')]
   const { ensureDir } = await import('./fsx.js')
   for (const d of dirs) {
     const full = path.join(sddDir, d)

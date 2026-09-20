@@ -350,6 +350,7 @@ const MATRIX_FILTERS_SCRIPT = `
   var st = document.getElementById('mstatus');
   var dom = document.getElementById('mdomain');
   var ch = document.getElementById('mchange');
+  var tp = document.getElementById('mtipo');
   var out = document.getElementById('mcount');
   var clear = document.getElementById('mclear');
   function norm(value) { return (value || '').normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase(); }
@@ -367,12 +368,16 @@ const MATRIX_FILTERS_SCRIPT = `
     var status = st ? st.value : 'all';
     var domain = dom ? dom.value : '';
     var change = ch ? ch.value : '';
+    var tipo = tp ? tp.value : 'all';
     var visible = 0;
     heads.forEach(function (head, key) {
       var list = (head.getAttribute('data-changes') || '').split(' ').filter(Boolean);
+      var hasChanges = head.getAttribute('data-has-changes') === '1';
+      var hasFixes = head.getAttribute('data-has-fixes') === '1';
       var show = (!text || norm(head.getAttribute('data-text')).indexOf(text) >= 0)
         && (status === 'all' || (status === 'gap' ? head.getAttribute('data-gap') === '1' : head.getAttribute('data-gap') !== '1'))
         && (!domain || head.getAttribute('data-domain') === domain)
+        && (tipo === 'all' || (tipo === 'changes' ? hasChanges : tipo === 'fixes' ? hasFixes : (!hasChanges && !hasFixes)))
         && (!change || (change === '__none' ? list.length === 0 : list.indexOf(change) >= 0));
       if (show) visible += 1;
       rows.forEach(function (row) { if (row.getAttribute('data-group') === key) row.hidden = !show; });
@@ -383,12 +388,13 @@ const MATRIX_FILTERS_SCRIPT = `
     });
     if (out) out.textContent = visible + ' de ' + heads.size + ' requisito(s)';
   }
-  [q, st, dom, ch].forEach(function (el) { if (el) el.addEventListener('input', apply); });
+  [q, st, dom, ch, tp].forEach(function (el) { if (el) el.addEventListener('input', apply); });
   if (clear) clear.addEventListener('click', function () {
     if (q) q.value = '';
     if (st) st.value = 'all';
     if (dom) dom.value = '';
     if (ch) ch.value = '';
+    if (tp) tp.value = 'all';
     apply();
   });
   apply();
@@ -441,12 +447,14 @@ export function matrixHtml(model: MatrixModel, nonce?: string): string {
     .map((requirement) => {
       const requirementPercent = requirement.total > 0 ? (requirement.passed / requirement.total) * 100 : 0
       const requirementGap = requirement.scenarios.some((scenario) => scenario.tasks.length === 0 || scenario.evidence !== 'pass')
-      const groupRow = `<tr class="row-group${requirementGap ? ' has-gap' : ''}" data-group="${escapeHtml(requirement.id)}" data-gap="${requirementGap ? '1' : '0'}" data-domain="${escapeHtml(requirement.domain ?? '')}" data-changes="${escapeHtml((requirement.changes ?? []).join(' '))}" data-text="${escapeHtml([requirement.id, requirement.title, ...requirement.scenarios.flatMap((s) => [s.id, s.title])].join(' ').toLowerCase())}">
+      const groupRow = `<tr class="row-group${requirementGap ? ' has-gap' : ''}" data-group="${escapeHtml(requirement.id)}" data-gap="${requirementGap ? '1' : '0'}" data-domain="${escapeHtml(requirement.domain ?? '')}" data-changes="${escapeHtml((requirement.changes ?? []).join(' '))}" data-has-changes="${(requirement.changes ?? []).length > 0 ? '1' : '0'}" data-has-fixes="${(requirement.fixes ?? []).length > 0 ? '1' : '0'}" data-text="${escapeHtml([requirement.id, requirement.title, ...requirement.scenarios.flatMap((s) => [s.id, s.title])].join(' ').toLowerCase())}">
   <td colspan="4">
     <div class="group-line">
       <span class="group-title">${commandLink('specatlas.openAt', [requirement.file, requirement.line], `${requirement.id} — ${requirement.title}`)}</span>
       ${pillHtml(requirement.living ? 'viva' : 'delta', 'blue', '◈')}
       ${requirement.living && (requirement.changes ?? []).length > 0 ? pillHtml(`modificado por ${(requirement.changes ?? []).join(', ')}`, 'purple', '⌥') : ''}
+      ${(requirement.fixes ?? []).length > 0 ? pillHtml(`corregido por ${(requirement.fixes ?? []).join(', ')}`, 'orange', '✚') : ''}
+      ${requirement.living && (requirement.changes ?? []).length === 0 && (requirement.fixes ?? []).length === 0 ? pillHtml('sin procedencia registrada', 'gray', '∅') : ''}
       <span class="group-spacer"></span>
       <span class="group-coverage" style="--tone:${tone(requirementTone(requirement))}">
         <span class="gc-track"><span class="gc-fill" style="width:${Math.round(requirementPercent)}%"></span></span>
@@ -512,6 +520,12 @@ export function matrixHtml(model: MatrixModel, nonce?: string): string {
   </select>
   ${domains.length > 1 ? `<select id="mdomain" aria-label="Dominio"><option value="">Todos los dominios</option>${domains.map((domain) => `<option value="${escapeHtml(domain)}">${escapeHtml(domain)}</option>`).join('')}</select>` : ''}
   ${changeSlugs.length > 0 ? `<select id="mchange" aria-label="Cambio"><option value="">Todos los cambios</option><option value="__none">Sin cambio activo</option>${changeSlugs.map((slug) => `<option value="${escapeHtml(slug)}">${escapeHtml(slug)}</option>`).join('')}</select>` : ''}
+  <select id="mtipo" aria-label="Procedencia">
+    <option value="all">Toda procedencia</option>
+    <option value="changes">Con cambios</option>
+    <option value="fixes">Con fixes</option>
+    <option value="none">Sin procedencia</option>
+  </select>
   <span class="fcount" id="mcount"></span>
   <button type="button" class="fclear" id="mclear" aria-label="Limpiar filtros">Limpiar</button>
 </div>`
@@ -544,6 +558,7 @@ ${status}
   <span class="legend-item" style="--tone:${tone('orange')}"><i></i>pendiente</span>
   <span class="legend-item" style="--tone:${tone('red')}"><i></i>hueco (sin tarea o sin evidencia)</span>
   <span class="legend-item" style="--tone:${tone('blue')}"><i></i>tarea que cubre</span>
+  <span class="legend-item" style="--tone:${tone('orange')}"><i></i>fix que la corrige</span>
 </div>`
 
   return panelPage({

@@ -388,3 +388,99 @@ El sistema DEBE permitir otra cosa.
     expect(segundo.scenarios[0]!.tasks).toContain('T1.1')
   })
 })
+
+describe('fixes vivos y procedencia', () => {
+  const FIX = `# Fix — Arreglo de login
+
+## Síntoma
+Falla el ingreso.
+
+## Causa raíz
+Zona horaria.
+
+## Cambio
+Comparar en local.
+
+## Rollback
+Revertir.
+
+Cubre: REQ-AUTH-001
+
+## Evidencia
+
+### REQ-AUTH-001-S1
+
+\`\`\`evidence
+method: manual
+result: pass
+date: 2026-09-20 10:00:00 -05:00
+by: Prueba
+\`\`\`
+`
+
+  async function makeArchivedPair(): Promise<string> {
+    const root = await makeWorkspace(true)
+    await createChange({ root, slug: 'arreglo', lane: 'fix', domain: 'auth', title: 'Arreglo de login' })
+    await fs.writeFile(path.join(root, '.sdd', 'changes', 'arreglo', 'fix.md'), FIX, 'utf8')
+    await archiveChange({ root, slug: 'arreglo' })
+    await archiveChange({ root, slug: 'reset-password' })
+    return root
+  }
+
+  it('el snapshot incluye fixes vivos e histórico sin fixes (REQ-FIXES-002-S1, REQ-FIXES-002-S2, REQ-FIXES-002-S3)', async () => {
+    const root = await makeArchivedPair()
+    const snapshot = await buildSnapshot(root)
+    expect(snapshot!.fixes.map((fix) => fix.slug)).toEqual(['arreglo'])
+    expect(snapshot!.fixes[0]?.domain).toBe('auth')
+    expect(snapshot!.fixes[0]?.result).toBe('pass')
+    expect(snapshot!.fixes[0]?.covers).toEqual(['REQ-AUTH-001'])
+    expect(await fs.stat(snapshot!.fixes[0]!.path)).toBeDefined()
+    expect(snapshot!.archived.map((entry) => entry.slug)).toEqual(['reset-password'])
+    expect(snapshot!.archived[0]?.lane).toBe('standard')
+    expect(await fs.stat(snapshot!.archived[0]!.file)).toBeDefined()
+    expect(snapshot!.summary.fixes).toBe(1)
+  })
+
+  it('sin historial no hay fixes ni cambios archivados (REQ-FIXES-002-S4)', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-vscode-'))
+    await initWorkspace({ root, name: 'vscode-demo', language: 'es' })
+    const snapshot = await buildSnapshot(root)
+    expect(snapshot!.fixes).toEqual([])
+    expect(snapshot!.archived).toEqual([])
+    expect(snapshot!.summary.fixes).toBe(0)
+  })
+
+  it('la matriz muestra la procedencia de cambios archivados y fixes (REQ-FIXES-003-S1, REQ-FIXES-003-S3, REQ-FIXES-004-S1)', async () => {
+    const root = await makeArchivedPair()
+    const matrix = await buildMatrix(root)
+    const requirement = matrix.requirements.find((r) => r.id === 'REQ-AUTH-001')!
+    expect(requirement.changes).toContain('reset-password')
+    expect(requirement.fixes).toContain('arreglo')
+
+    const html = matrixHtml(matrix)
+    expect(html).toContain('modificado por reset-password')
+    expect(html).toContain('corregido por arreglo')
+    expect(html).toContain('data-has-fixes="1"')
+    expect(html).toContain('data-has-changes="1"')
+    expect(html).toContain('id="mtipo"')
+    expect(html).toContain('Con fixes')
+    expect(html).toContain('Sin procedencia')
+  })
+
+  it('un requisito vivo sin procedencia lo dice expresamente (REQ-FIXES-003-S2)', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-vscode-'))
+    await initWorkspace({ root, name: 'vscode-demo', language: 'es' })
+    await fs.mkdir(path.join(root, '.sdd', 'specs', 'otro'), { recursive: true })
+    await fs.writeFile(
+      path.join(root, '.sdd', 'specs', 'otro', 'spec.md'),
+      `---\ndomain: otro\ntitle: Otro\nversion: 1\nupdated: 2026-09-20\n---\n\n# Otro\n\n### Requisito: REQ-OTRO-001 — Algo\nEl sistema DEBE hacer algo.\n\n#### Escenario: REQ-OTRO-001-S1 — Caso\n- **CUANDO** pasa algo\n- **ENTONCES** ocurre\n`,
+      'utf8',
+    )
+
+    const matrix = await buildMatrix(root)
+    const requirement = matrix.requirements.find((r) => r.id === 'REQ-OTRO-001')!
+    expect(requirement.changes).toBeUndefined()
+    expect(requirement.fixes).toBeUndefined()
+    expect(matrixHtml(matrix)).toContain('sin procedencia registrada')
+  })
+})

@@ -427,6 +427,19 @@ export function upgradeAdvisory(root: string): Promise<UpgradeAdvisory>        /
 - Respaldo en `.sdd/.backup/<marca-de-tiempo>/`: solo los elementos afectados + `backup.yaml` + puntero `.latest`.
 - Una reversión por aplicación: `--rollback` restaura el estado previo y consume el respaldo.
 
+### 5.17 `fixes` (fixes vivos)
+
+```ts
+export interface LivingFix { slug: string; file: string; date: string; result: string; domain?: string; title?: string; covers: string[]; content: string }
+export function parseFixCovers(content: string): string[]                       // línea opcional `Cubre: REQ-…` (ignora comentarios)
+export async function loadLivingFixes(root: string): Promise<LivingFix[]>       // .sdd/fixes/*.md ordenados por fecha
+export async function writeLivingFix(root: string, input: WriteLivingFixInput): Promise<WriteLivingFixResult>  // idempotente: si existe, no lo pisa
+```
+
+- El archivado del carril `fix` sella el fix vivo (encabezado con identidad + contenido íntegro) antes de mover el cambio al histórico; si el movimiento falla, elimina el fix recién creado (todo-o-nada) y las specs vivas no se tocan.
+- `Change.fixCovers` alimenta la trazabilidad: `checkTrace` avisa con `TRACE-011` si un fix declara un requisito que no existe (el fix sigue válido).
+- El registro `.sdd/INDEX.md` incluye la sección «Fixes vivos».
+
 ---
 
 ## 6. Gramáticas exactas
@@ -855,7 +868,7 @@ export interface Envelope<T> {
 
 ## 12. Servidor MCP (`satlas mcp`)
 
-- `satlas mcp` (stdio) expone herramientas **de solo lectura**: `atlas_status`, `atlas_next`, `atlas_validate`, `atlas_trace`, `atlas_impact`, `atlas_glossary`.
+- `satlas mcp` (stdio) expone herramientas **de solo lectura**: `atlas_status`, `atlas_next`, `atlas_validate`, `atlas_trace`, `atlas_impact`, `atlas_glossary`, `atlas_fixes`.
 - Nunca muta el repo: las mutaciones pasan por el CLI (acción humana/agente con permisos).
 - Pensado para agentes que no tienen extensión o prefieren introspección del estado antes de actuar.
 

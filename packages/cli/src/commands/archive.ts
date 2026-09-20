@@ -28,22 +28,26 @@ export async function runArchive(ctx: CliContext): Promise<CommandResult> {
 
   const result = await archiveChange({ root, slug, language: config.project.language, dryRun })
   const lines: string[] = [msg('archive.title', ctx.language), '']
-  if (result.fold.applied.added.length + result.fold.applied.modified.length + result.fold.applied.removed.length + result.fold.applied.renamed.length > 0) {
+  const operations = result.fold.applied.added.length + result.fold.applied.modified.length + result.fold.applied.removed.length + result.fold.applied.renamed.length
+  if (operations > 0) {
     lines.push(`${dryRun ? '[dry-run] ' : ''}${msg('archive.done', ctx.language)}`)
     lines.push(`  agregados: ${result.fold.applied.added.join(', ') || '—'}`)
     lines.push(`  modificados: ${result.fold.applied.modified.join(', ') || '—'}`)
     lines.push(`  eliminados: ${result.fold.applied.removed.join(', ') || '—'}`)
     lines.push(`  renombrados: ${result.fold.applied.renamed.join(', ') || '—'}`)
-    if (result.archivedTo) lines.push(`  archivado en: ${path.relative(ctx.cwd, result.archivedTo)}`)
+  } else if (result.livingFix) {
+    lines.push(`${dryRun ? '[dry-run] ' : ''}Fix archivado y conservado como fix vivo.`)
+    lines.push(`  fix vivo: ${result.livingFix}`)
   } else {
     lines.push('El delta no contiene operaciones (ADDED/MODIFIED/REMOVED/RENAMED).')
   }
+  if (result.archivedTo) lines.push(`  archivado en: ${path.relative(ctx.cwd, result.archivedTo)}`)
 
   const hasErrors = result.diagnostics.some((d) => d.severity === 'error')
   return {
     exitCode: hasErrors ? 1 : 0,
     diagnostics: result.diagnostics,
-    data: { slug: result.slug, domain: result.domain, archivedTo: result.archivedTo, applied: result.fold.applied, dryRun: result.dryRun },
+    data: { slug: result.slug, domain: result.domain, archivedTo: result.archivedTo, livingFix: result.livingFix, applied: result.fold.applied, dryRun: result.dryRun },
     text: lines,
   }
 }

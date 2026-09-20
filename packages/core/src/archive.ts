@@ -11,6 +11,7 @@ import type { Delta, Language } from './model.js'
 import { renderRequirement } from './parse/spec.js'
 import { loadChange, loadWorkspace } from './workspace.js'
 import { indexMarkdown } from './templates.js'
+import { loadLivingFixes, writeLivingFix } from './fixes.js'
 
 const REQ_HEADER_RE = /^###\s+(?:Requisito|Requirement):\s+(REQ-[A-Z0-9-]+)\s*(?:—|-|–)\s*(.*)$/
 
@@ -159,6 +160,7 @@ export interface ArchiveResult {
   slug: string
   domain?: string
   archivedTo?: string
+  livingFix?: string
   fold: FoldOutcome
   diagnostics: Diagnostic[]
   dryRun: boolean
@@ -189,11 +191,38 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
       diagnostics.push(diag('ATLAS-ARCH-002', 'error', `Ya existe un cambio archivado en ${targetFix}`, { path: targetFix }))
       return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: opts.dryRun ?? false }
     }
+    let livingFix: string | undefined
+    let livingCreated = false
+    if (!opts.dryRun) {
+      const fixRaw = (await readTextIfExists(path.join(change.dir, 'fix.md'))) ?? ''
+      try {
+        const written = await writeLivingFix(root, {
+          slug: opts.slug,
+          date: localDate(nowFix),
+          result: 'pass',
+          ...(change.meta.domain !== undefined ? { domain: change.meta.domain } : {}),
+          ...(change.meta.title !== undefined ? { title: change.meta.title } : {}),
+          covers: change.fixCovers ?? [],
+          content: fixRaw,
+        })
+        livingFix = written.relativePath
+        livingCreated = written.created
+      } catch (error) {
+        diagnostics.push(
+          diag('ATLAS-ARCH-006', 'error', `No se pudo conservar el fix vivo: ${(error as Error).message}`, {
+            path: path.join(root, '.sdd', 'fixes'),
+            suggestion: 'Revisa los permisos de .sdd/fixes y vuelve a intentar; el fix sigue sin archivar',
+          }),
+        )
+        return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: false }
+      }
+    }
     if (!opts.dryRun) {
       await ensureDir(path.dirname(targetFix))
       try {
         await moveDirectory(change.dir, targetFix)
       } catch (error) {
+        if (livingCreated && livingFix) await removeFile(path.join(root, livingFix))
         diagnostics.push(
           diag('ATLAS-ARCH-004', 'error', `No se pudo mover el cambio al histórico: ${(error as Error).message}`, {
             path: change.dir,
@@ -202,9 +231,16 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
         )
         return { slug: opts.slug, fold: emptyFold, diagnostics, dryRun: false }
       }
-      await regenerateIndex(root, config)
+      await regenerateIndex(root, config, nowFix)
     }
-    return { slug: opts.slug, archivedTo: targetFix, fold: emptyFold, diagnostics, dryRun: opts.dryRun ?? false }
+    return {
+      slug: opts.slug,
+      archivedTo: targetFix,
+      ...(livingFix !== undefined ? { livingFix } : {}),
+      fold: emptyFold,
+      diagnostics,
+      dryRun: opts.dryRun ?? false,
+    }
   }
 
   if (!change.delta) {
@@ -272,13 +308,23 @@ export async function regenerateIndex(root: string, cfg?: AtlasConfig, now: Date
   const { workspace, config } = cfg ? { workspace: (await loadWorkspace(root)).workspace, config: cfg } : await loadWorkspace(root)
   const archiveDir = path.join(root, '.sdd', 'changes', 'archive')
   const archived = (await exists(archiveDir)) ? (await fs.readdir(archiveDir)).filter((e) => !e.startsWith('.')).length : 0
+  const fixes = await loadLivingFixes(root)
   const markdown = indexMarkdown({
     projectName: config.project.name,
     language: config.project.language,
     specs: workspace.specs.map((s) => ({ domain: s.domain, requirements: s.spec.requirements.length })),
     changes: workspace.changes.map((c) => ({ slug: c.slug, lane: c.meta?.lane ?? config.lanes.default })),
+    fixes: fixes.map((fix) => ({ slug: fix.slug, date: fix.date, result: fix.result, ...(fix.domain !== undefined ? { domain: fix.domain } : {}) })),
     archived,
   })
   void now
   await writeText(path.join(root, '.sdd', 'INDEX.md'), markdown)
+}
+
+async function removeFile(file: string): Promise<void> {
+  try {
+    await rm(file, { force: true })
+  } catch {
+    // la limpieza es best-effort
+  }
 }

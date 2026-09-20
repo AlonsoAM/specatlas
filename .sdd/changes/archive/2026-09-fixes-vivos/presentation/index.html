@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta — Fixes vivos y trazabilidad de specs y fixes</title>
+<style>:root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#0f766e; --accent-soft:#ccfbf1; --warn:#b45309; --ok:#15803d; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#111a2c; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#2dd4bf; --accent-soft:#134e4a; --warn:#f59e0b; --ok:#4ade80; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+.hero { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: white; border-radius: 18px; padding: 28px; margin-bottom: 28px; }
+.hero h1 { margin: 6px 0 10px; font-size: 30px; line-height: 1.2; }
+.kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; opacity: .9; margin: 0; }
+.meta { margin: 0; font-size: 13px; opacity: .95; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+section h2 { margin-top: 0; font-size: 20px; }
+h3 { margin-bottom: 4px; }
+h4 { margin: 14px 0 6px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: #0b1220; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow:auto; font-size: 13px; }
+pre code { background: transparent; color: inherit; }
+.badge { display:inline-block; font-size: 11px; text-transform: uppercase; letter-spacing:.08em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-left: 8px; }
+.req { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.req:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.rules { color: var(--muted); font-size: 14px; }
+.scenario { margin: 8px 0 8px 0; }
+.when { color: var(--muted); }
+.then { font-weight: 600; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.pass { color: var(--ok); border-color: var(--ok); }
+.pill.fail { color: #dc2626; border-color: #dc2626; }
+.pill.skipped, .pill.pending { color: var(--warn); border-color: var(--warn); }
+.mockups { display:grid; gap: 18px; }
+.mockup { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mockup header { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.mockup iframe { width: 100%; height: 560px; border: 0; background: white; }
+.mockup.phone iframe { max-width: 420px; margin: 0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid-shots img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+footer { color: var(--muted); font-size: 13px; text-align:center; }
+.callout { border-left: 4px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, transparent); padding: 12px 14px; border-radius: 8px; }
+@media print { body { background: white; } section { break-inside: avoid; } .hero { background: #0f766e; } }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Propuesta · fixes · standard</p>
+    <h1>Fixes vivos y trazabilidad de specs y fixes</h1>
+    <p class="meta">SpecAtlas · Hash b5c9f248 · Generado 2026-09-20 13:45:38 -05:00</p>
+  </header>
+
+  <section>
+    <h2>Resumen de negocio</h2>
+    <h1 id="propuesta-fixes-vivos-y-trazabilidad-de-specs-y-fixes">Propuesta — Fixes vivos y trazabilidad de specs y fixes</h1>
+<h2 id="por-que">Por qué</h2>
+<p>Las specs tienen memoria viva (<code>.sdd/specs/</code>), pero los fixes no: al archivar un fix solo queda enterrado en <code>changes/archive/</code>, invisible en el editor (el árbol solo muestra cambios activos) y ajeno a la trazabilidad. Se pierde el porqué de las correcciones urgentes y no se ve qué tocó cada requisito. La matriz, además, no distingue qué cambios y qué fixes movieron un requisito.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<ul><li>Al archivar un fix queda un <strong>fix vivo</strong> navegable (uno por fix: fecha, dominio, título, resultado de su evidencia y contenido íntegro), incluido en el registro del proyecto; archivar de nuevo no lo duplica y el carril express sigue sin plegar comportamiento en las specs vivas.</li><li>La <strong>vista lateral</strong> suma dos grupos: «Fixes» (fecha, dominio y resultado, del más reciente al más antiguo; un clic lo abre) e «Histórico» (cambios archivados que no son fixes, con carril y fecha de cierre).</li><li>La <strong>matriz de trazabilidad</strong> muestra, por requisito vivo, además de escenarios → tareas → evidencia, <strong>qué cambios y fixes lo tocaron</strong>, con filtros por dominio y por tipo de procedencia; sin registros lo dice expresamente.</li><li>Un fix puede declarar <strong>qué requisitos afecta</strong> (opcional, en el propio fix); si el identificador no existe se avisa sin invalidar el fix.</li><li>Los fixes vivos se consultan también en <strong><code>satlas status</code></strong> y en la <strong>vía de consulta para asistentes</strong>, siempre en solo lectura y sin inventar cuando no hay ninguno.</li></ul>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>Fusionar fixes en las specs vivas: el carril express no cambia comportamiento documentado.</li><li>Editar o firmar fixes vivos desde el editor: se abren, no se reescriben.</li><li>Un panel nuevo de specs: la trazabilidad se amplía en la matriz existente.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Archivar un fix lo deja visible y consultable (editor, estado del proyecto y vía de asistentes) con su contenido íntegro, sin tocar las specs vivas.</li><li>Abrir un requisito muestra de un vistazo sus cambios y fixes; si no hay registros, lo dice sin inventar.</li><li>El árbol muestra fixes e histórico sin duplicados y sin depender de cerrar y reabrir paneles.</li></ul>
+  </section>
+
+  <section>
+    <h2>Criterios de aceptación</h2>
+    <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-FIXES-001-S1</code></td><td>Fix archivado con su identidad</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-001-S2</code></td><td>Registro del proyecto al día</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-001-S3</code></td><td>Archivar de nuevo el mismo fix</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-001-S4</code></td><td>El fix no altera las specs vivas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-001-S5</code></td><td>Sin permiso para conservar el fix vivo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-002-S1</code></td><td>Lista de fixes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-002-S2</code></td><td>Abrir un fix desde la lista</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-002-S3</code></td><td>Lista del histórico</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-002-S4</code></td><td>Proyecto sin historial</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-003-S1</code></td><td>Requisito tocado por cambios y fixes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-003-S2</code></td><td>Requisito sin procedencia registrada</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-003-S3</code></td><td>Filtros por dominio y procedencia</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-004-S1</code></td><td>Fix con requisitos declarados</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-004-S2</code></td><td>Fix con un requisito inexistente</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-004-S3</code></td><td>Fix sin declaración</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-005-S1</code></td><td>El estado del proyecto con fixes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-005-S2</code></td><td>Consulta detallada de los fixes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-005-S3</code></td><td>Sin fixes vivos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-FIXES-005-S4</code></td><td>Consulta sin efectos</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Requisitos y escenarios</h2>
+    <div class="req"><h3>REQ-FIXES-001 — Un fix archivado queda vivo<span class="badge">agregado</span></h3><p>El equipo necesita que los fixes corregidos no desaparezcan en el histórico: al cerrar un fix debe quedar una pieza viva, consultable después, con su fecha, su dominio y el resultado de su verificación, para no volver a investigar lo ya resuelto ni perder el porqué de una corrección urgente.</p><ul class="rules"><li><code>BR-FIXES-001</code> — Al archivar un fix se conserva su contenido íntegro (síntoma, causa raíz, cambio, reversión y evidencia) tal como quedó; el fix vivo no se reescribe al crearse.</li><li><code>BR-FIXES-002</code> — Archivar es idempotente: un fix ya conservado no se duplica ni se pisa.</li></ul><div class="scenario"><h4>REQ-FIXES-001-S1 — Fix archivado con su identidad</h4><div class="when">CUANDO el equipo archiva un fix verificado</div><div class="then">ENTONCES queda un fix vivo con su fecha, su dominio, su título y el resultado de su evidencia, y con su contenido íntegro</div></div><div class="scenario"><h4>REQ-FIXES-001-S2 — Registro del proyecto al día</h4><div class="when">CUANDO se archiva un fix</div><div class="then">ENTONCES el registro del proyecto (el mismo que enumera specs y cambios) lo incluye junto a los demás fixes vivos</div></div><div class="scenario"><h4>REQ-FIXES-001-S3 — Archivar de nuevo el mismo fix</h4><div class="when">CUANDO se archiva un fix que ya estaba conservado como fix vivo</div><div class="then">ENTONCES no se duplica ni se pierde el existente</div></div><div class="scenario"><h4>REQ-FIXES-001-S4 — El fix no altera las specs vivas</h4><div class="when">CUANDO se archiva un fix</div><div class="then">ENTONCES las specs vivas quedan idénticas: el carril express no pliega comportamiento nuevo</div></div><div class="scenario"><h4>REQ-FIXES-001-S5 — Sin permiso para conservar el fix vivo</h4><div class="when">CUANDO el archivado no puede conservar el fix vivo por falta de permiso de escritura</div><div class="then">ENTONCES el fix sigue sin archivar, nada queda a medias y recibe el motivo</div></div></div><div class="req"><h3>REQ-FIXES-002 — Ver los fixes y el histórico en la vista lateral<span class="badge">agregado</span></h3><p>El equipo necesita ver en el editor qué fixes ya se hicieron y qué cambios se cerraron, sin recorrer carpetas, para reutilizar decisiones y saber qué quedó atrás.</p><ul class="rules"><li><code>BR-FIXES-003</code> — La vista lateral muestra dos grupos: «Fixes» (los fixes vivos) e «Histórico» (los cambios archivados que no son fixes); un fix no se muestra duplicado en el histórico.</li></ul><div class="scenario"><h4>REQ-FIXES-002-S1 — Lista de fixes</h4><div class="when">CUANDO el proyecto tiene fixes archivados</div><div class="then">ENTONCES la vista lateral muestra cada uno con su fecha, su dominio y el resultado de su evidencia, del más reciente al más antiguo</div></div><div class="scenario"><h4>REQ-FIXES-002-S2 — Abrir un fix desde la lista</h4><div class="when">CUANDO el equipo elige un fix de la lista</div><div class="then">ENTONCES se abre su contenido</div></div><div class="scenario"><h4>REQ-FIXES-002-S3 — Lista del histórico</h4><div class="when">CUANDO el proyecto tiene cambios archivados que no son fixes</div><div class="then">ENTONCES la vista lateral los muestra con su nombre, su carril y su fecha de cierre</div></div><div class="scenario"><h4>REQ-FIXES-002-S4 — Proyecto sin historial</h4><div class="when">CUANDO el proyecto no tiene fixes ni cambios archivados</div><div class="then">ENTONCES los dos grupos aparecen vacíos e indican que se llenan al archivar</div></div></div><div class="req"><h3>REQ-FIXES-003 — La trazabilidad muestra qué tocó cada requisito<span class="badge">agregado</span></h3><p>El equipo necesita ver, para cada requisito vivo, no solo sus escenarios, tareas y evidencia, sino también qué cambios y qué fixes lo tocaron, para entender su historia y no atribuir a nadie lo que no está registrado.</p><ul class="rules"><li><code>BR-FIXES-004</code> — La procedencia sale de lo registrado (tareas que cubren, cambios que lo declararon y fixes que lo declaran); lo no registrado no se supone.</li><li><code>BR-FIXES-005</code> — La trazabilidad se puede filtrar por dominio y por tipo de procedencia (cambios, fixes), sin alterar los datos de cobertura mostrados.</li></ul><div class="scenario"><h4>REQ-FIXES-003-S1 — Requisito tocado por cambios y fixes</h4><div class="when">CUANDO un requisito vivo fue declarado por cambios archivados y por fixes</div><div class="then">ENTONCES su fila muestra ambos tipos de procedencia con sus nombres</div></div><div class="scenario"><h4>REQ-FIXES-003-S2 — Requisito sin procedencia registrada</h4><div class="when">CUANDO un requisito vivo no tiene cambios ni fixes registrados</div><div class="then">ENTONCES se indica expresamente que no hay procedencia registrada, sin inventarla</div></div><div class="scenario"><h4>REQ-FIXES-003-S3 — Filtros por dominio y procedencia</h4><div class="when">CUANDO el equipo filtra por un dominio o por un tipo de procedencia</div><div class="then">ENTONCES solo quedan visibles los requisitos que cumplen el filtro y el resto de los datos no cambia</div></div></div><div class="req"><h3>REQ-FIXES-004 — Un fix declara qué requisitos afecta (opcional)<span class="badge">agregado</span></h3><p>Quien cierra un fix necesita poder dejar constancia de los requisitos que su corrección afecta, para que la trazabilidad no lo pierda, sin que declararlo sea obligatorio.</p><ul class="rules"><li><code>BR-FIXES-006</code> — La declaración es opcional y vive en el propio fix; si menciona un requisito inexistente, se avisa sin invalidar el fix.</li><li><code>BR-FIXES-007</code> — La declaración no altera el veredicto del fix ni sus evidencias.</li></ul><div class="scenario"><h4>REQ-FIXES-004-S1 — Fix con requisitos declarados</h4><div class="when">CUANDO un fix declara requisitos existentes</div><div class="then">ENTONCES esos requisitos muestran el fix en su trazabilidad</div></div><div class="scenario"><h4>REQ-FIXES-004-S2 — Fix con un requisito inexistente</h4><div class="when">CUANDO un fix declara un requisito que no existe</div><div class="then">ENTONCES recibe un aviso explícito con el identificador y el fix sigue siendo válido</div></div><div class="scenario"><h4>REQ-FIXES-004-S3 — Fix sin declaración</h4><div class="when">CUANDO un fix no declara requisitos</div><div class="then">ENTONCES sigue siendo válido y aparece en la lista de fixes, sin asociarse a ningún requisito</div></div></div><div class="req"><h3>REQ-FIXES-005 — Los fixes vivos se ven también fuera del editor<span class="badge">agregado</span></h3><p>El equipo y los asistentes necesitan consultar los fixes vivos desde la terminal y desde la vía de consulta para asistentes, con su detalle, sin abrir el editor.</p><ul class="rules"><li><code>BR-FIXES-008</code> — La consulta es de solo lectura: informa los fixes vivos registrados; nunca los crea, edita ni archiva.</li><li><code>BR-FIXES-009</code> — Lo informado coincide con los fixes vivos del proyecto; sin fixes, se indica y no se inventa.</li></ul><div class="scenario"><h4>REQ-FIXES-005-S1 — El estado del proyecto con fixes</h4><div class="when">CUANDO se consulta el estado del proyecto y hay fixes vivos</div><div class="then">ENTONCES se listan o resumen con su fecha, su dominio y su resultado</div></div><div class="scenario"><h4>REQ-FIXES-005-S2 — Consulta detallada de los fixes</h4><div class="when">CUANDO un asistente consulta los fixes vivos</div><div class="then">ENTONCES recibe cada fix con su identidad, su contenido y los requisitos que declara</div></div><div class="scenario"><h4>REQ-FIXES-005-S3 — Sin fixes vivos</h4><div class="when">CUANDO se consultan los fixes y no hay ninguno</div><div class="then">ENTONCES se recibe una respuesta que lo indica y la acción para archivar un fix existente, sin inventar contenido</div></div><div class="scenario"><h4>REQ-FIXES-005-S4 — Consulta sin efectos</h4><div class="when">CUANDO se consultan los fixes vivos</div><div class="then">ENTONCES los archivos del proyecto quedan idénticos antes y después</div></div></div>
+  </section>
+
+  <section>
+    <h2>Mockups</h2>
+    <p><em>Este cambio no declara mockups.</em></p>
+    
+  </section>
+
+  <section>
+    <h2>Aprobación</h2>
+    <div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ Aprobada por Alonso Anchante el 2026-09-20 13:45:38 -05:00. Cualquier cambio posterior invalida la firma.</div>
+  </section>
+
+  <footer>SpecAtlas · SpecAtlas · 2026-09-20 13:45:38 -05:00</footer>
+</div>
+</body>
+</html>

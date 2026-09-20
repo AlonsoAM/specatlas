@@ -181,6 +181,17 @@ export function checkTrace(input: TraceInput): TraceResult {
     }
   }
 
+  for (const cover of change.fixCovers ?? []) {
+    if (!livingReqs.has(cover)) {
+      findings.push(
+        diag('TRACE-011', 'warning', `El fix ${change.slug} declara ${cover}, que no existe en las specs vivas`, {
+          path: change.fix?.path,
+          suggestion: 'Corrige el identificador o quítalo: la declaración es opcional',
+        }) as TraceFinding,
+      )
+    }
+  }
+
   const summary = countBySeverity(findings)
   return { graph: buildTraceGraph(input), findings, summary }
 }

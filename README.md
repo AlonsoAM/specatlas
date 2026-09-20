@@ -21,7 +21,7 @@ F0 (fundaciones) en desarrollo:
 | CLI `specatlas` / `satlas` (`init`, `new`, `approve`, `status`, `next`, `validate`, `trace`, `waves`, `doctor`, `archive`) | ✅ |
 | Perfiles de stack (`generic`, `node-ts`, `python`, `dotnet-sqlserver`) + detección | ✅ |
 | Plantillas es/en (es por defecto), `meta.yaml`, evidencia por escenario | ✅ |
-| Tests (vitest, 207 casos) y typecheck | ✅ |
+| Tests (vitest, 230 casos) y typecheck | ✅ |
 | Compilador de adaptadores (`@specatlas/adapters`: opencode, Claude Code, genérico) + manifiesto y `--check` | ✅ |
 | Comandos `adapters`, `profile`, `hash` | ✅ |
 | Fixtures multi-stack (node-ts, python, dotnet) | ✅ |
@@ -38,6 +38,7 @@ F0 (fundaciones) en desarrollo:
 | F3: servidor MCP de solo lectura (`satlas mcp`) para que los asistentes consulten estado, siguiente acción, hallazgos, cobertura, impacto y glosario | ✅ |
 | F3: `satlas upgrade` (migraciones de esquema): aviso pasivo, vista previa, aplicación con respaldo recuperable, reversión y `--json` | ✅ |
 | F3: informe de hallazgos **SARIF** (`satlas ci --sarif`) y **Action oficial** en el repo (`uses: AlonsoAM/specatlas@v1`) con gate real en cada PR | ✅ |
+| F3: **fixes vivos** (`.sdd/fixes/`), grupos Fixes/Histórico en el editor, procedencia de cambios y fixes en la Matriz y `atlas_fixes` en la vía de consulta | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -147,6 +148,7 @@ pnpm satlas mcp        # queda escuchando mensajes JSON-RPC por stdio
 | `atlas_trace` | Cobertura por escenario: tarea que lo cubre, evidencia y huecos |
 | `atlas_impact` | Impacto registrado de un requisito (`REQ-…`) o de un archivo |
 | `atlas_glossary` | Términos del glosario del negocio con su definición vigente |
+| `atlas_fixes` | Fixes vivos (carril express archivado): identidad, resultado, contenido y requisitos que declaran |
 
 Se registra como servidor local en el asistente (opencode, Claude Code, Cursor…). En opencode, por ejemplo:
 
@@ -171,6 +173,14 @@ satlas upgrade --rollback   # restaura el estado previo (consume el respaldo)
 ```
 
 La aplicación es **todo o nada** (si algo falla, el proyecto queda exactamente como estaba), **idempotente** (repetirla no cambia nada) y admite `--json`. Nunca actualiza hacia atrás: un proyecto producido por una versión más nueva se avisa, no se degrada. El respaldo en `.sdd/.backup/` no debe versionarse.
+
+## Fixes vivos (carril express)
+
+Al archivar un fix (`satlas new <slug> --lane fix` → `satlas archive <slug> --yes`), la corrección queda **viva** en `.sdd/fixes/<AAAA-MM>-<slug>.md` con su síntoma, causa raíz, cambio, rollback y evidencia, y se lista en `.sdd/INDEX.md`. El carril express **no pliega nada** en las specs vivas: no cambia comportamiento documentado.
+
+- El árbol de VS Code muestra los grupos **Fixes** (fecha, dominio y resultado; un clic lo abre) e **Histórico** (cambios archivados que no son fixes).
+- La **Matriz de trazabilidad** muestra por requisito qué **cambios** y **fixes** lo tocaron, con filtro por procedencia; un fix puede declarar `Cubre: REQ-…` (opcional) en su `fix.md` — si el requisito no existe se avisa (`TRACE-011`) y el fix sigue siendo válido.
+- `satlas status` lista los fixes vivos y la vía de consulta para asistentes expone `atlas_fixes` (solo lectura).
 
 ## Integración con GitHub (opcional, nunca un gate por defecto)
 

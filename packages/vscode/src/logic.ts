@@ -7,6 +7,7 @@ import {
   findWorkspaceRoot,
   lintDelta,
   loadApprovals,
+  loadLivingFixes,
   loadWorkspace,
   evaluatePacks,
   mockupsReady,
@@ -147,8 +148,29 @@ export interface Snapshot {
   language: Language
   specs: SnapshotSpec[]
   changes: SnapshotChange[]
+  fixes: SnapshotFix[]
+  archived: SnapshotArchived[]
   diagnostics: FlatDiagnostic[]
-  summary: { specs: number; changes: number; errors: number; warnings: number }
+  summary: { specs: number; changes: number; fixes: number; errors: number; warnings: number }
+}
+
+export interface SnapshotFix {
+  slug: string
+  date: string
+  result: string
+  path: string
+  covers: string[]
+  domain?: string
+  title?: string
+}
+
+export interface SnapshotArchived {
+  slug: string
+  lane: string
+  month: string
+  path: string
+  file: string
+  title?: string
 }
 
 export async function buildSnapshot(startDir: string): Promise<Snapshot | undefined> {
@@ -226,6 +248,32 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
 
   const sortedChanges = sortChanges(changes)
 
+  const livingFixes = await loadLivingFixes(root)
+  const fixes: SnapshotFix[] = livingFixes.map((fix) => ({
+    slug: fix.slug,
+    date: fix.date,
+    result: fix.result,
+    path: fix.file,
+    covers: fix.covers,
+    ...(fix.domain !== undefined ? { domain: fix.domain } : {}),
+    ...(fix.title !== undefined ? { title: fix.title } : {}),
+  }))
+
+  const archived: SnapshotArchived[] = []
+  for (const change of workspace.archived ?? []) {
+    if (change.meta?.lane === 'fix') continue
+    const month = /^(\d{4}-\d{2})/.exec(path.basename(change.dir))?.[1] ?? ''
+    archived.push({
+      slug: change.slug,
+      lane: change.meta?.lane ?? 'standard',
+      month,
+      path: change.dir,
+      file: path.join(change.dir, 'spec.md'),
+      ...(change.meta?.title !== undefined ? { title: change.meta.title } : {}),
+    })
+  }
+  archived.sort((a, b) => b.month.localeCompare(a.month) || a.slug.localeCompare(b.slug))
+
   return {
     root,
     projectName: config.project.name,
@@ -244,10 +292,13 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       })),
     })),
     changes: sortedChanges,
+    fixes,
+    archived,
     diagnostics,
     summary: {
       specs: workspace.specs.length,
       changes: changes.length,
+      fixes: fixes.length,
       errors: diagnostics.filter((d) => d.severity === 'error').length,
       warnings: diagnostics.filter((d) => d.severity === 'warning').length,
     },
@@ -421,6 +472,7 @@ export interface MatrixRequirement {
   scenarios: MatrixScenario[]
   domain?: string
   changes?: string[]
+  fixes?: string[]
 }
 
 export interface MatrixModel {
@@ -473,6 +525,7 @@ export async function buildMatrix(root: string): Promise<MatrixModel> {
       scenarios,
       ...(requirement.domain !== undefined ? { domain: requirement.domain } : {}),
       ...(requirement.changes !== undefined && requirement.changes.length > 0 ? { changes: requirement.changes } : {}),
+      ...(requirement.fixes !== undefined && requirement.fixes.length > 0 ? { fixes: requirement.fixes } : {}),
     })
   }
 

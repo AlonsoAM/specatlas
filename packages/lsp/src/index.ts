@@ -2,6 +2,7 @@ import path from 'node:path'
 import {
   checkTrace,
   lintDelta,
+  loadLivingFixes,
   loadWorkspace,
   parseDelta,
   parseRequirementBlocks,
@@ -23,6 +24,7 @@ export interface ReqInfo {
   living: boolean
   domain?: string
   changes?: string[]
+  fixes?: string[]
 }
 
 export interface ScenarioInfo {
@@ -139,6 +141,25 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
       const list = evidence.get(entry.scenario) ?? []
       list.push({ scenario: entry.scenario, result: entry.result, method: entry.method, file: change.fix?.path ?? '', line: entry.line })
       evidence.set(entry.scenario, list)
+    }
+    if (change.delta) {
+      for (const requirement of [...change.delta.added, ...change.delta.modified]) {
+        const info = requirements.get(requirement.id)
+        if (!info) continue
+        const list = info.changes ?? []
+        if (!list.includes(change.slug)) list.push(change.slug)
+        info.changes = list
+      }
+    }
+  }
+
+  for (const fix of await loadLivingFixes(root)) {
+    for (const cover of fix.covers) {
+      const info = requirements.get(cover)
+      if (!info) continue
+      const list = info.fixes ?? []
+      if (!list.includes(fix.slug)) list.push(fix.slug)
+      info.fixes = list
     }
   }
 

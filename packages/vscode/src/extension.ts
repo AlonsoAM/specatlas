@@ -37,8 +37,10 @@ import {
   previewHtml,
   toolGroups,
   type Snapshot,
+  type SnapshotArchived,
   type SnapshotChange,
   type SnapshotFile,
+  type SnapshotFix,
   type SnapshotSpec,
   type SnapshotSpecItem,
   type SnapshotTaskItem,
@@ -97,6 +99,8 @@ type Node =
   | { kind: 'taskBlock'; change: SnapshotChange; file: SnapshotFile; block: string; tasks: SnapshotTaskItem[] }
   | { kind: 'task'; change: SnapshotChange; file: SnapshotFile; task: SnapshotTaskItem }
   | { kind: 'mockup'; change: SnapshotChange; screen: SnapshotMockupItem }
+  | { kind: 'livingFix'; fix: SnapshotFix }
+  | { kind: 'archivedChange'; archived: SnapshotArchived }
 
 interface AtlasExtensionState {
   snapshots: Snapshot[]
@@ -155,6 +159,39 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         item.iconPath = new vscode.ThemeIcon('symbol-interface', new vscode.ThemeColor('charts.blue'))
         item.contextValue = 'specItem'
         item.command = { command: 'specatlas.openAt', title: 'Abrir en el requisito', arguments: [node.spec.path, node.item.line] }
+        return item
+      }
+      case 'livingFix': {
+        const fix = node.fix
+        const item = new vscode.TreeItem(fix.slug, vscode.TreeItemCollapsibleState.None)
+        item.description = `${fix.date} · ${fix.domain ?? '—'} · ${fix.result}`
+        item.tooltip = new vscode.MarkdownString(
+          [
+            `**${fix.title ?? fix.slug}**`,
+            '',
+            `Archivado: ${fix.date} · dominio \`${fix.domain ?? '—'}\` · evidencia \`${fix.result}\``,
+            fix.covers.length > 0 ? `Cubre: ${fix.covers.map((cover) => `\`${cover}\``).join(', ')}` : '',
+            '',
+            `\`${vscode.workspace.asRelativePath(fix.path)}\``,
+          ]
+            .filter((line) => line !== '')
+            .join('\n'),
+        )
+        item.iconPath = new vscode.ThemeIcon('wrench', new vscode.ThemeColor('charts.orange'))
+        item.contextValue = 'livingFix'
+        item.command = { command: 'specatlas.openPreview', title: 'Abrir fix vivo', arguments: [fix.path] }
+        return item
+      }
+      case 'archivedChange': {
+        const archived = node.archived
+        const item = new vscode.TreeItem(archived.slug, vscode.TreeItemCollapsibleState.None)
+        item.description = `${archived.lane} · ${archived.month}`
+        item.tooltip = new vscode.MarkdownString(
+          [`**${archived.title ?? archived.slug}**`, '', `Carril \`${archived.lane}\` · cerrado en ${archived.month}`, '', `\`${vscode.workspace.asRelativePath(archived.file)}\``].join('\n'),
+        )
+        item.iconPath = new vscode.ThemeIcon('archive')
+        item.contextValue = 'archivedChange'
+        item.command = { command: 'specatlas.openPreview', title: 'Abrir cambio archivado', arguments: [archived.file] }
         return item
       }
       case 'change': {
@@ -301,6 +338,8 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
     return this.state.snapshots.map((snapshot) => {
       const specs: Node[] = snapshot.specs.map((spec) => ({ kind: 'spec', spec }))
       const changes: Node[] = snapshot.changes.map((change) => ({ kind: 'change', change }))
+      const fixes: Node[] = snapshot.fixes.map((fix) => ({ kind: 'livingFix', fix }))
+      const archived: Node[] = snapshot.archived.map((entry) => ({ kind: 'archivedChange', archived: entry }))
       const ready = snapshot.changes.filter((change) => change.state === 'ready').length
       const blocked = snapshot.changes.filter((change) => change.blockedBy.length > 0).length
       return {
@@ -320,6 +359,23 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             children: specs,
           },
           { kind: 'group', label: 'Cambios', description: `${snapshot.summary.changes}`, icon: 'git-pull-request', tone: 'charts.green', children: changes },
+          {
+            kind: 'group',
+            label: 'Fixes',
+            description: snapshot.fixes.length > 0 ? `${snapshot.fixes.length}` : '0 · se llenan al archivar un fix',
+            icon: 'wrench',
+            tone: 'charts.orange',
+            tooltip: '**Fixes vivos** — las correcciones del carril express ya archivadas.\n\nSe llenan al archivar: `satlas archive <slug>` conserva el fix en `.sdd/fixes/` con su causa, su cambio y su evidencia.',
+            children: fixes,
+          },
+          {
+            kind: 'group',
+            label: 'Histórico',
+            description: snapshot.archived.length > 0 ? `${snapshot.archived.length}` : '0 · se llena al archivar',
+            icon: 'archive',
+            tooltip: '**Histórico** — cambios archivados que no son fixes (los fixes viven en su propio grupo).',
+            children: archived,
+          },
         ],
       }
     })
