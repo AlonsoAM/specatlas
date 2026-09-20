@@ -4,6 +4,7 @@ import { countBySeverity } from './diagnostics.js'
 import { listDirs } from './fsx.js'
 import { lintDelta } from './lint.js'
 import { checkTrace } from './trace.js'
+import { linkedTraceInput } from './links.js'
 import { deriveState, stateLabel, verifyApproval, type ChangeState } from './lifecycle.js'
 import { loadApprovals, loadWorkspace } from './workspace.js'
 import type { Diagnostic } from './diagnostics.js'
@@ -90,6 +91,7 @@ export async function collectMetrics(root: string, now: Date = new Date()): Prom
       specs: workspace.specs,
       change,
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+      linked: linkedTraceInput(workspace),
     })
     findings.push(...trace.findings)
     const state = deriveState({ change, cfg: config, approval, blockingFindings: change.delta ? countBySeverity(findings).errors : 0 })

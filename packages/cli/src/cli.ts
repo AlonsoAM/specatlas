@@ -20,7 +20,9 @@ import { runApprove } from './commands/approve.js'
 import { runArchive } from './commands/archive.js'
 import { runCi } from './commands/ci.js'
 import { runClarify } from './commands/clarify.js'
+import { runContracts } from './commands/contracts.js'
 import { runDocs } from './commands/docs.js'
+import { runLink } from './commands/link.js'
 import { runProfile } from './commands/profile.js'
 import { runDoctorCommand } from './commands/doctor.js'
 import { runHash } from './commands/hash.js'
@@ -78,6 +80,8 @@ const HANDLERS: Record<string, CommandHandler> = {
   doctor: runDoctorCommand,
   clarify: runClarify,
   docs: runDocs,
+  contracts: runContracts,
+  link: runLink,
   upgrade: runUpgrade,
   approve: runApprove,
   issue: runIssue,

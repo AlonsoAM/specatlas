@@ -5,6 +5,7 @@ import { countBySeverity, diag } from './diagnostics.js'
 import { readTextIfExists, writeText } from './fsx.js'
 import { lintDelta, lintPlan } from './lint.js'
 import { checkTrace } from './trace.js'
+import { linkedTraceInput } from './links.js'
 import { planWaves } from './waves.js'
 import { checkMockups } from './mockups.js'
 import { evaluatePacks, packFindings, resolvePacks } from './packs.js'
@@ -64,7 +65,7 @@ export async function runAnalyze(opts: AnalyzeOptions): Promise<AnalyzeResult> {
     findings.push(...lintDelta(change.delta, living, path.join(change.dir, 'spec.md'), { language: config.spec.language }))
   }
 
-  const trace = checkTrace({ specs: workspace.specs, change, requireEvidence: false })
+  const trace = checkTrace({ specs: workspace.specs, change, requireEvidence: false, linked: linkedTraceInput(workspace) })
   findings.push(...trace.findings)
 
   let waves: AnalyzeResult['waves']

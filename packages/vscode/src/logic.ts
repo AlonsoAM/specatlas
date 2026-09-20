@@ -8,7 +8,9 @@ import {
   lintDelta,
   loadApprovals,
   loadLivingFixes,
+  linkedTraceInput,
   clarifyAdvisory,
+  contractsAdvisory,
   docsAdvisory,
   loadWorkspace,
   evaluatePacks,
@@ -203,6 +205,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       specs: workspace.specs,
       change,
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+      linked: linkedTraceInput(workspace),
     })
     const blocking = [...lintFindings, ...trace.findings].filter((d) => d.severity === 'error').length
     const requiresMockupGate = requiresMockups(change.meta, config)
@@ -215,7 +218,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
     })
 
-    const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config)]
+    const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
     for (const finding of [...lintFindings, ...trace.findings, ...phaseAdvisories]) diagnostics.push(toFlat(finding))
     if (packEvaluation) {
       const evaluations = evaluatePacks(packEvaluation.packs, change, config)

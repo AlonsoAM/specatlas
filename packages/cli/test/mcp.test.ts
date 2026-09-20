@@ -409,6 +409,69 @@ describe('MCP: atlas_fixes (REQ-FIXES-005)', () => {
   })
 })
 
+describe('MCP: atlas_contracts y atlas_links (REQ-INTEGRACIONES-005)', () => {
+  it('S3: contratos con operaciones y hallazgos de cobertura', async () => {
+    const root = await initWorkspace()
+    await initChange(root, 'gestion-tareas', `## Requisitos agregados
+
+### Requisito: REQ-TAREA-001 — Gestionar tareas
+El sistema DEBE permitir gestionar tareas.
+
+#### Escenario: REQ-TAREA-001-S1 — Listar tareas
+- **CUANDO** el equipo pide la lista
+- **ENTONCES** recibe las tareas
+- **Contrato**: GET /tareas
+`)
+    const contractsDir = path.join(root, '.sdd', 'changes', 'gestion-tareas', 'contracts')
+    await fs.mkdir(contractsDir, { recursive: true })
+    await fs.writeFile(
+      path.join(contractsDir, 'openapi.yaml'),
+      `openapi: 3.0.0\ninfo:\n  title: Tareas\n  version: 1.0.0\npaths:\n  /tareas:\n    get:\n      responses:\n        '200':\n          description: ok\n    post:\n      responses:\n        '201':\n          description: creada\n`,
+      'utf8',
+    )
+
+    const data = toolJson(await callTool(hostFor(root), 'atlas_contracts', { slug: 'gestion-tareas' })) as {
+      contracts: Array<{ format: string; operations: string[] }>
+      findings: Array<{ code: string }>
+    }
+    expect(data.contracts[0]?.format).toBe('openapi')
+    expect(data.contracts[0]?.operations.sort()).toEqual(['GET /tareas', 'POST /tareas'])
+    expect(data.findings.some((finding) => finding.code === 'ATLAS-CONTRACT-003')).toBe(true)
+  })
+
+  it('S3: sin enlaces informa y sugiere añadir uno', async () => {
+    const root = await initWorkspace()
+    const data = toolJson(await callTool(hostFor(root), 'atlas_links')) as { links: unknown[]; message: string; action: string }
+    expect(data.links).toEqual([])
+    expect(data.message).toContain('no tiene enlaces')
+    expect(data.action).toContain('satlas link add')
+  })
+
+  it('S3: enlaces con disponibilidad y requisitos externos', async () => {
+    const root = await initWorkspace()
+    const linked = await initWorkspace()
+    await fs.mkdir(path.join(linked, '.sdd', 'specs', 'externo'), { recursive: true })
+    await fs.writeFile(
+      path.join(linked, '.sdd', 'specs', 'externo', 'spec.md'),
+      `---\ndomain: externo\ntitle: Externo\nversion: 1\nupdated: 2026-09-20\n---\n\n# Externo\n\n### Requisito: REQ-EXT-001 — Algo\nEl sistema DEBE algo.\n\n#### Escenario: REQ-EXT-001-S1 — Caso\n- **CUANDO** pasa\n- **ENTONCES** ocurre\n`,
+      'utf8',
+    )
+    const add = await callTool(hostFor(root), 'atlas_links')
+    expect(add).toBeDefined()
+    const { addLink } = await import('@specatlas/core')
+    await addLink(root, { path: linked, name: 'externo' })
+
+    const data = toolJson(await callTool(hostFor(root), 'atlas_links')) as {
+      links: Array<{ name: string; available: boolean; requirements: number }>
+      externalRequirements: number
+    }
+    expect(data.links).toHaveLength(1)
+    expect(data.links[0]?.available).toBe(true)
+    expect(data.links[0]?.requirements).toBe(1)
+    expect(data.externalRequirements).toBe(1)
+  })
+})
+
 describe('MCP: solo lectura (REQ-MCP-006)', () => {
   it('S1: el catálogo expone únicamente operaciones de consulta', async () => {
     const host = hostFor(await newRoot('atlas-mcp-ro-'))
@@ -436,6 +499,7 @@ describe('MCP: solo lectura (REQ-MCP-006)', () => {
     await callTool(host, 'atlas_impact', { target: 'src/reset.ts' })
     await callTool(host, 'atlas_glossary')
     await callTool(host, 'atlas_fixes')
+    await callTool(host, 'atlas_links')
     await handleRequest({ jsonrpc: '2.0', id: 1, method: 'tools/list' }, host)
 
     const after = await snapshotHashes(root)

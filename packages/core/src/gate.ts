@@ -4,6 +4,7 @@ import { lintDelta, lintPlan, lintSpec } from './lint.js'
 import { checkMockups } from './mockups.js'
 import { evaluatePacks, packFindings, resolvePacks } from './packs.js'
 import { checkTrace } from './trace.js'
+import { linkedTraceInput } from './links.js'
 import { planWaves } from './waves.js'
 import { runDoctor } from './doctor.js'
 import { loadWorkspace } from './workspace.js'
@@ -72,6 +73,7 @@ export async function runCiGate(opts: CiOptions): Promise<CiResult> {
       specs: workspace.specs,
       change,
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+      linked: linkedTraceInput(workspace),
     })
     const changeDiags: Diagnostic[] = [...lintFindings, ...trace.findings]
     if (change.planPath) {

@@ -4,6 +4,7 @@ import type { Change, ChangeMeta, Lane } from './model.js'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { artifactHash } from './hash.js'
+import { contractCoverage } from './contracts.js'
 
 export type ChangeState =
   | 'draft'
@@ -198,6 +199,14 @@ export function deriveState(input: DeriveInput): DerivedState {
   if (lane === 'full' && cfg.gates.docs.mode === 'blocking' && !docsReady(change)) {
     blockedBy.push('documentación pendiente')
     return { state: 'reviewed', blockedBy, nextAction: next(`/satlas.docs ${change.slug}`, 'Generar la documentación técnica y manual del cambio', true), progress }
+  }
+
+  if (cfg.gates.contracts.mode === 'blocking') {
+    const contractFindings = contractCoverage(change, 'blocking')
+    if (contractFindings.length > 0) {
+      blockedBy.push(`contratos con hallazgos (${contractFindings.length})`)
+      return { state: 'verified', blockedBy, nextAction: next(`satlas contracts ${change.slug}`, 'Resolver los hallazgos de contrato antes de archivar'), progress }
+    }
   }
 
   return { state: 'ready', blockedBy, nextAction: next(`satlas archive ${change.slug}`, 'Archivar el cambio y plegar los deltas'), progress }

@@ -1409,6 +1409,7 @@ async function traceFor(root: string, slug: string): Promise<{ summary: { errors
     specs: workspace.specs,
     change,
     requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+    linked: fsx.linkedTraceInput(workspace),
   })
   return { summary: result.summary, findings: result.findings }
 }

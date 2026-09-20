@@ -22,7 +22,47 @@ export interface Scenario {
   reqId: string
   when: string[]
   then: string[]
+  contracts?: string[]
   line: number
+}
+
+export type ContractFormat = 'openapi' | 'graphql' | 'protobuf' | 'unsupported'
+
+export interface ContractOperation {
+  id: string
+  kind: ContractFormat
+  file: string
+  line: number
+}
+
+export interface ContractFile {
+  path: string
+  format: ContractFormat
+  operations: ContractOperation[]
+}
+
+export interface ContractsState {
+  files: ContractFile[]
+  operations: ContractOperation[]
+  findings: Diagnostic[]
+}
+
+export interface LinkEntry {
+  name: string
+  path: string
+}
+
+export interface LinkStatus extends LinkEntry {
+  available: boolean
+  requirements: number
+  domains: string[]
+  error?: string
+}
+
+export interface LinksState {
+  entries: LinkStatus[]
+  specs: SpecRef[]
+  unavailable: string[]
 }
 
 export interface Requirement {
@@ -194,6 +234,7 @@ export interface Change {
   clarify?: ClarifyFile
   clarifyPath?: string
   docsPaths?: string[]
+  contracts?: ContractsState
   planPath?: string
   reviewPath?: string
   presentationPath?: string
@@ -212,6 +253,7 @@ export interface Workspace {
   sddDir: string
   specs: SpecRef[]
   changes: Change[]
-  archived?: Change[]
+  archived: Change[]
+  links?: LinksState
   diagnostics: Diagnostic[]
 }

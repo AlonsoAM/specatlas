@@ -1,6 +1,6 @@
 {
   "name": "@specatlas/lsp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Servidor de lenguaje de SpecAtlas: diagnósticos, CodeLens, navegación y quick fixes para specs",
   "license": "MIT",
   "type": "module",

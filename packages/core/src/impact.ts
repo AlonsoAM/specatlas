@@ -19,6 +19,8 @@ export interface ImpactReport {
   target: string
   kind: 'requirement' | 'file'
   exists: boolean
+  external?: boolean
+  origin?: string
   scenarios: string[]
   tasks: ImpactTask[]
   requirements: string[]
@@ -92,6 +94,7 @@ export function impactOfRequirement(workspace: Workspace, reqId: string): Impact
   const id = reqId.toUpperCase()
   const scenarios = new Set<string>()
   let exists = false
+  let origin: string | undefined
 
   for (const spec of workspace.specs) {
     for (const req of spec.spec.requirements) {
@@ -109,6 +112,18 @@ export function impactOfRequirement(workspace: Workspace, reqId: string): Impact
     if ((change.delta?.removed ?? []).some((r) => r.id === id)) exists = true
     if ((change.delta?.renamed ?? []).some((r) => r.from.id === id || r.to.id === id)) exists = true
   }
+  if (!exists) {
+    for (const link of workspace.links?.entries ?? []) {
+      const spec = workspace.links?.specs.find((candidate) => candidate.spec.requirements.some((req) => req.id === id))
+      if (!spec) continue
+      const requirement = spec.spec.requirements.find((candidate) => candidate.id === id)
+      if (!requirement) continue
+      exists = true
+      origin = link.name
+      for (const sc of requirement.scenarios) scenarios.add(sc.id)
+      break
+    }
+  }
 
   const report = emptyReport(id, 'requirement')
   if (!exists) return report
@@ -117,6 +132,10 @@ export function impactOfRequirement(workspace: Workspace, reqId: string): Impact
   const reqOf = scenarioToReq(workspace)
   collect(workspace, report, new Set([id, ...scenarios]), reqOf)
   if (!report.requirements.includes(id)) report.requirements.unshift(id)
+  if (origin !== undefined) {
+    report.external = true
+    report.origin = origin
+  }
   return report
 }
 

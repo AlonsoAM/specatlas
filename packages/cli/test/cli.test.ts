@@ -17,7 +17,9 @@ import { runApprove } from '../src/commands/approve'
 import { runArchive } from '../src/commands/archive'
 import { runCi } from '../src/commands/ci'
 import { runClarify } from '../src/commands/clarify'
+import { runContracts } from '../src/commands/contracts'
 import { runDocs } from '../src/commands/docs'
+import { runLink } from '../src/commands/link'
 import { runMockup } from '../src/commands/mockup'
 import { runPresentCommand } from '../src/commands/present'
 import { runProfile } from '../src/commands/profile'
@@ -44,6 +46,19 @@ const TASKS = `# Tareas
 
 - [x] T1.1 Endpoint de solicitud · Archivos: src/reset.ts · Cubre: REQ-AUTH-001-S1
 - [x] T1.2 Pruebas del endpoint · Archivos: test/reset.test.ts · Cubre: REQ-AUTH-001-S1 · Depende de: T1.1
+`
+
+const CONTRACT_DELTA = `# Delta — Gestionar tareas
+
+## Requisitos agregados
+
+### Requisito: REQ-TAREA-001 — Gestionar tareas
+El sistema DEBE permitir gestionar tareas.
+
+#### Escenario: REQ-TAREA-001-S1 — Listar tareas
+- **CUANDO** el equipo pide la lista de tareas
+- **ENTONCES** recibe las tareas
+- **Contrato**: GET /tareas
 `
 
 const VERIFY = `# Verificación
@@ -109,11 +124,56 @@ describe('CLI e2e (F0)', () => {
     }
   })
 
+  it('comprueba contratos y gestiona enlaces (REQ-INTEGRACIONES-005-S1, REQ-INTEGRACIONES-005-S2)', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-contratos-'))
+    const init = await runInit(ctx(root))
+    expect(init.exitCode).toBe(0)
+    const created = await runNew(ctx(root, { lane: 'standard', domain: 'tareas', title: 'Gestionar tareas' }, ['gestion-tareas']))
+    expect(created.exitCode).toBe(0)
+    const changeDir = path.join(root, '.sdd', 'changes', 'gestion-tareas')
+    await fs.writeFile(path.join(changeDir, 'spec.md'), CONTRACT_DELTA, 'utf8')
+    await fs.mkdir(path.join(changeDir, 'contracts'), { recursive: true })
+    await fs.writeFile(
+      path.join(changeDir, 'contracts', 'openapi.yaml'),
+      `openapi: 3.0.0\ninfo:\n  title: Tareas\n  version: 1.0.0\npaths:\n  /tareas:\n    get:\n      responses:\n        '200':\n          description: ok\n    post:\n      responses:\n        '201':\n          description: creada\n`,
+      'utf8',
+    )
+
+    const check = await runContracts(ctx(root, {}, ['gestion-tareas']))
+    expect(check.exitCode).toBe(0)
+    const checkData = check.data as { contracts: Array<{ operations: string[] }>; findings: Array<{ code: string }> }
+    expect(checkData.contracts[0]?.operations.sort()).toEqual(['GET /tareas', 'POST /tareas'])
+    expect(checkData.findings.some((finding) => finding.code === 'ATLAS-CONTRACT-003')).toBe(true)
+    expect((check.text ?? []).join('\n')).toContain('GET /tareas')
+
+    const missing = await runContracts(ctx(root, {}, ['no-existe']))
+    expect(missing.exitCode).toBe(2)
+
+    const linked = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-enlazado-'))
+    const linkedInit = await runInit(ctx(linked))
+    expect(linkedInit.exitCode).toBe(0)
+    const add = await runLink(ctx(root, { name: 'externo' }, ['add', linked]))
+    expect(add.exitCode).toBe(0)
+    expect((add.data as { link?: { name: string } }).link?.name).toBe('externo')
+
+    const list = await runLink(ctx(root, {}, ['list']))
+    expect(list.exitCode).toBe(0)
+    const links = (list.data as { links: Array<{ name: string; available: boolean }> }).links
+    expect(links).toHaveLength(1)
+    expect(links[0]?.available).toBe(true)
+
+    const remove = await runLink(ctx(root, {}, ['remove', 'externo']))
+    expect(remove.exitCode).toBe(0)
+    expect((remove.data as { removed?: string }).removed).toBe('externo')
+
+    const badAdd = await runLink(ctx(root, {}, ['add', path.join(root, 'no-existe')]))
+    expect(badAdd.exitCode).toBe(2)
+  })
+
   it('el carril fix deja un fix vivo y el estado lo lista (REQ-FIXES-005-S1)', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'atlas-cli-fix-'))
     const init = await runInit(ctx(root))
     expect(init.exitCode).toBe(0)
-
     const created = await runNew(ctx(root, { lane: 'fix', domain: 'auth', title: 'Arreglo de login' }, ['arreglo-login']))
     expect(created.exitCode).toBe(0)
     const fixFile = path.join(root, '.sdd', 'changes', 'arreglo-login', 'fix.md')

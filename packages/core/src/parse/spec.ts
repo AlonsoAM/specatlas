@@ -9,6 +9,7 @@ export const SCENARIO_HEAD_RE = /^####\s+(?:Scenario|Escenario):\s+(REQ-[A-Z0-9-
 export const RULE_RE = /^-\s*(?:Rule|Regla)\s+(BR-[A-Z0-9-]+)\s*:\s*(.+?)\s*$/
 const WHEN_RE = /^-\s*\*\*\s*(?:WHEN|CUANDO|DADO QUE)\s*\*\*\s*(.+?)\s*$/i
 const THEN_RE = /^-\s*\*\*\s*(?:THEN|ENTONCES|Y|AND)\s*\*\*\s*(.+?)\s*$/i
+const CONTRACT_RE = /^-\s*\*\*\s*(?:CONTRATO|CONTRACT)\s*\*\*\s*:\s*(.+?)\s*$/i
 
 interface BlockDraft {
   id: string
@@ -113,6 +114,16 @@ export function parseRequirementBlocks(body: string, startLine = 1, filePath?: s
     const thenMatch = THEN_RE.exec(line)
     if (thenMatch && currentScenario) {
       currentScenario.then.push(thenMatch[1] ?? '')
+      continue
+    }
+    const contractMatch = CONTRACT_RE.exec(line)
+    if (contractMatch && currentScenario) {
+      const ref = (contractMatch[1] ?? '').trim()
+      if (ref !== '') {
+        const list = currentScenario.contracts ?? []
+        if (!list.includes(ref)) list.push(ref)
+        currentScenario.contracts = list
+      }
       continue
     }
 

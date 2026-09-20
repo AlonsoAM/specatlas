@@ -21,7 +21,7 @@ F0 (fundaciones) en desarrollo:
 | CLI `specatlas` / `satlas` (`init`, `new`, `approve`, `status`, `next`, `validate`, `trace`, `waves`, `doctor`, `archive`) | ✅ |
 | Perfiles de stack (`generic`, `node-ts`, `python`, `dotnet-sqlserver`) + detección | ✅ |
 | Plantillas es/en (es por defecto), `meta.yaml`, evidencia por escenario | ✅ |
-| Tests (vitest, 253 casos) y typecheck | ✅ |
+| Tests (vitest, 281 casos) y typecheck | ✅ |
 | Compilador de adaptadores (`@specatlas/adapters`: opencode, Claude Code, genérico) + manifiesto y `--check` | ✅ |
 | Comandos `adapters`, `profile`, `hash` | ✅ |
 | Fixtures multi-stack (node-ts, python, dotnet) | ✅ |
@@ -40,6 +40,7 @@ F0 (fundaciones) en desarrollo:
 | F3: informe de hallazgos **SARIF** (`satlas ci --sarif`) y **Action oficial** en el repo (`uses: AlonsoAM/specatlas@v1`) con gate real en cada PR | ✅ |
 | F3: **fixes vivos** (`.sdd/fixes/`), grupos Fixes/Histórico en el editor, procedencia de cambios y fixes en la Matriz y `atlas_fixes` en la vía de consulta | ✅ |
 | F3: fases **aclarar** y **documentar** (carril completo) con modos configurables, comandos `satlas clarify`/`satlas docs` y artefactos en el editor | ✅ |
+| F3: **contratos** del cambio (OpenAPI/GraphQL/protobuf) con cobertura cruzada y **enlaces multi-repo** (`satlas link`) en trazabilidad, impacto y consulta | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -150,6 +151,8 @@ pnpm satlas mcp        # queda escuchando mensajes JSON-RPC por stdio
 | `atlas_impact` | Impacto registrado de un requisito (`REQ-…`) o de un archivo |
 | `atlas_glossary` | Términos del glosario del negocio con su definición vigente |
 | `atlas_fixes` | Fixes vivos (carril express archivado): identidad, resultado, contenido y requisitos que declaran |
+| `atlas_contracts` | Contratos del cambio: operaciones declaradas y hallazgos de forma y cobertura |
+| `atlas_links` | Enlaces a otros proyectos: disponibilidad y requisitos externos que aportan |
 
 Se registra como servidor local en el asistente (opencode, Claude Code, Cursor…). En opencode, por ejemplo:
 
@@ -187,6 +190,11 @@ Al archivar un fix (`satlas new <slug> --lane fix` → `satlas archive <slug> --
 
 - **Aclarar** (`/satlas.clarify <slug>` · `satlas clarify <slug>`): después de especificar y antes de aprobar/planificar, resuelve supuestos, dependencias y preguntas abiertas. Las respuestas quedan en `clarify.md` (`- [ ]` abiertas, `- [x] pregunta — respuesta` aclaradas) y el resumen se refleja en la propuesta. Modo: `gates.clarify.mode: off | advisory | blocking` (**aviso** por defecto); en bloqueante no se avanza a plan con preguntas abiertas.
 - **Documentar** (`/satlas.docs <slug>` · `satlas docs <slug> [--tipo tecnica|manual|all]`): carril completo. Genera `docs/tecnica.md` y `docs/manual.md` desde plantillas y la **evidencia real** (lo que no tiene evidencia se señala); el contenido generado vive entre marcadores y **regenerar conserva lo escrito a mano**. Modo: `gates.docs.mode: off | advisory | blocking` (**bloqueante** por defecto en carril completo: no se archiva sin los dos documentos).
+
+## Contratos del cambio y enlaces entre repos
+
+- **Contratos** (`satlas contracts <slug>`): el cambio declara sus interfaces en `contracts/` (OpenAPI 3.x, GraphQL SDL o protobuf) y sus escenarios pueden declarar la operación que prometen (`- **Contrato**: GET /tareas`). La comprobación es **local** (sin red): forma del contrato y **cobertura cruzada** (operación sin escenario · referencia rota). Modo: `gates.contracts.mode: off | advisory | blocking` (**aviso** por defecto); en bloqueante no se archiva con huecos o roturas.
+- **Enlaces multi-repo** (`satlas link add <ruta>` · `satlas link list` · `satlas link remove <nombre|ruta>`): registra otros proyectos (monorepo y polyrepo) y consulta sus specs en **solo lectura**; la trazabilidad y el impacto marcan lo externo con su origen y avisan de referencias no resueltas cuando un enlace no está disponible. La vía de consulta para asistentes expone `atlas_contracts` y `atlas_links`.
 
 ## Integración con GitHub (opcional, nunca un gate por defecto)
 

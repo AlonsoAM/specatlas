@@ -8,6 +8,8 @@ export const READ_ONLY_TOOL_NAMES: readonly string[] = [
   'atlas_impact',
   'atlas_glossary',
   'atlas_fixes',
+  'atlas_contracts',
+  'atlas_links',
 ]
 
 export function listTools(): ToolDefinition[] {
@@ -72,6 +74,25 @@ export function listTools(): ToolDefinition[] {
     {
       name: 'atlas_fixes',
       description: 'Fixes vivos (carril express ya archivado): identidad, resultado de su evidencia, contenido y requisitos que declaran. Solo lectura.',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+        additionalProperties: false,
+      },
+    },
+    {
+      name: 'atlas_contracts',
+      description: 'Contratos del cambio: operaciones declaradas y hallazgos de forma y cobertura con los escenarios. Solo lectura.',
+      inputSchema: {
+        type: 'object',
+        properties: { slug: { type: 'string', description: 'Nombre del cambio' } },
+        required: ['slug'],
+        additionalProperties: false,
+      },
+    },
+    {
+      name: 'atlas_links',
+      description: 'Enlaces a otros proyectos: nombre, disponibilidad, requisitos externos que aportan y enlaces no disponibles. Solo lectura.',
       inputSchema: {
         type: 'object',
         properties: {},

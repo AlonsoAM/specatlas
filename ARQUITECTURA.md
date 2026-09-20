@@ -245,6 +245,7 @@ La derivación es una función pura sobre `ChangeContext = { meta, spec?, delta?
 | Mockup aprobado (dominio UI) | — | ✅ | ✅ + comparación en verify |
 | `review` | — | advisory | ✅ bloqueante |
 | Aclaración (preguntas abiertas) | — | configurable (`gates.clarify.mode`) | configurable (`gates.clarify.mode`) |
+| Contratos (forma + cobertura) | — | configurable (`gates.contracts.mode`) | configurable (`gates.contracts.mode`) |
 
 | Docs | — | — | ✅ configurable (`gates.docs.mode`) |
 | Archivo | ✅ | ✅ | ✅ |
@@ -454,6 +455,23 @@ export function docsReady(change: Change): boolean                              
 - `gates.clarify.mode` (`off|advisory|blocking`, por defecto `advisory`) y `gates.docs.mode` (`off|advisory|blocking`, por defecto `blocking`; solo aplica al carril `full`).
 - La aclaración bloquea el paso a plan (`approved` → `/satlas.clarify`); la documentación pendiente deja el cambio en `reviewed` con `next /satlas.docs`.
 - El contenido generado vive entre `<!-- specatlas:generado:inicio -->` y `<!-- specatlas:generado:fin -->`: regenerar reemplaza solo ese bloque y conserva lo escrito a mano.
+
+### 5.19 `contracts` y `links` (contratos y multi-repo)
+
+```ts
+export function parseContract(file: string, content: string): ContractFile & { findings: Diagnostic[] }   // OpenAPI 3.x · GraphQL SDL · protobuf
+export async function loadContracts(changeDir: string): Promise<ContractsState>                            // changes/<slug>/contracts/
+export function contractCoverage(change: Change, mode: 'off'|'advisory'|'blocking'): Diagnostic[]         // ATLAS-CONTRACT-003/004
+export function contractsAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[]                         // forma + cobertura en modo advisory
+export async function loadLinks(root: string): Promise<LinksState>                                        // .sdd/links.yaml + specs en solo lectura
+export async function addLink(root: string, opts: { path: string; name?: string }): Promise<AddLinkResult>
+export async function removeLink(root: string, ref: string): Promise<RemoveLinkResult>
+export function linkedTraceInput(workspace: { links?: LinksState }): { ids: string[]; unavailable: string[] } | undefined
+```
+
+- Los escenarios pueden declarar la operación que prometen (`- **Contrato**: GET /tareas`); el identificador canónico es `GET /ruta`, `Query.campo` o `Servicio.Método`.
+- `gates.contracts.mode` (`off|advisory|blocking`, por defecto `advisory`); en bloqueante el archivado espera a resolver huecos (`ATLAS-CONTRACT-003`) y roturas (`ATLAS-CONTRACT-004`).
+- Los enlaces son rutas locales a proyectos inicializados; sus specs se leen en **solo lectura**. `checkTrace` resuelve requisitos externos e informa `ATLAS-LINK-003` cuando hay enlaces no disponibles; `impactOfRequirement` marca lo externo con `origin`.
 
 ---
 
@@ -883,7 +901,7 @@ export interface Envelope<T> {
 
 ## 12. Servidor MCP (`satlas mcp`)
 
-- `satlas mcp` (stdio) expone herramientas **de solo lectura**: `atlas_status`, `atlas_next`, `atlas_validate`, `atlas_trace`, `atlas_impact`, `atlas_glossary`, `atlas_fixes`.
+- `satlas mcp` (stdio) expone herramientas **de solo lectura**: `atlas_status`, `atlas_next`, `atlas_validate`, `atlas_trace`, `atlas_impact`, `atlas_glossary`, `atlas_fixes`, `atlas_contracts`, `atlas_links`.
 - Nunca muta el repo: las mutaciones pasan por el CLI (acción humana/agente con permisos).
 - Pensado para agentes que no tienen extensión o prefieren introspección del estado antes de actuar.
 

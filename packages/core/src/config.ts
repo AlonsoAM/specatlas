@@ -31,6 +31,7 @@ export const atlasConfigSchema = z.object({
       review: z.object({ mode: z.enum(['off', 'advisory', 'blocking']).default('advisory') }).default({}),
       clarify: z.object({ mode: z.enum(['off', 'advisory', 'blocking']).default('advisory') }).default({}),
       docs: z.object({ mode: z.enum(['off', 'advisory', 'blocking']).default('blocking') }).default({}),
+      contracts: z.object({ mode: z.enum(['off', 'advisory', 'blocking']).default('advisory') }).default({}),
       mockup: z.object({ require_approval: z.boolean().default(false), compare_in_verify: z.boolean().default(false) }).default({}),
     })
     .default({}),

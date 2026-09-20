@@ -32,6 +32,7 @@ export interface TraceInput {
   specs: SpecRef[]
   change: Change
   requireEvidence: boolean
+  linked?: { ids: string[]; unavailable: string[] }
 }
 
 export function buildTraceGraph(input: TraceInput): TraceGraph {
@@ -133,15 +134,25 @@ export function checkTrace(input: TraceInput): TraceResult {
     }
   }
 
+  const linkedIds = new Set(input.linked?.ids ?? [])
+  const unavailableLinks = input.linked?.unavailable ?? []
   for (const task of taskById.values()) {
     for (const c of task.covers) {
-      if (!livingReqs.has(c) && !deltaScenarios.has(c) && !allScenarioIds.has(c)) {
+      if (!livingReqs.has(c) && !deltaScenarios.has(c) && !allScenarioIds.has(c) && !linkedIds.has(c)) {
         findings.push(
           diag('TRACE-003', 'error', `La tarea ${task.id} cubre ${c}, que no existe`, {
             path: change.tasks?.path,
-            suggestion: 'Corrige el id o crea el requisito/escenario',
+            suggestion: unavailableLinks.length > 0 ? 'Corrige el id o revisa los enlaces no disponibles (`satlas link list`)' : 'Corrige el id o crea el requisito/escenario',
           }) as TraceFinding,
         )
+        if (unavailableLinks.length > 0) {
+          findings.push(
+            diag('ATLAS-LINK-003', 'warning', `Referencia no resuelta: ${c} (hay ${unavailableLinks.length} enlace(s) no disponible(s): ${unavailableLinks.join(', ')})`, {
+              path: change.tasks?.path,
+              suggestion: 'Restaura la ruta del enlace o corrige la referencia',
+            }) as TraceFinding,
+          )
+        }
       }
     }
     for (const dep of task.dependsOn) {

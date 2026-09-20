@@ -2,8 +2,10 @@ import path from 'node:path'
 import {
   checkTrace,
   clarifyAdvisory,
+  contractsAdvisory,
   deriveState,
   docsAdvisory,
+  linkedTraceInput,
   lintDelta,
   mockupsReady,
   readTextIfExists,
@@ -53,6 +55,7 @@ export async function evaluateChange(
     specs: workspace.specs,
     change,
     requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+    linked: linkedTraceInput(workspace),
   })
 
   const blocking =
@@ -67,7 +70,7 @@ export async function evaluateChange(
     ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
   })
 
-  const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config)]
+  const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
 
   return { change, approval, lintFindings: [...lintFindings, ...phaseAdvisories], trace, blocking, state }
 }

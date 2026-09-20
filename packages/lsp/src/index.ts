@@ -3,6 +3,7 @@ import {
   checkTrace,
   lintDelta,
   loadLivingFixes,
+  linkedTraceInput,
   loadWorkspace,
   parseDelta,
   parseRequirementBlocks,
@@ -221,6 +222,7 @@ export async function buildIndex(root: string): Promise<AtlasIndex> {
       specs: workspace.specs,
       change,
       requireEvidence: config.gates.verify.mode !== 'off' && config.gates.verify.require_evidence,
+      linked: linkedTraceInput(workspace),
     })
     diagnostics.push(...trace.findings)
   }

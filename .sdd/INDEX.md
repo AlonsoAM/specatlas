@@ -8,6 +8,7 @@
 - `esquema` — 5 requisitos
 - `fases` — 5 requisitos
 - `fixes` — 5 requisitos
+- `integraciones` — 5 requisitos
 - `mcp` — 6 requisitos
 
 ## Fixes vivos
@@ -22,4 +23,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-8 cambio(s) en `changes/archive/`.
+9 cambio(s) en `changes/archive/`.

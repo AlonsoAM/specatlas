@@ -12,6 +12,8 @@ import { parseVerifyFile } from './parse/evidence.js'
 import { parseApprovals, parseChangeMeta } from './parse/meta.js'
 import { parseClarify } from './parse/clarify.js'
 import { parseFixCovers } from './fixes.js'
+import { loadContracts } from './contracts.js'
+import { LINKS_FILE, loadLinks } from './links.js'
 
 export const SDD_DIR = '.sdd'
 
@@ -126,6 +128,9 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   }
   if (docsPaths.length > 0) change.docsPaths = docsPaths
 
+  const contracts = await loadContracts(dir)
+  if (contracts.files.length > 0) change.contracts = contracts
+
   const mockupManifest = path.join(dir, 'mockups', 'manifest.yaml')
   if (await exists(mockupManifest)) change.mockupManifestPath = mockupManifest
 
@@ -161,7 +166,11 @@ export async function loadWorkspace(root: string): Promise<{ workspace: Workspac
     }
   }
 
-  return { workspace: { root, sddDir, specs, changes, archived, diagnostics }, config }
+  const workspace: Workspace = { root, sddDir, specs, changes, archived, diagnostics }
+  if (await exists(path.join(sddDir, LINKS_FILE))) {
+    workspace.links = await loadLinks(root)
+  }
+  return { workspace, config }
 }
 
 export async function ensureSddDirs(sddDir: string): Promise<string[]> {
