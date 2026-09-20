@@ -27,6 +27,7 @@ import { runInit } from './commands/init.js'
 import { runIssue } from './commands/issue.js'
 import { runMetrics } from './commands/metrics.js'
 import { runMockup } from './commands/mockup.js'
+import { runMcp } from './commands/mcp.js'
 import { runPacks } from './commands/packs.js'
 import { runNew } from './commands/new.js'
 import { runNext } from './commands/next.js'
@@ -83,6 +84,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   mockup: runMockup,
   present: runPresentCommand,
   ci: runCi,
+  mcp: runMcp,
   metrics: runMetrics,
   run: runRun,
   archive: runArchive,

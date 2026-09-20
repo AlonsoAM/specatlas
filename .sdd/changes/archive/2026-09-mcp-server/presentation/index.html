@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta — Consultar el estado del proyecto desde el asistente</title>
+<style>:root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#0f766e; --accent-soft:#ccfbf1; --warn:#b45309; --ok:#15803d; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#111a2c; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#2dd4bf; --accent-soft:#134e4a; --warn:#f59e0b; --ok:#4ade80; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+.hero { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: white; border-radius: 18px; padding: 28px; margin-bottom: 28px; }
+.hero h1 { margin: 6px 0 10px; font-size: 30px; line-height: 1.2; }
+.kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; opacity: .9; margin: 0; }
+.meta { margin: 0; font-size: 13px; opacity: .95; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+section h2 { margin-top: 0; font-size: 20px; }
+h3 { margin-bottom: 4px; }
+h4 { margin: 14px 0 6px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: #0b1220; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow:auto; font-size: 13px; }
+pre code { background: transparent; color: inherit; }
+.badge { display:inline-block; font-size: 11px; text-transform: uppercase; letter-spacing:.08em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-left: 8px; }
+.req { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.req:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.rules { color: var(--muted); font-size: 14px; }
+.scenario { margin: 8px 0 8px 0; }
+.when { color: var(--muted); }
+.then { font-weight: 600; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.pass { color: var(--ok); border-color: var(--ok); }
+.pill.fail { color: #dc2626; border-color: #dc2626; }
+.pill.skipped, .pill.pending { color: var(--warn); border-color: var(--warn); }
+.mockups { display:grid; gap: 18px; }
+.mockup { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mockup header { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.mockup iframe { width: 100%; height: 560px; border: 0; background: white; }
+.mockup.phone iframe { max-width: 420px; margin: 0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid-shots img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+footer { color: var(--muted); font-size: 13px; text-align:center; }
+.callout { border-left: 4px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, transparent); padding: 12px 14px; border-radius: 8px; }
+@media print { body { background: white; } section { break-inside: avoid; } .hero { background: #0f766e; } }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Propuesta · mcp · standard</p>
+    <h1>Consultar el estado del proyecto desde el asistente</h1>
+    <p class="meta">SpecAtlas · Hash ca0f50c9 · Generado 2026-09-19 18:37:12 -05:00</p>
+  </header>
+
+  <section>
+    <h2>Resumen de negocio</h2>
+    <h1 id="propuesta-consultar-el-estado-del-proyecto-desde-el-asistente">Propuesta — Consultar el estado del proyecto desde el asistente</h1>
+<h2 id="por-que">Por qué</h2>
+<p>Hoy el estado del proyecto vive en la terminal y en los artefactos: fases, gates pendientes, hallazgos, cobertura y glosario. Cuando el equipo trabaja con asistentes, alguien tiene que llevar ese contexto a la conversación o el asistente responde con suposiciones: propone pasos ya hechos, ignora bloqueos vigentes o usa términos que no son los del negocio.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<p>El asistente podrá consultar el estado vigente del proyecto directamente:</p>
+<ul><li><strong>Estado</strong>: cambios activos con fase, avance de tareas y evidencia, y bloqueos.</li><li><strong>Siguiente acción</strong>: el paso recomendado, señalando si requiere una persona.</li><li><strong>Hallazgos y cobertura</strong>: validación y trazabilidad vigentes, tal como los ve el equipo.</li><li><strong>Impacto</strong>: qué se relaciona con un requisito o un archivo.</li><li><strong>Glosario</strong>: términos del negocio con su definición vigente.</li></ul>
+<p>Todas las consultas son <strong>de solo lectura</strong>: la vía nunca modifica el proyecto.</p>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>Ejecutar acciones que cambian el proyecto desde el asistente (aprobar, firmar, archivar, editar artefactos): siguen siendo actos humanos por los canales actuales.</li><li>Consultar métricas históricas o costos.</li><li>Cualquier consulta que requiera salir del proyecto o acceder a recursos externos.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>El 100 % de las respuestas coincide con lo que el proyecto reporta en el mismo instante (comprobado en la verificación).</li><li>Cero modificaciones a los archivos del proyecto atribuibles a la vía de consulta.</li><li>Un asistente puede responder «¿qué sigue en este cambio?» sin que una persona pegue contexto.</li></ul>
+  </section>
+
+  <section>
+    <h2>Criterios de aceptación</h2>
+    <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-MCP-001-S1</code></td><td>Estado general con cambios activos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-001-S2</code></td><td>Estado general sin cambios activos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-001-S3</code></td><td>Estado de un cambio concreto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-001-S4</code></td><td>Cambio inexistente</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-001-S5</code></td><td>Proyecto sin inicializar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-002-S1</code></td><td>Paso sin intervención humana</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-002-S2</code></td><td>Paso que requiere una persona</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-002-S3</code></td><td>Cambio bloqueado por un gate</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-002-S4</code></td><td>Cambio pausado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-003-S1</code></td><td>Consulta de hallazgos con resultados</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-003-S2</code></td><td>Consulta de hallazgos sin resultados</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-003-S3</code></td><td>Cobertura de trazabilidad</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-004-S1</code></td><td>Impacto de un requisito</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-004-S2</code></td><td>Impacto de un archivo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-004-S3</code></td><td>Sin relaciones registradas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-005-S1</code></td><td>Términos vigentes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-005-S2</code></td><td>Glosario vacío</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-006-S1</code></td><td>Catálogo de operaciones de consulta</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-MCP-006-S2</code></td><td>Proyecto intacto tras la consulta</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Requisitos y escenarios</h2>
+    <div class="req"><h3>REQ-MCP-001 — Consultar el estado general y el de un cambio<span class="badge">agregado</span></h3><p>El asistente necesita conocer el estado vigente del proyecto (cambios activos, fase, avance y bloqueos) sin depender de que una persona se lo describa, para no basar sus respuestas en suposiciones.</p><ul class="rules"><li><code>BR-MCP-001</code> — Lo informado coincide con lo que reporta el estado del proyecto en el mismo instante; la consulta no calcula nada por su cuenta.</li></ul><div class="scenario"><h4>REQ-MCP-001-S1 — Estado general con cambios activos</h4><div class="when">CUANDO el asistente consulta el estado general y el proyecto tiene cambios activos</div><div class="then">ENTONCES recibe cada cambio con su nombre, fase, avance de tareas, avance de evidencia y bloqueos pendientes, idéntico a lo que reporta el estado del proyecto</div></div><div class="scenario"><h4>REQ-MCP-001-S2 — Estado general sin cambios activos</h4><div class="when">CUANDO el asistente consulta el estado general y no hay cambios activos</div><div class="then">ENTONCES recibe una respuesta que lo indica y la acción recomendada para crear un cambio</div></div><div class="scenario"><h4>REQ-MCP-001-S3 — Estado de un cambio concreto</h4><div class="when">CUANDO el asistente consulta el estado indicando el nombre de un cambio existente</div><div class="then">ENTONCES recibe solo el detalle de ese cambio: fase, avance de tareas, avance de evidencia y bloqueos</div></div><div class="scenario"><h4>REQ-MCP-001-S4 — Cambio inexistente</h4><div class="when">CUANDO el asistente consulta un cambio que no existe</div><div class="then">ENTONCES recibe un aviso explícito de que no existe y la lista de cambios disponibles, nunca una respuesta vacía sin explicación</div></div><div class="scenario"><h4>REQ-MCP-001-S5 — Proyecto sin inicializar</h4><div class="when">CUANDO el asistente consulta en una carpeta que no tiene el estado del proyecto</div><div class="then">ENTONCES recibe la indicación de que el proyecto no está inicializado y la acción para inicializarlo</div></div></div><div class="req"><h3>REQ-MCP-002 — Conocer la siguiente acción recomendada<span class="badge">agregado</span></h3><p>El asistente necesita saber cuál es el siguiente paso recomendado para un cambio, para proponer acciones alineadas con el proceso y no improvisar.</p><ul class="rules"><li><code>BR-MCP-002</code> — Cuando el paso pendiente requiere una persona, la respuesta lo señala de forma explícita y no sugiere que el asistente puede realizarlo por su cuenta.</li></ul><div class="scenario"><h4>REQ-MCP-002-S1 — Paso sin intervención humana</h4><div class="when">CUANDO el asistente consulta la siguiente acción de un cambio y el paso pendiente no requiere una persona</div><div class="then">ENTONCES recibe la acción exacta con sus argumentos y la indicación de que no requiere una persona</div></div><div class="scenario"><h4>REQ-MCP-002-S2 — Paso que requiere una persona</h4><div class="when">CUANDO el paso pendiente requiere una persona (aprobar, revisar o archivar)</div><div class="then">ENTONCES recibe la acción y la indicación explícita de que requiere una persona</div></div><div class="scenario"><h4>REQ-MCP-002-S3 — Cambio bloqueado por un gate</h4><div class="when">CUANDO el cambio está bloqueado porque falta un gate</div><div class="then">ENTONCES recibe cuál gate falta y qué lo desbloquea</div></div><div class="scenario"><h4>REQ-MCP-002-S4 — Cambio pausado</h4><div class="when">CUANDO el cambio está pausado</div><div class="then">ENTONCES recibe que está pausado, el motivo registrado y la acción para reanudarlo</div></div></div><div class="req"><h3>REQ-MCP-003 — Consultar hallazgos y cobertura<span class="badge">agregado</span></h3><p>El asistente necesita ver los mismos hallazgos y huecos de trazabilidad que ve el equipo, para corregir la causa en lugar de adivinar.</p><ul class="rules"><li><code>BR-MCP-003</code> — La consulta no crea, modifica ni oculta hallazgos; informa exactamente los vigentes.</li></ul><div class="scenario"><h4>REQ-MCP-003-S1 — Consulta de hallazgos con resultados</h4><div class="when">CUANDO el asistente consulta los hallazgos de un cambio que tiene hallazgos</div><div class="then">ENTONCES recibe cada hallazgo con su código, severidad, ubicación y sugerencia, y el conjunto coincide con el que reporta la validación</div></div><div class="scenario"><h4>REQ-MCP-003-S2 — Consulta de hallazgos sin resultados</h4><div class="when">CUANDO el asistente consulta los hallazgos de un cambio conforme</div><div class="then">ENTONCES recibe una respuesta de conformidad, sin hallazgos inventados</div></div><div class="scenario"><h4>REQ-MCP-003-S3 — Cobertura de trazabilidad</h4><div class="when">CUANDO el asistente consulta la cobertura de trazabilidad del proyecto</div><div class="then">ENTONCES recibe por escenario su cobertura vigente (tarea que lo cubre y evidencia registrada) y los huecos pendientes</div></div></div><div class="req"><h3>REQ-MCP-004 — Consultar el impacto de un requisito o un archivo<span class="badge">agregado</span></h3><p>El asistente necesita saber qué está relacionado con un requisito o un archivo antes de proponer un cambio, para dimensionar el efecto y evitar olvidos.</p><ul class="rules"><li><code>BR-MCP-004</code> — El impacto informado sale de las relaciones registradas en el proyecto; lo no relacionado no se incluye ni se supone.</li></ul><div class="scenario"><h4>REQ-MCP-004-S1 — Impacto de un requisito</h4><div class="when">CUANDO el asistente consulta el impacto de un requisito existente</div><div class="then">ENTONCES recibe los escenarios, tareas, cambios y anclas relacionados con ese requisito</div></div><div class="scenario"><h4>REQ-MCP-004-S2 — Impacto de un archivo</h4><div class="when">CUANDO el asistente consulta el impacto de un archivo del proyecto</div><div class="then">ENTONCES recibe las tareas y requisitos que lo mencionan</div></div><div class="scenario"><h4>REQ-MCP-004-S3 — Sin relaciones registradas</h4><div class="when">CUANDO el asistente consulta el impacto de un requisito o un archivo sin relaciones registradas</div><div class="then">ENTONCES recibe una respuesta que lo indica, sin elementos supuestos</div></div></div><div class="req"><h3>REQ-MCP-005 — Consultar el glosario del negocio<span class="badge">agregado</span></h3><p>El asistente debe usar los términos del negocio con el significado vigente, para que sus respuestas y propuestas hablen el idioma del equipo.</p><ul class="rules"><li><code>BR-MCP-005</code> — Los términos y definiciones son los del glosario vigente; la consulta no propone significados nuevos.</li></ul><div class="scenario"><h4>REQ-MCP-005-S1 — Términos vigentes</h4><div class="when">CUANDO el asistente consulta el glosario</div><div class="then">ENTONCES recibe los términos con su definición y sus sinónimos aceptados, idéntico al glosario vigente</div></div><div class="scenario"><h4>REQ-MCP-005-S2 — Glosario vacío</h4><div class="when">CUANDO el glosario no tiene términos definidos</div><div class="then">ENTONCES recibe una respuesta que lo indica y la sugerencia de definir los términos del negocio, sin inventar definiciones</div></div></div><div class="req"><h3>REQ-MCP-006 — Consulta de solo lectura<span class="badge">agregado</span></h3><p>El equipo necesita la garantía de que la vía de consulta nunca modifica el proyecto, para usarla con confianza durante cualquier fase del trabajo.</p><ul class="rules"><li><code>BR-MCP-006</code> — Toda operación ofrecida es de consulta; no existe ninguna operación que escriba, firme, ejecute comandos ni cambie la configuración del proyecto.</li></ul><div class="scenario"><h4>REQ-MCP-006-S1 — Catálogo de operaciones de consulta</h4><div class="when">CUANDO se enumeran las operaciones disponibles de la vía de consulta</div><div class="then">ENTONCES todas son de consulta y ninguna modifica el proyecto</div></div><div class="scenario"><h4>REQ-MCP-006-S2 — Proyecto intacto tras la consulta</h4><div class="when">CUANDO se usa cualquier operación de la vía de consulta</div><div class="then">ENTONCES los archivos del proyecto permanecen idénticos antes y después</div></div></div>
+  </section>
+
+  <section>
+    <h2>Mockups</h2>
+    <p><em>Este cambio no declara mockups.</em></p>
+    
+  </section>
+
+  <section>
+    <h2>Aprobación</h2>
+    <div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ Aprobada por Alonso Anchante el 2026-09-19 18:37:12 -05:00. Cualquier cambio posterior invalida la firma.</div>
+  </section>
+
+  <footer>SpecAtlas · SpecAtlas · 2026-09-19 18:37:12 -05:00</footer>
+</div>
+</body>
+</html>

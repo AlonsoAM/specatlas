@@ -840,11 +840,19 @@ export interface Envelope<T> {
 
 ---
 
-## 12. Servidor MCP (`@specatlas/mcp`)
+## 12. Servidor MCP (`satlas mcp`)
 
 - `satlas mcp` (stdio) expone herramientas **de solo lectura**: `atlas_status`, `atlas_next`, `atlas_validate`, `atlas_trace`, `atlas_impact`, `atlas_glossary`.
 - Nunca muta el repo: las mutaciones pasan por el CLI (acción humana/agente con permisos).
 - Pensado para agentes que no tienen extensión o prefieren introspección del estado antes de actuar.
+
+**Implementación (F3):**
+
+- Vive en el CLI (`packages/cli/src/mcp/*`): transporte JSON-RPC 2.0 newline-delimited sobre stdio con Node built-ins (`readline`), **sin dependencias nuevas** (ADR-007/010). La salida estándar solo transporta mensajes; todo registro va a stderr.
+- Las operaciones reutilizan `evaluateChange`/`checkTrace` del CLI: el estado informado es idéntico al de `satlas status`/`next` por construcción.
+- `atlas_impact` se apoya en el nuevo módulo del núcleo `impact.ts` (relaciones registradas: `Cubre`, `Archivos`, deltas; sin análisis semántico de código) y `atlas_glossary` en `parse/glossary.ts`.
+- Caché del workspace en memoria invalidada por cambio de archivos clave (`.sdd/`), para heredar el presupuesto de `status` (≤ 300 ms).
+- Sin proyecto inicializado: respuesta estructurada con `isError` y la acción recomendada (`satlas init`), nunca una excepción de protocolo.
 
 ---
 

@@ -1,0 +1,7 @@
+schema_version: 1
+approvals:
+  - artifact: changes/mcp-server/spec.md
+    artifact_hash: sha256:ca0f50c9944b8cac20ca2ab56dde87a7afb5e8db9cec38871815abff9b2de759
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-19 18:37:12 -05:00
+    channel: editor

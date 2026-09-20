@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **Servidor MCP de solo lectura** (`satlas mcp`): los asistentes consultan el estado del proyecto (estado, siguiente acción, hallazgos, cobertura, impacto y glosario) por el protocolo MCP sobre stdio, con las mismas respuestas que la terminal y sin modificar el proyecto. Incluye el análisis de impacto y el lector del glosario en el kernel, pruebas del contrato de mensajes y documentación en README/ARQUITECTURA.
 - **Filtros en los paneles**: la Matriz de trazabilidad tiene búsqueda (insensible a acentos), estado (todos / con huecos / verificados) y, cuando aplican, dominio y cambio activo, con contador en vivo; el Tablero filtra por texto, carril y dominio, y actualiza el recuento por columna.
 - **El árbol refresca al recuperar el foco** la ventana de VS Code: los cambios hechos desde la terminal (evidencia, tareas, archivado) aparecen sin recargar.
 - **Tooltip de «Specs vivas»** en el árbol: explica que es la fuente de verdad y que se llena al archivar; cuando está vacío indica «se llenan al archivar un cambio».
@@ -20,6 +21,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **Ciclo de vida con tareas y hallazgos pendientes**: un cambio con tareas hechas y hallazgos bloqueantes ya no se muestra como «spec en borrador»: pasa a «construido» (siguiente: registrar evidencia) y, con tareas pendientes, a «construyendo» (siguiente: construir en olas).
 - **Gate de revisión del carril `full`**: se resolvía con `verify.md` en vez del artefacto de revisión. Ahora se carga `review.md` en el modelo y el gate exige `/satlas.review` (con `gates.review.mode: blocking`) hasta que exista; en el árbol aparece el nodo «Revisión».
 - **`satlas archive` sin `--yes`** ya no se muestra como ERROR: es una **confirmación requerida** (aviso + exit 2) e indica el comando exacto con el slug (`--dry-run` para revisar, `--yes` para confirmar).
 - **Presentación y mockups se abren como desde el explorador**: el clic en `Presentación`, en `Mockups` o en cada pantalla abre el HTML con el editor predeterminado (Integrated Browser), por lo que los mockups embebidos en la propuesta **renderizan correctamente**. Antes se abrían en un visor propio con iframes vacíos y estilos bloqueados por CSP (visor retirado).

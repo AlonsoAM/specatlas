@@ -26,6 +26,7 @@ export const CATALOG: CommandSpec[] = [
   { name: 'mockup', description: 'Planifica, valida o captura los mockups del cambio', flags: ['plan', 'check', 'capture', 'require', 'json'], usage: 'satlas mockup <slug> [--plan|--check|--capture|--require]' },
   { name: 'present', description: 'Genera el paquete de propuesta para el stakeholder (HTML autocontenido)', flags: ['json'], usage: 'satlas present <slug>' },
   { name: 'ci', description: 'Gate de pipeline: specs + cambios + doctor + adaptadores (sin agente)', flags: ['strict', 'json'], usage: 'satlas ci [--strict]' },
+  { name: 'mcp', description: 'Vía de consulta de solo lectura para asistentes (protocolo MCP sobre entrada/salida estándar)', flags: [], usage: 'satlas mcp' },
   { name: 'metrics', description: 'Métricas locales del workspace (progreso, WIP, throughput, evidencia)', flags: ['json'], usage: 'satlas metrics [--json]' },
   { name: 'run', description: 'Persiste runs y eventos de ejecución (auditoría y reanudación)', flags: ['phase', 'inputs', 'data', 'slug', 'status', 'json'], usage: 'satlas run start|event|status|show|list' },
   { name: 'hash', description: 'Calcula el sha256 de un archivo o texto (para evidencia)', flags: ['text', 'json'], usage: 'satlas hash <archivo> | satlas hash --text "salida"' },

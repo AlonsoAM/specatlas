@@ -35,6 +35,7 @@ F0 (fundaciones) en desarrollo:
 | F2: integración GitHub: `satlas issue sync` (tracker idempotente) y `satlas approve --from-github` (aprobación por etiqueta, firmada con hash) | ✅ |
 | F3: matriz de trazabilidad, tablero y panel de métricas en la extensión + `satlas metrics` (local, sin telemetría) | ✅ |
 | F3: packs de cumplimiento (`seguridad`, `datos`, `auditoria`, `accesibilidad` + packs de proyecto) con `satlas packs --check` y gate en `ci`/`analyze` | ✅ |
+| F3: servidor MCP de solo lectura (`satlas mcp`) para que los asistentes consulten estado, siguiente acción, hallazgos, cobertura, impacto y glosario | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -127,6 +128,35 @@ packs: [seguridad, auditoria]
 | `accesibilidad` | Escenarios con teclado/foco/contraste y un requisito no funcional medible (WCAG AA) |
 
 También puedes escribir **packs propios** en `.sdd/packs/<id>.yaml` (mismo esquema que los integrados: `id`, `title`, `description`, `checks[]` con tipos `task-rollback`, `evidence-strong`, `spec-terms`, `rule-terms`, `nfr-measurable`, `approval-provider`). Los hallazgos aparecen como `PACK-<PACK>-<CONTROL>` en `analyze`, en `ci` y en el panel de Problems de la extensión.
+
+## Servidor MCP (solo lectura)
+
+`satlas mcp` inicia la **vía de consulta para asistentes** (protocolo MCP sobre entrada/salida estándar). Es de **solo lectura**: nunca modifica el proyecto, por lo que los asistentes pueden consultar el estado real antes de actuar.
+
+```bash
+pnpm satlas mcp        # queda escuchando mensajes JSON-RPC por stdio
+```
+
+| Operación | Qué consulta |
+|---|---|
+| `atlas_status` | Estado general o de un cambio: fase, avance de tareas y evidencia, bloqueos |
+| `atlas_next` | Siguiente acción recomendada, con la indicación explícita de si requiere una persona |
+| `atlas_validate` | Hallazgos vigentes de un cambio (idénticos a los que reporta la herramienta) |
+| `atlas_trace` | Cobertura por escenario: tarea que lo cubre, evidencia y huecos |
+| `atlas_impact` | Impacto registrado de un requisito (`REQ-…`) o de un archivo |
+| `atlas_glossary` | Términos del glosario del negocio con su definición vigente |
+
+Se registra como servidor local en el asistente (opencode, Claude Code, Cursor…). En opencode, por ejemplo:
+
+```json
+{
+  "mcp": {
+    "specatlas": { "type": "local", "command": ["satlas", "mcp"], "enabled": true }
+  }
+}
+```
+
+Las respuestas son deterministas: salen del mismo núcleo que la terminal, no de un modelo interpretando archivos. Sin proyecto inicializado, la vía responde con la acción recomendada (`satlas init`).
 
 ## Integración con GitHub (opcional, nunca un gate por defecto)
 

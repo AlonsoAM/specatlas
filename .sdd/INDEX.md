@@ -1,10 +1,10 @@
 # Índice — SpecAtlas
 
-> Generado por SpecAtlas. Las specs vivas y los cambios se listan aquí a medida que existan.
+> Generado por SpecAtlas. No editar a mano: `satlas doctor` lo regenera.
 
 ## Specs vivas
 
-_Sin specs todavía._
+- `mcp` — 6 requisitos
 
 ## Cambios activos
 
@@ -12,4 +12,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-0 cambio(s) en `changes/archive/`.
+1 cambio(s) en `changes/archive/`.
