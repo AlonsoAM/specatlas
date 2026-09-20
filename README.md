@@ -21,7 +21,7 @@ F0 (fundaciones) en desarrollo:
 | CLI `specatlas` / `satlas` (`init`, `new`, `approve`, `status`, `next`, `validate`, `trace`, `waves`, `doctor`, `archive`) | ✅ |
 | Perfiles de stack (`generic`, `node-ts`, `python`, `dotnet-sqlserver`) + detección | ✅ |
 | Plantillas es/en (es por defecto), `meta.yaml`, evidencia por escenario | ✅ |
-| Tests (vitest, 39 casos) y typecheck | ✅ |
+| Tests (vitest, 190 casos) y typecheck | ✅ |
 | Compilador de adaptadores (`@specatlas/adapters`: opencode, Claude Code, genérico) + manifiesto y `--check` | ✅ |
 | Comandos `adapters`, `profile`, `hash` | ✅ |
 | Fixtures multi-stack (node-ts, python, dotnet) | ✅ |
@@ -36,6 +36,7 @@ F0 (fundaciones) en desarrollo:
 | F3: matriz de trazabilidad, tablero y panel de métricas en la extensión + `satlas metrics` (local, sin telemetría) | ✅ |
 | F3: packs de cumplimiento (`seguridad`, `datos`, `auditoria`, `accesibilidad` + packs de proyecto) con `satlas packs --check` y gate en `ci`/`analyze` | ✅ |
 | F3: servidor MCP de solo lectura (`satlas mcp`) para que los asistentes consulten estado, siguiente acción, hallazgos, cobertura, impacto y glosario | ✅ |
+| F3: `satlas upgrade` (migraciones de esquema): aviso pasivo, vista previa, aplicación con respaldo recuperable, reversión y `--json` | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -157,6 +158,18 @@ Se registra como servidor local en el asistente (opencode, Claude Code, Cursor�
 ```
 
 Las respuestas son deterministas: salen del mismo núcleo que la terminal, no de un modelo interpretando archivos. Sin proyecto inicializado, la vía responde con la acción recomendada (`satlas init`).
+
+## Actualizar el estado del proyecto (`satlas upgrade`)
+
+Los elementos de estado (configuración, cambios, aprobaciones, perfiles y manifiesto de mockups) declaran su versión. Si un proyecto quedó en una versión anterior, `status`, `validate` y `doctor` lo avisan **sin escribir nada**, y `satlas upgrade` lo actualiza:
+
+```bash
+satlas upgrade              # vista previa: qué cambiaría (no escribe nada)
+satlas upgrade --apply      # aplica con respaldo recuperable en .sdd/.backup/
+satlas upgrade --rollback   # restaura el estado previo (consume el respaldo)
+```
+
+La aplicación es **todo o nada** (si algo falla, el proyecto queda exactamente como estaba), **idempotente** (repetirla no cambia nada) y admite `--json`. Nunca actualiza hacia atrás: un proyecto producido por una versión más nueva se avisa, no se degrada. El respaldo en `.sdd/.backup/` no debe versionarse.
 
 ## Integración con GitHub (opcional, nunca un gate por defecto)
 

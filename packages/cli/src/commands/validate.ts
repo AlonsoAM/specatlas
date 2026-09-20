@@ -1,14 +1,15 @@
 import path from 'node:path'
-import { lintSpec, type Diagnostic } from '@specatlas/core'
+import { lintSpec, upgradeAdvisory, type Diagnostic } from '@specatlas/core'
 import { flagBool, flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { evaluateChange } from '../evaluate.js'
 import { msg } from '../messages.js'
 
 export async function runValidate(ctx: CliContext): Promise<CommandResult> {
-  const { workspace, config, approvals } = await requireWorkspace(ctx)
+  const { root, workspace, config, approvals } = await requireWorkspace(ctx)
   const slug = flagString(ctx.flags, 'change')
   const strict = flagBool(ctx.flags, 'strict')
+  const advisory = slug ? undefined : await upgradeAdvisory(root)
 
   const diagnostics: Diagnostic[] = []
   const lines: string[] = [msg('validate.title', ctx.language), '']
@@ -38,6 +39,9 @@ export async function runValidate(ctx: CliContext): Promise<CommandResult> {
   }
 
   if (targets.length === 0) lines.push('Sin cambios activos.')
+  if (advisory && advisory.plan.pending.length > 0) {
+    lines.push(`Actualización pendiente: ${advisory.plan.pending.length} elemento(s) (vista previa: \`satlas upgrade\`).`)
+  }
 
   const errors = diagnostics.filter((d) => d.severity === 'error').length
   const warnings = diagnostics.filter((d) => d.severity === 'warning').length
@@ -45,8 +49,20 @@ export async function runValidate(ctx: CliContext): Promise<CommandResult> {
 
   return {
     exitCode: errors > 0 || (strict && warnings > 0) ? 1 : 0,
-    diagnostics,
-    data: { changes, errors, warnings },
+    diagnostics: advisory ? [...diagnostics, ...advisory.diagnostics] : diagnostics,
+    data: {
+      changes,
+      errors,
+      warnings,
+      upgrade: advisory
+        ? {
+            currentVersion: advisory.plan.currentVersion,
+            pending: advisory.plan.pending.length,
+            newer: advisory.plan.newer.length,
+            unreadable: advisory.plan.unreadable.length,
+          }
+        : undefined,
+    },
     text: lines,
   }
 }

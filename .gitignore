@@ -14,6 +14,7 @@ packages/vscode/media/mermaid.min.js
 !.vscode/tasks.json
 tmp/
 .tmp/
+.sdd/.backup/
 packages/cli/workflow/
 packages/cli/profiles/
 packages/vscode/workflow/

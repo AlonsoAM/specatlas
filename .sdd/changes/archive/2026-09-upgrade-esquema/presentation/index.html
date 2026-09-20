@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta — Actualizar el estado del proyecto a la versión vigente</title>
+<style>:root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#0f766e; --accent-soft:#ccfbf1; --warn:#b45309; --ok:#15803d; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#111a2c; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#2dd4bf; --accent-soft:#134e4a; --warn:#f59e0b; --ok:#4ade80; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+.hero { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: white; border-radius: 18px; padding: 28px; margin-bottom: 28px; }
+.hero h1 { margin: 6px 0 10px; font-size: 30px; line-height: 1.2; }
+.kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; opacity: .9; margin: 0; }
+.meta { margin: 0; font-size: 13px; opacity: .95; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+section h2 { margin-top: 0; font-size: 20px; }
+h3 { margin-bottom: 4px; }
+h4 { margin: 14px 0 6px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: #0b1220; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow:auto; font-size: 13px; }
+pre code { background: transparent; color: inherit; }
+.badge { display:inline-block; font-size: 11px; text-transform: uppercase; letter-spacing:.08em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-left: 8px; }
+.req { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.req:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.rules { color: var(--muted); font-size: 14px; }
+.scenario { margin: 8px 0 8px 0; }
+.when { color: var(--muted); }
+.then { font-weight: 600; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.pass { color: var(--ok); border-color: var(--ok); }
+.pill.fail { color: #dc2626; border-color: #dc2626; }
+.pill.skipped, .pill.pending { color: var(--warn); border-color: var(--warn); }
+.mockups { display:grid; gap: 18px; }
+.mockup { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mockup header { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.mockup iframe { width: 100%; height: 560px; border: 0; background: white; }
+.mockup.phone iframe { max-width: 420px; margin: 0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid-shots img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+footer { color: var(--muted); font-size: 13px; text-align:center; }
+.callout { border-left: 4px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, transparent); padding: 12px 14px; border-radius: 8px; }
+@media print { body { background: white; } section { break-inside: avoid; } .hero { background: #0f766e; } }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Propuesta · esquema · standard</p>
+    <h1>Actualizar el estado del proyecto a la versión vigente</h1>
+    <p class="meta">SpecAtlas · Hash 452c90d8 · Generado 2026-09-20 12:24:09 -05:00</p>
+  </header>
+
+  <section>
+    <h2>Resumen de negocio</h2>
+    <h1 id="propuesta-upgrade-esquema">Propuesta — upgrade esquema</h1>
+<h2 id="por-que">Por qué</h2>
+<p>(problema u oportunidad, en lenguaje de negocio)</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<p>(alcance funcional de la propuesta)</p>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<p>(lo que explícitamente no se hará)</p>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<p>(indicadores observables)</p>
+  </section>
+
+  <section>
+    <h2>Criterios de aceptación</h2>
+    <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-ESQUEMA-001-S1</code></td><td>Proyecto desactualizado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-001-S2</code></td><td>Proyecto al día</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-001-S3</code></td><td>Proyecto sin inicializar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-001-S4</code></td><td>Proyecto producido por una versión más nueva</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-001-S5</code></td><td>La consulta no modifica el proyecto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-002-S1</code></td><td>Vista previa con cambios pendientes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-002-S2</code></td><td>Vista previa sin cambios pendientes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-002-S3</code></td><td>Elemento ilegible</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-002-S4</code></td><td>El proyecto permanece idéntico tras la vista previa</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S1</code></td><td>Aplicación exitosa</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S2</code></td><td>Aplicación sin cambios pendientes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S3</code></td><td>Falla a mitad de la aplicación</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S4</code></td><td>Sin permiso para escribir</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S5</code></td><td>Aplicación repetida</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-003-S6</code></td><td>Respaldo completo del estado previo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-004-S1</code></td><td>Reversión con respaldo disponible</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-004-S2</code></td><td>Reversión sin respaldo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-004-S3</code></td><td>Trabajo en curso durante la actualización</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-004-S4</code></td><td>Reversión repetida</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-005-S1</code></td><td>Proyecto recién iniciado</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-ESQUEMA-005-S2</code></td><td>Cambio y aprobación recién creados</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Requisitos y escenarios</h2>
+    <div class="req"><h3>REQ-ESQUEMA-001 — Saber si el proyecto está al día<span class="badge">agregado</span></h3><p>El equipo necesita saber si el estado guardado del proyecto corresponde a la versión vigente de la herramienta, para no trabajar con información desactualizada sin enterarse y para decidir a conciencia cuándo actualizarla.</p><ul class="rules"><li><code>BR-ESQUEMA-001</code> — Mirar el estado nunca lo modifica: los avisos son informativos y no escriben, no corrigen ni actualizan nada por su cuenta.</li><li><code>BR-ESQUEMA-002</code> — Un proyecto que fue producido por una versión más nueva de la herramienta no se degrada: se informa esa situación y no se propone volver atrás.</li></ul><div class="scenario"><h4>REQ-ESQUEMA-001-S1 — Proyecto desactualizado</h4><div class="when">CUANDO el equipo consulta el estado de un proyecto cuyo estado guardado corresponde a una versión anterior</div><div class="then">ENTONCES recibe un aviso de que hay una actualización pendiente, con los elementos afectados y la versión a la que pasaría</div></div><div class="scenario"><h4>REQ-ESQUEMA-001-S2 — Proyecto al día</h4><div class="when">CUANDO el equipo consulta el estado de un proyecto que ya corresponde a la versión vigente</div><div class="then">ENTONCES no recibe ningún aviso de actualización pendiente</div></div><div class="scenario"><h4>REQ-ESQUEMA-001-S3 — Proyecto sin inicializar</h4><div class="when">CUANDO el equipo consulta el estado de una carpeta que no tiene el estado del proyecto</div><div class="then">ENTONCES recibe la indicación de que no está inicializado y la acción para inicializarlo, sin sugerir una actualización</div></div><div class="scenario"><h4>REQ-ESQUEMA-001-S4 — Proyecto producido por una versión más nueva</h4><div class="when">CUANDO el equipo consulta el estado de un proyecto producido por una versión más nueva de la herramienta</div><div class="then">ENTONCES recibe un aviso explícito de esa situación, sin proponer una actualización hacia atrás y sin modificar nada</div></div><div class="scenario"><h4>REQ-ESQUEMA-001-S5 — La consulta no modifica el proyecto</h4><div class="when">CUANDO el equipo consulta el estado de un proyecto desactualizado</div><div class="then">ENTONCES los elementos del proyecto quedan idénticos a como estaban antes de la consulta</div></div></div><div class="req"><h3>REQ-ESQUEMA-002 — Previsualizar la actualización sin tocar el proyecto<span class="badge">agregado</span></h3><p>El equipo necesita ver de antemano qué cambiaría una actualización, elemento por elemento, para aprobar el efecto antes de aplicarla y poder planificar su respaldo.</p><ul class="rules"><li><code>BR-ESQUEMA-003</code> — La previsualización describe con exactitud lo que la actualización escribiría y deja el proyecto intacto: lo previsualizado y lo aplicado coinciden.</li></ul><div class="scenario"><h4>REQ-ESQUEMA-002-S1 — Vista previa con cambios pendientes</h4><div class="when">CUANDO el equipo previsualiza la actualización de un proyecto desactualizado</div><div class="then">ENTONCES recibe por cada elemento afectado qué versión tiene y a cuál pasaría, junto con el resumen de la diferencia</div></div><div class="scenario"><h4>REQ-ESQUEMA-002-S2 — Vista previa sin cambios pendientes</h4><div class="when">CUANDO el equipo previsualiza la actualización de un proyecto que ya está al día</div><div class="then">ENTONCES recibe que no hay nada que actualizar, sin listar elementos</div></div><div class="scenario"><h4>REQ-ESQUEMA-002-S3 — Elemento ilegible</h4><div class="when">CUANDO la previsualización encuentra un elemento del estado que no puede interpretar</div><div class="then">ENTONCES lo reporta con su ubicación y no lo toca ni lo reemplaza, y el resto de la vista previa continúa</div></div><div class="scenario"><h4>REQ-ESQUEMA-002-S4 — El proyecto permanece idéntico tras la vista previa</h4><div class="when">CUANDO el equipo termina de previsualizar una actualización con cambios pendientes</div><div class="then">ENTONCES los elementos del proyecto quedan idénticos a como estaban antes de la previsualización</div></div></div><div class="req"><h3>REQ-ESQUEMA-003 — Aplicar la actualización con respaldo recuperable<span class="badge">agregado</span></h3><p>El equipo necesita actualizar el proyecto al estado vigente sin riesgo de perder información ni quedar a medias, para poder seguir trabajando con la versión actual y volver atrás si algo sale mal.</p><ul class="rules"><li><code>BR-ESQUEMA-004</code> — Antes de escribir, se conserva un respaldo del estado previo en una ubicación separada; el respaldo es la fuente de la reversión.</li><li><code>BR-ESQUEMA-005</code> — La aplicación es todo o nada: o el proyecto queda por completo en la versión vigente, o queda exactamente como estaba antes de intentarlo.</li><li><code>BR-ESQUEMA-006</code> — Aplicar dos veces seguidas produce el mismo resultado que aplicar una vez: la segunda vez no cambia nada.</li></ul><div class="scenario"><h4>REQ-ESQUEMA-003-S1 — Aplicación exitosa</h4><div class="when">CUANDO el equipo aplica la actualización a un proyecto desactualizado</div><div class="then">ENTONCES el estado guardado del proyecto corresponde a la versión vigente y recibe un aviso con el resultado y la ubicación del respaldo</div></div><div class="scenario"><h4>REQ-ESQUEMA-003-S2 — Aplicación sin cambios pendientes</h4><div class="when">CUANDO el equipo aplica la actualización a un proyecto que ya está al día</div><div class="then">ENTONCES no se escribe ningún elemento ni se crea un respaldo, y recibe que no había nada que actualizar</div></div><div class="scenario"><h4>REQ-ESQUEMA-003-S3 — Falla a mitad de la aplicación</h4><div class="when">CUANDO la aplicación falla antes de terminar</div><div class="then">ENTONCES el proyecto queda exactamente como estaba antes de intentarlo y recibe el motivo de la falla</div></div><div class="scenario"><h4>REQ-ESQUEMA-003-S4 — Sin permiso para escribir</h4><div class="when">CUANDO el equipo aplica la actualización en una ubicación donde no puede escribir</div><div class="then">ENTONCES no se modifica ningún elemento, el proyecto queda intacto y recibe un aviso explícito de falta de permiso</div></div><div class="scenario"><h4>REQ-ESQUEMA-003-S5 — Aplicación repetida</h4><div class="when">CUANDO el equipo aplica la actualización por segunda vez consecutiva sobre un proyecto ya actualizado por la primera</div><div class="then">ENTONCES los elementos del proyecto quedan idénticos a como quedaron tras la primera aplicación</div></div><div class="scenario"><h4>REQ-ESQUEMA-003-S6 — Respaldo completo del estado previo</h4><div class="when">CUANDO una aplicación termina con éxito</div><div class="then">ENTONCES el respaldo conserva todos los elementos del estado tal como estaban antes de la aplicación</div></div></div><div class="req"><h3>REQ-ESQUEMA-004 — Volver al estado anterior a una actualización<span class="badge">agregado</span></h3><p>El equipo necesita deshacer una actualización aplicada, por ejemplo si descubre un efecto no deseado, y recuperar el estado guardado tal como estaba antes, sin editar elementos a mano.</p><ul class="rules"><li><code>BR-ESQUEMA-007</code> — Volver atrás restaura el estado previo conservado en el respaldo y consume ese respaldo: una reversión solo puede ocurrir una vez por aplicación.</li></ul><div class="scenario"><h4>REQ-ESQUEMA-004-S1 — Reversión con respaldo disponible</h4><div class="when">CUANDO el equipo vuelve atrás una actualización aplicada y existe su respaldo</div><div class="then">ENTONCES el estado guardado del proyecto queda idéntico al que tenía antes de la aplicación y recibe el aviso del resultado</div></div><div class="scenario"><h4>REQ-ESQUEMA-004-S2 — Reversión sin respaldo</h4><div class="when">CUANDO el equipo vuelve atrás un proyecto actualizado cuyo respaldo ya no está disponible</div><div class="then">ENTONCES no se modifica ningún elemento y recibe un aviso explícito de que no hay nada que restaurar</div></div><div class="scenario"><h4>REQ-ESQUEMA-004-S3 — Trabajo en curso durante la actualización</h4><div class="when">CUANDO el proyecto tenía trabajo en curso (cambios y evidencias registradas) antes de la aplicación y luego se vuelve atrás</div><div class="then">ENTONCES ese trabajo en curso vuelve tal como estaba antes de la aplicación</div></div><div class="scenario"><h4>REQ-ESQUEMA-004-S4 — Reversión repetida</h4><div class="when">CUANDO el equipo intenta volver atrás una segunda vez la misma aplicación</div><div class="then">ENTONCES recibe que no hay nada que restaurar y los elementos del proyecto quedan sin cambios</div></div></div><div class="req"><h3>REQ-ESQUEMA-005 — El proyecto nuevo nace al día<span class="badge">agregado</span></h3><p>Quien inicia un proyecto con la herramienta necesita que nazca en la versión vigente, para que la actualización nunca sea un paso necesario el primer día.</p><ul class="rules"><li><code>BR-ESQUEMA-008</code> — Todo estado que la herramienta genera de nuevo queda registrado en la versión vigente en el mismo momento de su creación.</li></ul><div class="scenario"><h4>REQ-ESQUEMA-005-S1 — Proyecto recién iniciado</h4><div class="when">CUANDO el equipo inicia un proyecto y consulta si está al día</div><div class="then">ENTONCES no recibe ningún aviso de actualización pendiente</div></div><div class="scenario"><h4>REQ-ESQUEMA-005-S2 — Cambio y aprobación recién creados</h4><div class="when">CUANDO el equipo crea un cambio y registra una aprobación en un proyecto al día</div><div class="then">ENTONCES los elementos creados quedan en la versión vigente y la siguiente consulta no reporta actualización pendiente</div></div></div>
+  </section>
+
+  <section>
+    <h2>Mockups</h2>
+    <p><em>Este cambio no declara mockups.</em></p>
+    
+  </section>
+
+  <section>
+    <h2>Aprobación</h2>
+    <div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ Aprobada por Alonso Anchante el 2026-09-20 12:24:09 -05:00. Cualquier cambio posterior invalida la firma.</div>
+  </section>
+
+  <footer>SpecAtlas · SpecAtlas · 2026-09-20 12:24:09 -05:00</footer>
+</div>
+</body>
+</html>

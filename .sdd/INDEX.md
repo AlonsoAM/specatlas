@@ -4,6 +4,7 @@
 
 ## Specs vivas
 
+- `esquema` — 5 requisitos
 - `mcp` — 6 requisitos
 
 ## Cambios activos
@@ -12,4 +13,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-1 cambio(s) en `changes/archive/`.
+2 cambio(s) en `changes/archive/`.

@@ -35,6 +35,7 @@ import { runPresentCommand } from './commands/present.js'
 import { runRun } from './commands/run.js'
 import { runStatus } from './commands/status.js'
 import { runTrace } from './commands/trace.js'
+import { runUpgrade } from './commands/upgrade.js'
 import { runValidate } from './commands/validate.js'
 import { runVerify } from './commands/verify.js'
 import { runWaves } from './commands/waves.js'
@@ -73,6 +74,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   trace: runTrace,
   waves: runWaves,
   doctor: runDoctorCommand,
+  upgrade: runUpgrade,
   approve: runApprove,
   issue: runIssue,
   adapters: runAdapters,

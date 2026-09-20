@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { runDoctor } from '@specatlas/core'
+import { countBySeverity, runDoctor, upgradeAdvisory } from '@specatlas/core'
 import { checkAdapters } from '@specatlas/adapters'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { msg } from '../messages.js'
@@ -22,6 +22,10 @@ export async function runDoctorCommand(ctx: CliContext): Promise<CommandResult> 
       report.summary.warnings += 1
     }
   }
+
+  const advisory = await upgradeAdvisory(root)
+  report.findings.push(...advisory.diagnostics)
+  report.summary = countBySeverity(report.findings)
 
   const lines: string[] = [msg('doctor.title', ctx.language), '']
 

@@ -5,3 +5,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-19 18:37:12 -05:00
     channel: editor
+  - artifact: changes/upgrade-esquema/spec.md
+    artifact_hash: sha256:452c90d8309912c75a23bc0291f206ead4d3966caed62eb2e8ac53c1173da962
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-20 12:24:09 -05:00
+    channel: editor

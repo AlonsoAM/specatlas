@@ -412,14 +412,20 @@ export function detectProfiles(root: string, profiles: StackProfile[]): Detectio
 export function loadProfiles(dirs: string[]): Promise<StackProfile[]>                       // oficiales + proyecto + usuario
 ```
 
-### 5.16 `migrations`
+### 5.16 `migrations` (implementado en la vía `satlas upgrade`)
 
 ```ts
-export interface Migration { id: string; description: string; detect(root: string): Promise<boolean>; apply(root: string, opts: { dryRun: boolean }): Promise<MigrationResult>; rollback(root: string): Promise<void> }
-export function runMigrations(root: string, opts: { dryRun: boolean; backup: boolean }): Promise<MigrationReport>
+export const SCHEMA_VERSION = 1
+export interface MigrationSpec { id: string; description: string; from: number; to: number }
+export function planUpgrade(root: string): Promise<UpgradePlan>                // detecta pendientes, ilegibles y versiones más nuevas; no escribe
+export function applyUpgrade(root: string): Promise<UpgradeApplyReport>        // respaldo + sellado todo-o-nada; idempotente
+export function rollbackUpgrade(root: string): Promise<UpgradeRollbackReport>  // restaura el respaldo de la última aplicación y lo consume
+export function upgradeAdvisory(root: string): Promise<UpgradeAdvisory>        // aviso de solo lectura para estado, validación y diagnóstico
 ```
 
-Backup en `.sdd/.backup/<timestamp>/` antes de aplicar; dry-run reporta archivos y diffs sin tocar disco.
+- Vista previa por defecto (`satlas upgrade`); aplicar es explícito (`--apply`).
+- Respaldo en `.sdd/.backup/<marca-de-tiempo>/`: solo los elementos afectados + `backup.yaml` + puntero `.latest`.
+- Una reversión por aplicación: `--rollback` restaura el estado previo y consume el respaldo.
 
 ---
 
@@ -907,7 +913,7 @@ Si se excede, los tests de rendimiento fallan en CI (fixture sintético).
 ## 16. Versionado, migraciones y deprecaciones
 
 - **Semver** para paquetes; **`schema_version`** por artefacto (`meta`, `approvals`, `mockup manifest`, `config`, envelope).
-- Toda migración es: detectable, idempotente, reversible, con backup y dry-run (`satlas migrate`).
+- Toda migración es: detectable, idempotente, reversible, con backup y dry-run (`satlas upgrade`).
 - Deprecaciones: un minor marca con warning (`DEPRECATED-*`), el siguiente major elimina; ventana mínima de 6 meses para flags/gramáticas.
 - Compatibilidad de gramática: el parser acepta la forma antigua por 2 majors; el writer siempre emite la nueva.
 

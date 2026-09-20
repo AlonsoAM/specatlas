@@ -6,6 +6,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Añadido
 
+- **`satlas upgrade` (migraciones de esquema)**: `status`, `validate` y `doctor` avisan (sin escribir) cuando el estado del proyecto quedó en una versión anterior; `satlas upgrade` muestra la vista previa, `--apply` sella la versión vigente con respaldo recuperable en `.sdd/.backup/` (todo o nada e idempotente) y `--rollback` restaura el estado previo consumiendo el respaldo. Los proyectos nuevos nacen al día y un proyecto producido por una versión más nueva solo se avisa (nunca se degrada). Incluye `--json`, exclusión del respaldo en `.gitignore` y documentación en README/ARQUITECTURA.
 - **Servidor MCP de solo lectura** (`satlas mcp`): los asistentes consultan el estado del proyecto (estado, siguiente acción, hallazgos, cobertura, impacto y glosario) por el protocolo MCP sobre stdio, con las mismas respuestas que la terminal y sin modificar el proyecto. Incluye el análisis de impacto y el lector del glosario en el kernel, pruebas del contrato de mensajes y documentación en README/ARQUITECTURA.
 - **Filtros en los paneles**: la Matriz de trazabilidad tiene búsqueda (insensible a acentos), estado (todos / con huecos / verificados) y, cuando aplican, dominio y cambio activo, con contador en vivo; el Tablero filtra por texto, carril y dominio, y actualiza el recuento por columna.
 - **El árbol refresca al recuperar el foco** la ventana de VS Code: los cambios hechos desde la terminal (evidencia, tareas, archivado) aparecen sin recargar.

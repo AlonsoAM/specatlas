@@ -1,10 +1,11 @@
-import { stateLabel } from '@specatlas/core'
+import { stateLabel, upgradeAdvisory } from '@specatlas/core'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { evaluateChange } from '../evaluate.js'
 import { msg } from '../messages.js'
 
 export async function runStatus(ctx: CliContext): Promise<CommandResult> {
-  const { workspace, config, approvals } = await requireWorkspace(ctx)
+  const { root, workspace, config, approvals } = await requireWorkspace(ctx)
+  const advisory = await upgradeAdvisory(root)
   const lines: string[] = [msg('status.title', ctx.language), '']
   const changes: unknown[] = []
 
@@ -40,11 +41,21 @@ export async function runStatus(ctx: CliContext): Promise<CommandResult> {
     lines.push(`  ${spec.domain} — ${spec.spec.requirements.length} requisitos`)
   }
 
-  const errors = workspace.diagnostics.filter((d) => d.severity === 'error').length
+  const diagnostics = [...workspace.diagnostics, ...advisory.diagnostics]
+  const errors = diagnostics.filter((d) => d.severity === 'error').length
   return {
     exitCode: errors > 0 ? 1 : 0,
-    diagnostics: workspace.diagnostics,
-    data: { changes, specs: workspace.specs.map((s) => ({ domain: s.domain, requirements: s.spec.requirements.length })) },
+    diagnostics,
+    data: {
+      changes,
+      specs: workspace.specs.map((s) => ({ domain: s.domain, requirements: s.spec.requirements.length })),
+      upgrade: {
+        currentVersion: advisory.plan.currentVersion,
+        pending: advisory.plan.pending.length,
+        newer: advisory.plan.newer.length,
+        unreadable: advisory.plan.unreadable.length,
+      },
+    },
     text: lines,
   }
 }
