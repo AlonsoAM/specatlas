@@ -178,7 +178,7 @@ La aplicación es **todo o nada** (si algo falla, el proyecto queda exactamente 
 
 Al archivar un fix (`satlas new <slug> --lane fix` → `satlas archive <slug> --yes`), la corrección queda **viva** en `.sdd/fixes/<AAAA-MM>-<slug>.md` con su síntoma, causa raíz, cambio, rollback y evidencia, y se lista en `.sdd/INDEX.md`. El carril express **no pliega nada** en las specs vivas: no cambia comportamiento documentado.
 
-- El árbol de VS Code muestra los grupos **Fixes** (fecha, dominio y resultado; un clic lo abre) e **Histórico** (cambios archivados que no son fixes).
+- El árbol de VS Code muestra los grupos **Fixes** (fecha, dominio y resultado; un clic lo abre) e **Histórico de cambios** (qué se cerró, cuándo y con qué evidencia; la historia, no el comportamiento vigente). Los fixes archivados por versiones anteriores también aparecen en **Fixes** (se leen del histórico).
 - La **Matriz de trazabilidad** muestra por requisito qué **cambios** y **fixes** lo tocaron, con filtro por procedencia; un fix puede declarar `Cubre: REQ-…` (opcional) en su `fix.md` — si el requisito no existe se avisa (`TRACE-011`) y el fix sigue siendo válido.
 - `satlas status` lista los fixes vivos y la vía de consulta para asistentes expone `atlas_fixes` (solo lectura).
 

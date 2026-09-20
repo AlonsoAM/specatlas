@@ -48,7 +48,8 @@ export async function runStatus(ctx: CliContext): Promise<CommandResult> {
     lines.push('  (se llenan al archivar un fix)')
   } else {
     for (const fix of fixes) {
-      lines.push(`  ${fix.date || '—'}  ${(fix.domain ?? '—').padEnd(10)} ${fix.slug} — ${fix.result}`)
+      const origin = fix.source === 'archive' ? ' (histórico)' : ''
+      lines.push(`  ${fix.date || '—'}  ${(fix.domain ?? '—').padEnd(10)} ${fix.slug} — ${fix.result}${origin}`)
     }
   }
 
@@ -64,6 +65,7 @@ export async function runStatus(ctx: CliContext): Promise<CommandResult> {
         slug: fix.slug,
         date: fix.date,
         result: fix.result,
+        source: fix.source,
         ...(fix.domain !== undefined ? { domain: fix.domain } : {}),
         covers: fix.covers,
       })),

@@ -160,6 +160,7 @@ export interface SnapshotFix {
   result: string
   path: string
   covers: string[]
+  source: 'living' | 'archive'
   domain?: string
   title?: string
 }
@@ -255,6 +256,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
     result: fix.result,
     path: fix.file,
     covers: fix.covers,
+    source: fix.source,
     ...(fix.domain !== undefined ? { domain: fix.domain } : {}),
     ...(fix.title !== undefined ? { title: fix.title } : {}),
   }))

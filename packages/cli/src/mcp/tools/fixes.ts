@@ -20,6 +20,7 @@ export async function runAtlasFixes(_args: unknown, host: McpHost): Promise<Tool
       slug: fix.slug,
       date: fix.date,
       result: fix.result,
+      source: fix.source,
       domain: fix.domain,
       title: fix.title,
       covers: fix.covers,

@@ -450,6 +450,21 @@ by: Prueba
     expect(snapshot!.summary.fixes).toBe(0)
   })
 
+  it('un fix archivado antes de la función aparece igualmente (REQ-FIXES-001-S1)', async () => {
+    const root = await makeWorkspace(true)
+    await createChange({ root, slug: 'heredado', lane: 'fix', domain: 'auth', title: 'Heredado' })
+    await fs.writeFile(path.join(root, '.sdd', 'changes', 'heredado', 'fix.md'), FIX, 'utf8')
+    await fs.mkdir(path.join(root, '.sdd', 'changes', 'archive'), { recursive: true })
+    await fs.cp(path.join(root, '.sdd', 'changes', 'heredado'), path.join(root, '.sdd', 'changes', 'archive', '2026-08-heredado'), { recursive: true })
+    await fs.rm(path.join(root, '.sdd', 'changes', 'heredado'), { recursive: true, force: true })
+
+    const snapshot = await buildSnapshot(root)
+    const legacy = snapshot!.fixes.find((fix) => fix.slug === 'heredado')
+    expect(legacy?.source).toBe('archive')
+    expect(legacy?.domain).toBe('auth')
+    expect(snapshot!.archived.map((entry) => entry.slug)).not.toContain('heredado')
+  })
+
   it('la matriz muestra la procedencia de cambios archivados y fixes (REQ-FIXES-003-S1, REQ-FIXES-003-S3, REQ-FIXES-004-S1)', async () => {
     const root = await makeArchivedPair()
     const matrix = await buildMatrix(root)

@@ -170,6 +170,7 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             `**${fix.title ?? fix.slug}**`,
             '',
             `Archivado: ${fix.date} · dominio \`${fix.domain ?? '—'}\` · evidencia \`${fix.result}\``,
+            fix.source === 'archive' ? 'Conservado en el histórico (archivado antes de los fixes vivos).' : '',
             fix.covers.length > 0 ? `Cubre: ${fix.covers.map((cover) => `\`${cover}\``).join(', ')}` : '',
             '',
             `\`${vscode.workspace.asRelativePath(fix.path)}\``,
@@ -187,7 +188,15 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
         const item = new vscode.TreeItem(archived.slug, vscode.TreeItemCollapsibleState.None)
         item.description = `${archived.lane} · ${archived.month}`
         item.tooltip = new vscode.MarkdownString(
-          [`**${archived.title ?? archived.slug}**`, '', `Carril \`${archived.lane}\` · cerrado en ${archived.month}`, '', `\`${vscode.workspace.asRelativePath(archived.file)}\``].join('\n'),
+          [
+            `**${archived.title ?? archived.slug}**`,
+            '',
+            `Carril \`${archived.lane}\` · cerrado en ${archived.month}`,
+            '',
+            'Es la **historia del cambio** (qué se propuso, se planificó y se verificó). El comportamiento vigente vive en **Specs vivas**.',
+            '',
+            `\`${vscode.workspace.asRelativePath(archived.file)}\``,
+          ].join('\n'),
         )
         item.iconPath = new vscode.ThemeIcon('archive')
         item.contextValue = 'archivedChange'
@@ -365,15 +374,17 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
             description: snapshot.fixes.length > 0 ? `${snapshot.fixes.length}` : '0 · se llenan al archivar un fix',
             icon: 'wrench',
             tone: 'charts.orange',
-            tooltip: '**Fixes vivos** — las correcciones del carril express ya archivadas.\n\nSe llenan al archivar: `satlas archive <slug>` conserva el fix en `.sdd/fixes/` con su causa, su cambio y su evidencia.',
+            tooltip:
+              '**Fixes** — las correcciones del carril express, vivas o conservadas del histórico.\n\nSe llenan al archivar: `satlas archive <slug>` conserva el fix en `.sdd/fixes/` con su causa, su cambio y su evidencia. Los fixes archivados por versiones anteriores también aparecen (desde el histórico).',
             children: fixes,
           },
           {
             kind: 'group',
-            label: 'Histórico',
+            label: 'Histórico de cambios',
             description: snapshot.archived.length > 0 ? `${snapshot.archived.length}` : '0 · se llena al archivar',
             icon: 'archive',
-            tooltip: '**Histórico** — cambios archivados que no son fixes (los fixes viven en su propio grupo).',
+            tooltip:
+              '**Histórico de cambios** — qué cambios se cerraron, cuándo y con qué evidencia (su propuesta, su plan, sus tareas y su verificación).\n\nEs la **historia**, no el comportamiento vigente: eso vive en **Specs vivas**. Los fixes tienen su propio grupo.',
             children: archived,
           },
         ],

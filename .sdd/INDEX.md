@@ -11,7 +11,9 @@
 
 ## Fixes vivos
 
-_Sin fixes archivados todavía._
+- 2026-09-20 · `fixes` · `fixes-heredados` · pass
+- 2026-09 · `editor` · `paneles-vivo` · pass
+- 2026-09 · `esquema` · `matriz-cobertura` · pass
 
 ## Cambios activos
 
@@ -19,4 +21,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-6 cambio(s) en `changes/archive/`.
+7 cambio(s) en `changes/archive/`.

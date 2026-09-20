@@ -373,8 +373,27 @@ describe('MCP: atlas_fixes (REQ-FIXES-005)', () => {
     expect(data.fixes[0]?.content).toContain('Causa raíz')
   })
 
-  it('S3: sin fixes vivos informa y sugiere crear uno', async () => {
+  it('S2: un fix archivado antes de la función también se informa', async () => {
     const root = await initWorkspace()
+    const created = await runNew(ctx(root, { lane: 'fix', domain: 'auth' }, ['heredado']))
+    expect(created.exitCode).toBe(0)
+    const dir = path.join(root, '.sdd', 'changes', 'heredado')
+    await fs.writeFile(
+      path.join(dir, 'fix.md'),
+      `# Fix — Heredado\n\n## Causa raíz\nZona horaria.\n\n## Evidencia\n\n### REQ-AUTH-001-S1\n\n\`\`\`evidence\nmethod: manual\nresult: pass\ndate: 2026-08-01 10:00:00 -05:00\nby: Prueba\n\`\`\`\n`,
+      'utf8',
+    )
+    await fs.mkdir(path.join(root, '.sdd', 'changes', 'archive'), { recursive: true })
+    await fs.cp(dir, path.join(root, '.sdd', 'changes', 'archive', '2026-08-heredado'), { recursive: true })
+    await fs.rm(dir, { recursive: true, force: true })
+
+    const data = toolJson(await callTool(hostFor(root), 'atlas_fixes')) as { fixes: Array<{ slug: string; source: string; result: string }> }
+    const legacy = data.fixes.find((fix) => fix.slug === 'heredado')
+    expect(legacy?.source).toBe('archive')
+    expect(legacy?.result).toBe('pass')
+  })
+
+  it('S3: sin fixes vivos informa y sugiere crear uno', async () => {    const root = await initWorkspace()
     const data = toolJson(await callTool(hostFor(root), 'atlas_fixes')) as { fixes: unknown[]; message: string; action: string }
     expect(data.fixes).toHaveLength(0)
     expect(data.message).toContain('No hay fixes vivos')

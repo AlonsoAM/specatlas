@@ -190,4 +190,31 @@ describe('lectura de fixes vivos', () => {
     const fixes = await loadLivingFixes(root)
     expect(fixes.map((f) => f.slug)).toEqual(['nuevo', 'viejo'])
   })
+
+  it('incluye los fixes archivados antes de existir los fixes vivos (REQ-FIXES-001-S1)', async () => {
+    const { root } = await makeFixWorkspace()
+    // Simula un fix archivado por una versión anterior: sin fix vivo materializado.
+    await fs.mkdir(path.join(root, '.sdd', 'changes', 'archive'), { recursive: true })
+    await fs.cp(path.join(root, '.sdd', 'changes', 'arreglo-login'), path.join(root, '.sdd', 'changes', 'archive', '2026-08-arreglo-login'), { recursive: true })
+    await fs.rm(path.join(root, '.sdd', 'changes', 'arreglo-login'), { recursive: true, force: true })
+
+    const fixes = await loadLivingFixes(root)
+    expect(fixes).toHaveLength(1)
+    expect(fixes[0]?.slug).toBe('arreglo-login')
+    expect(fixes[0]?.source).toBe('archive')
+    expect(fixes[0]?.domain).toBe('auth')
+    expect(fixes[0]?.result).toBe('pass')
+    expect(fixes[0]?.covers).toEqual(['REQ-AUTH-001'])
+    expect(fixes[0]?.content).toContain('## Causa raíz')
+    expect(fixes[0]?.file).toContain(path.join('archive', '2026-08-arreglo-login', 'fix.md'))
+  })
+
+  it('no duplica un fix archivado que ya tiene fix vivo', async () => {
+    const { root } = await makeFixWorkspace()
+    await archiveChange({ root, slug: 'arreglo-login', now: new Date('2026-09-20T10:00:00') })
+
+    const fixes = await loadLivingFixes(root)
+    expect(fixes.filter((f) => f.slug === 'arreglo-login')).toHaveLength(1)
+    expect(fixes[0]?.source).toBe('living')
+  })
 })
