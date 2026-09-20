@@ -21,7 +21,7 @@ F0 (fundaciones) en desarrollo:
 | CLI `specatlas` / `satlas` (`init`, `new`, `approve`, `status`, `next`, `validate`, `trace`, `waves`, `doctor`, `archive`) | ✅ |
 | Perfiles de stack (`generic`, `node-ts`, `python`, `dotnet-sqlserver`) + detección | ✅ |
 | Plantillas es/en (es por defecto), `meta.yaml`, evidencia por escenario | ✅ |
-| Tests (vitest, 190 casos) y typecheck | ✅ |
+| Tests (vitest, 207 casos) y typecheck | ✅ |
 | Compilador de adaptadores (`@specatlas/adapters`: opencode, Claude Code, genérico) + manifiesto y `--check` | ✅ |
 | Comandos `adapters`, `profile`, `hash` | ✅ |
 | Fixtures multi-stack (node-ts, python, dotnet) | ✅ |
@@ -37,6 +37,7 @@ F0 (fundaciones) en desarrollo:
 | F3: packs de cumplimiento (`seguridad`, `datos`, `auditoria`, `accesibilidad` + packs de proyecto) con `satlas packs --check` y gate en `ci`/`analyze` | ✅ |
 | F3: servidor MCP de solo lectura (`satlas mcp`) para que los asistentes consulten estado, siguiente acción, hallazgos, cobertura, impacto y glosario | ✅ |
 | F3: `satlas upgrade` (migraciones de esquema): aviso pasivo, vista previa, aplicación con respaldo recuperable, reversión y `--json` | ✅ |
+| F3: informe de hallazgos **SARIF** (`satlas ci --sarif`) y **Action oficial** en el repo (`uses: AlonsoAM/specatlas@v1`) con gate real en cada PR | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
 | F3 restante: contract testing y multi-repo | 🔲 pendiente |
 
@@ -184,6 +185,41 @@ pnpm satlas approve reset-password --from-github           # firma la spec si el
 - El issue se vincula en `meta.yaml` (`tracker: { provider: github, id, url }`) y su cuerpo se regenera desde el cambio (siguiente acción, tareas, evidencia).
 - Aprobación por etiqueta: quien aprueba aplica `spec-approved` (configurable con `gates.approval_label`) y `satlas approve --from-github` registra la **firma local con hash y canal `tracker`**.
 - Config: `integrations.tracker: github`, `gates.approval: file | none | github-label`.
+
+## Comprobación continua en GitHub (Action oficial)
+
+`satlas ci --sarif <ruta>` ejecuta el gate y, además, escribe un **informe de hallazgos en formato SARIF 2.1.0** (reglas por código, rutas relativas, archivo y línea) que GitHub Code Scanning muestra anotado en cada propuesta. La **Action oficial** hace todo con un solo paso:
+
+```yaml
+name: SDD
+on: [pull_request]
+permissions:
+  contents: read
+  security-events: write   # necesario solo para publicar el informe
+jobs:
+  specatlas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: AlonsoAM/specatlas@v1
+        with:
+          version: latest        # o una versión fija, p. ej. 0.1.27
+          strict: 'false'        # 'true' para que los avisos también bloqueen
+          upload: 'true'         # publica el informe en Code Scanning
+```
+
+| Entrada | Por defecto | Qué hace |
+|---|---|---|
+| `version` | `latest` | Versión de la herramienta que se instala desde npm |
+| `path` | `.` | Ruta del proyecto dentro del repositorio |
+| `strict` | `'false'` | Con `'true'`, los avisos también bloquean la propuesta |
+| `sarif-file` | `specatlas.sarif` | Ruta del informe, relativa a `path` |
+| `upload` | `'true'` | Publica el informe en Code Scanning |
+
+- El paso **bloquea el job exactamente cuando bloquea el gate local** con la misma configuración (avisos incluidos en modo estricto).
+- Publicar el informe es **opcional**: si falta el permiso `security-events` o no hay conexión, se avisa del motivo y el veredicto no cambia.
+- El informe contiene solo hallazgos y ubicaciones: **nunca** contenido de archivos ni credenciales. El gate no usa la red.
+- Equivalente local: `pnpm satlas ci --sarif specatlas.sarif [--strict]`.
 
 ## Extensión de VS Code
 

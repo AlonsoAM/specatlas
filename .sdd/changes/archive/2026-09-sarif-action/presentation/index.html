@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta — Ver los hallazgos en GitHub y ejecutar el gate en cada PR</title>
+<style>:root { --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --accent:#0f766e; --accent-soft:#ccfbf1; --warn:#b45309; --ok:#15803d; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --card:#111a2c; --ink:#e2e8f0; --muted:#94a3b8; --line:#1e293b; --accent:#2dd4bf; --accent-soft:#134e4a; --warn:#f59e0b; --ok:#4ade80; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 80px; }
+.hero { background: linear-gradient(135deg, var(--accent), #0ea5e9); color: white; border-radius: 18px; padding: 28px; margin-bottom: 28px; }
+.hero h1 { margin: 6px 0 10px; font-size: 30px; line-height: 1.2; }
+.kicker { text-transform: uppercase; letter-spacing: .12em; font-size: 12px; opacity: .9; margin: 0; }
+.meta { margin: 0; font-size: 13px; opacity: .95; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 22px; }
+section h2 { margin-top: 0; font-size: 20px; }
+h3 { margin-bottom: 4px; }
+h4 { margin: 14px 0 6px; color: var(--muted); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+code { background: color-mix(in srgb, var(--line) 60%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: #0b1220; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow:auto; font-size: 13px; }
+pre code { background: transparent; color: inherit; }
+.badge { display:inline-block; font-size: 11px; text-transform: uppercase; letter-spacing:.08em; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 2px 10px; margin-left: 8px; }
+.req { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.req:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+.rules { color: var(--muted); font-size: 14px; }
+.scenario { margin: 8px 0 8px 0; }
+.when { color: var(--muted); }
+.then { font-weight: 600; }
+.pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); }
+.pill.pass { color: var(--ok); border-color: var(--ok); }
+.pill.fail { color: #dc2626; border-color: #dc2626; }
+.pill.skipped, .pill.pending { color: var(--warn); border-color: var(--warn); }
+.mockups { display:grid; gap: 18px; }
+.mockup { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.mockup header { padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; font-size: 14px; }
+.mockup iframe { width: 100%; height: 560px; border: 0; background: white; }
+.mockup.phone iframe { max-width: 420px; margin: 0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.grid-shots img { width: 100%; border: 1px solid var(--line); border-radius: 10px; }
+footer { color: var(--muted); font-size: 13px; text-align:center; }
+.callout { border-left: 4px solid var(--accent); background: color-mix(in srgb, var(--accent-soft) 35%, transparent); padding: 12px 14px; border-radius: 8px; }
+@media print { body { background: white; } section { break-inside: avoid; } .hero { background: #0f766e; } }</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <p class="kicker">Propuesta · ci · standard</p>
+    <h1>Ver los hallazgos en GitHub y ejecutar el gate en cada PR</h1>
+    <p class="meta">SpecAtlas · Hash aec64110 · Generado 2026-09-20 12:49:48 -05:00</p>
+  </header>
+
+  <section>
+    <h2>Resumen de negocio</h2>
+    <h1 id="propuesta-ver-los-hallazgos-en-github-y-ejecutar-el-gate-en-cada-pr">Propuesta — Ver los hallazgos en GitHub y ejecutar el gate en cada PR</h1>
+<h2 id="por-que">Por qué</h2>
+<p>La comprobación continua ya corre en la terminal, pero sus hallazgos viven fuera de la revisión: quien revisa una propuesta de cambio no ve el archivo ni la línea señalados y depende de que alguien pegue la salida. Además, cada proyecto que quiere el gate en sus propuestas debe escribir sus propios pasos de flujo automático. SpecAtlas es una herramienta global: debe integrarse sola, con un solo paso y sin preparar cada proyecto.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<ul><li>La comprobación continua puede emitir un <strong>informe de hallazgos en el formato estándar que muestran las revisiones de código</strong>, con cada hallazgo anotado en su archivo y línea, las reglas descritas una sola vez y ubicaciones relativas al proyecto.</li><li>Un <strong>paso oficial reutilizable</strong> que cualquier proyecto añade con una línea: obtiene la herramienta de su distribución pública (con versión fijable), corre la comprobación, publica el informe y <strong>bloquea la propuesta cuando el gate falla</strong> (avisos incluidos en modo estricto).</li><li>El veredicto publicado es <strong>idéntico al local</strong>; el informe nunca lo altera. Sin hallazgos, el informe es válido y vacío.</li><li>El informe <strong>no expone contenido de archivos ni credenciales</strong>; el veredicto <strong>no depende de la red</strong>; publicar el informe no es requisito para bloquear.</li></ul>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>Otros servicios de revisión de código aparte de GitHub (GitLab, Bitbucket, etc.).</li><li>Publicar los hallazgos como incidencias o tareas en un gestor externo.</li><li>Telemetría o envío de datos a servicios de SpecAtlas.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Un proyecto añade la comprobación a sus propuestas con una sola línea, sin pasos previos ni dependencias propias.</li><li>En una propuesta con hallazgos, la revisión los muestra anotados en archivo y línea; sin hallazgos, el informe es válido y declara cero.</li><li>El paso falla exactamente cuando la comprobación local falla con la misma configuración (estricto o no).</li><li>El informe no contiene rutas absolutas, contenido de archivos ni credenciales; el veredicto se emite sin conexión.</li></ul>
+  </section>
+
+  <section>
+    <h2>Criterios de aceptación</h2>
+    <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-CI-001-S1</code></td><td>Propuesta con hallazgos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-001-S2</code></td><td>Sin hallazgos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-001-S3</code></td><td>Sin permiso para publicar el informe después del veredicto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-001-S4</code></td><td>Ruta del informe no escribible</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-002-S1</code></td><td>Reglas declaradas y referenciadas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-002-S2</code></td><td>Ubicaciones relativas</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-002-S3</code></td><td>Hallazgo sin archivo concreto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-003-S1</code></td><td>Hallazgos bloqueantes</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-003-S2</code></td><td>Modo estricto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-003-S3</code></td><td>Avisos sin modo estricto</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-004-S1</code></td><td>Proyecto listo, un solo paso</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-004-S2</code></td><td>Versión fijada</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-004-S3</code></td><td>Proyecto sin inicializar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-004-S4</code></td><td>Herramienta no disponible</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-005-S1</code></td><td>Contenido del informe</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-005-S2</code></td><td>Permisos mínimos</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CI-005-S3</code></td><td>Veredicto sin conexión</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+  </section>
+
+  <section>
+    <h2>Requisitos y escenarios</h2>
+    <div class="req"><h3>REQ-CI-001 — Un informe de hallazgos junto a la comprobación continua<span class="badge">agregado</span></h3><p>El equipo necesita que la comprobación continua que ya corre en cada propuesta de cambio deje un informe legible por las herramientas de revisión, para ver los hallazgos anotados sobre el archivo y la línea exactos donde están, sin abrir la terminal ni buscar a mano.</p><ul class="rules"><li><code>BR-CI-001</code> — El informe se genera en la ruta indicada al solicitar la comprobación; no es un paso aparte ni un producto distinto del veredicto.</li><li><code>BR-CI-002</code> — El informe siempre es válido para su consumidor, incluso cuando no hay hallazgos.</li></ul><div class="scenario"><h4>REQ-CI-001-S1 — Propuesta con hallazgos</h4><div class="when">CUANDO la comprobación continua encuentra hallazgos y se pidió el informe</div><div class="then">ENTONCES el informe queda escrito en la ruta indicada y cada hallazgo aparece con su código, severidad, archivo, línea y sugerencia, de modo que la revisión lo muestra anotado en ese archivo y línea</div></div><div class="scenario"><h4>REQ-CI-001-S2 — Sin hallazgos</h4><div class="when">CUANDO la comprobación continua no encuentra ningún hallazgo y se pidió el informe</div><div class="then">ENTONCES el informe queda escrito igualmente, es válido y declara cero hallazgos</div></div><div class="scenario"><h4>REQ-CI-001-S3 — Sin permiso para publicar el informe después del veredicto</h4><div class="when">CUANDO la comprobación termina pero el informe no puede entregarse al servicio de revisión por falta de permiso</div><div class="then">ENTONCES el veredicto de la comprobación no cambia, se informa del motivo y la propuesta no se bloquea por ese motivo</div></div><div class="scenario"><h4>REQ-CI-001-S4 — Ruta del informe no escribible</h4><div class="when">CUANDO se pide el informe en una ruta donde no se puede escribir</div><div class="then">ENTONCES recibe un aviso explícito con la ruta y la comprobación continúa con su veredicto</div></div></div><div class="req"><h3>REQ-CI-002 — Un informe que la revisión pueda mostrar por archivo y regla<span class="badge">agregado</span></h3><p>Quien revisa necesita que cada hallazgo llegue agrupado por la regla que lo produce y ubicado en el archivo relativo del proyecto, para entenderlo y arreglarlo sin ambigüedad.</p><ul class="rules"><li><code>BR-CI-003</code> — Cada código de hallazgo se publica una sola vez como regla del informe, con su descripción; los hallazgos la referencian por ese código.</li><li><code>BR-CI-004</code> — Las ubicaciones se expresan relativas a la raíz del proyecto; nunca se publican rutas absolutas de la máquina que ejecutó la comprobación.</li></ul><div class="scenario"><h4>REQ-CI-002-S1 — Reglas declaradas y referenciadas</h4><div class="when">CUANDO el informe contiene hallazgos con códigos distintos</div><div class="then">ENTONCES el informe declara cada código una vez con su descripción y cada hallazgo referencia su código</div></div><div class="scenario"><h4>REQ-CI-002-S2 — Ubicaciones relativas</h4><div class="when">CUANDO un hallazgo señala un archivo del proyecto</div><div class="then">ENTONCES su ubicación es la ruta relativa a la raíz del proyecto y la línea señalada, sin rutas absolutas</div></div><div class="scenario"><h4>REQ-CI-002-S3 — Hallazgo sin archivo concreto</h4><div class="when">CUANDO un hallazgo es del proyecto en general y no señala un archivo</div><div class="then">ENTONCES el informe lo incluye en la sección general, sin archivo ni línea, y sigue siendo válido</div></div></div><div class="req"><h3>REQ-CI-003 — El veredicto que bloquea la propuesta<span class="badge">agregado</span></h3><p>El equipo necesita que la propuesta quede bloqueada exactamente cuando la comprobación no pasa y que el criterio sea el mismo que ve localmente, para no discutir dos verdades distintas.</p><ul class="rules"><li><code>BR-CI-005</code> — El veredicto publicado es el mismo que reporta la comprobación con la misma configuración; el informe no lo altera.</li><li><code>BR-CI-006</code> — Por defecto solo los hallazgos bloqueantes bloquean; en modo estricto los avisos también bloquean.</li></ul><div class="scenario"><h4>REQ-CI-003-S1 — Hallazgos bloqueantes</h4><div class="when">CUANDO la comprobación encuentra al menos un hallazgo bloqueante</div><div class="then">ENTONCES el paso termina en fallo y la propuesta queda bloqueada, con los hallazgos visibles en el informe</div></div><div class="scenario"><h4>REQ-CI-003-S2 — Modo estricto</h4><div class="when">CUANDO la comprobación corre en modo estricto y encuentra avisos sin hallazgos bloqueantes</div><div class="then">ENTONCES el paso termina en fallo y los avisos quedan visibles en el informe</div></div><div class="scenario"><h4>REQ-CI-003-S3 — Avisos sin modo estricto</h4><div class="when">CUANDO la comprobación encuentra solo avisos y no corre en modo estricto</div><div class="then">ENTONCES el paso termina en éxito y los avisos quedan visibles en el informe</div></div></div><div class="req"><h3>REQ-CI-004 — Un paso listo para cualquier proyecto<span class="badge">agregado</span></h3><p>Cualquier equipo necesita añadir la comprobación a sus propuestas con un único paso de su flujo automático, sin preparar el proyecto ni instalar nada a mano, porque la herramienta es global y no de un solo equipo.</p><ul class="rules"><li><code>BR-CI-007</code> — El paso obtiene la herramienta por sí mismo desde su distribución pública y admite fijar la versión; no exige que el proyecto la declare como dependencia.</li></ul><div class="scenario"><h4>REQ-CI-004-S1 — Proyecto listo, un solo paso</h4><div class="when">CUANDO un proyecto con su estado inicializado añade el paso oficial a su flujo automático</div><div class="then">ENTONCES la comprobación corre y el informe se publica sin pasos previos ni configuración adicional</div></div><div class="scenario"><h4>REQ-CI-004-S2 — Versión fijada</h4><div class="when">CUANDO el paso declara una versión concreta de la herramienta</div><div class="then">ENTONCES la comprobación usa esa versión y no otra</div></div><div class="scenario"><h4>REQ-CI-004-S3 — Proyecto sin inicializar</h4><div class="when">CUANDO el paso corre en un proyecto que no tiene su estado inicializado</div><div class="then">ENTONCES recibe el aviso de inicializar el proyecto y el flujo no se rompe con un error inesperado</div></div><div class="scenario"><h4>REQ-CI-004-S4 — Herramienta no disponible</h4><div class="when">CUANDO la herramienta no puede obtenerse desde su distribución pública</div><div class="then">ENTONCES el paso informa el motivo con claridad y no publica un informe vacío que parezca una comprobación sin hallazgos</div></div></div><div class="req"><h3>REQ-CI-005 — Comprobación sin secretos y sin permisos de más<span class="badge">agregado</span></h3><p>El equipo necesita que la comprobación automática no exponga información sensible ni exija permisos que no usa, para adoptarla con confianza en proyectos de cualquier tamaño.</p><ul class="rules"><li><code>BR-CI-008</code> — El informe contiene hallazgos y ubicaciones; nunca contenido de archivos, variables de entorno ni credenciales.</li><li><code>BR-CI-009</code> — El veredicto de la comprobación no depende de la red: la obtención de la herramienta y la entrega del informe son los únicos pasos que la usan.</li></ul><div class="scenario"><h4>REQ-CI-005-S1 — Contenido del informe</h4><div class="when">CUANDO se inspecciona un informe con hallazgos</div><div class="then">ENTONCES solo contiene códigos, severidades, mensajes, sugerencias y ubicaciones relativas, sin contenido de archivos ni credenciales</div></div><div class="scenario"><h4>REQ-CI-005-S2 — Permisos mínimos</h4><div class="when">CUANDO el flujo automático concede al paso solo los permisos para leer el repositorio y entregar el informe</div><div class="then">ENTONCES la comprobación corre y el veredicto se emite igual</div></div><div class="scenario"><h4>REQ-CI-005-S3 — Veredicto sin conexión</h4><div class="when">CUANDO la herramienta ya está disponible y no hay conexión a la red</div><div class="then">ENTONCES la comprobación emite su veredicto localmente; solo la entrega del informe falla y se informa el motivo</div></div></div>
+  </section>
+
+  <section>
+    <h2>Mockups</h2>
+    <p><em>Este cambio no declara mockups.</em></p>
+    
+  </section>
+
+  <section>
+    <h2>Aprobación</h2>
+    <div class="callout" style="border-left-color:#15803d;background:rgba(21,128,61,.12)">✔ Aprobada por Alonso Anchante el 2026-09-20 12:49:48 -05:00. Cualquier cambio posterior invalida la firma.</div>
+  </section>
+
+  <footer>SpecAtlas · SpecAtlas · 2026-09-20 12:49:48 -05:00</footer>
+</div>
+</body>
+</html>

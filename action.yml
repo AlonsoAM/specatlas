@@ -1,0 +1,54 @@
+name: SpecAtlas CI
+description: Ejecuta la comprobación continua de SpecAtlas en cada propuesta y publica el informe de hallazgos (gate real, no solo aviso).
+author: SpecAtlas
+
+branding:
+  icon: shield
+  color: purple
+
+inputs:
+  version:
+    description: Versión de la herramienta a usar (por ejemplo 0.1.27, o latest)
+    required: false
+    default: latest
+  path:
+    description: Ruta del proyecto dentro del repositorio
+    required: false
+    default: .
+  strict:
+    description: Si es "true", los avisos también bloquean
+    required: false
+    default: 'false'
+  sarif-file:
+    description: Ruta del informe de hallazgos a generar, relativa a la ruta del proyecto
+    required: false
+    default: specatlas.sarif
+  upload:
+    description: Si es "true", publica el informe en Code Scanning (requiere el permiso security-events)
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Obtener SpecAtlas de su distribución pública
+      shell: bash
+      run: npm install -g "specatlas@${{ inputs.version }}"
+
+    - name: Comprobación continua
+      id: ci
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        if [ "${{ inputs.strict }}" = "true" ]; then
+          satlas ci --sarif "${{ inputs.sarif-file }}" --strict
+        else
+          satlas ci --sarif "${{ inputs.sarif-file }}"
+        fi
+
+    - name: Publicar el informe en Code Scanning
+      if: ${{ always() && inputs.upload == 'true' }}
+      continue-on-error: true
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.path }}/${{ inputs.sarif-file }}

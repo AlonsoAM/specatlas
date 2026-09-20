@@ -10,3 +10,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-20 12:24:09 -05:00
     channel: editor
+  - artifact: changes/sarif-action/spec.md
+    artifact_hash: sha256:aec64110959c125cbd79100239a8fe9c4ddf05e5b1512366bdaa0271c032a52e
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-20 12:49:48 -05:00
+    channel: editor

@@ -759,7 +759,7 @@ export interface Envelope<T> {
 - `--json` emite **solo** el envelope por stdout (sin color, sin progreso).
 - Progreso y logs por stderr.
 - Mensajes localizados por `language` (**es por defecto**); **los códigos son estables en inglés**.
-- Los artefactos generados (`archive`, `present`, `migrate`, plantillas de `new`) respetan `language`: con `es` (default) todo el contenido se escribe en español.
+- Los artefactos generados (`archive`, `present`, plantillas de `new`) respetan `language`: con `es` (default) todo el contenido se escribe en español.
 
 ### 9.2 Exit codes
 
@@ -782,6 +782,13 @@ export interface Envelope<T> {
 ### 9.4 Precedencia de configuración
 
 `flags CLI` > `.sdd/config.yaml` > `~/.config/specatlas/config.yaml` > defaults. Variables de entorno: solo `SPECATLAS_*` documentadas (p. ej. `SPECATLAS_AGENT_COMMAND`), nunca secretos en archivos del repo.
+
+### 9.5 Informe de hallazgos (SARIF) y Action oficial
+
+- `satlas ci --sarif <ruta>` escribe el informe con el **mismo veredicto** del gate (`toSarifReport` en el kernel: `error→error`, `warning→warning`, `info→note`; reglas únicas por código con descripción por familia; `artifactLocation.uri` relativa al proyecto y `region.startLine`; hallazgos sin archivo van sin `locations`).
+- La escritura del informe **no altera el veredicto**: si la ruta no es escribible, se emite el aviso `ATLAS-CI-SARIF-001` y el exit code no cambia.
+- La Action compuesta (`action.yml`, `uses: AlonsoAM/specatlas@v1`) instala la herramienta desde npm (entrada `version`), corre el gate en `path` y publica el informe con `github/codeql-action/upload-sarif` en un paso `if: always()` con `continue-on-error: true`: publicar es opcional y nunca cambia el veredicto.
+- El informe solo contiene campos del diagnóstico (código, severidad, mensaje, sugerencia, ubicación): nunca contenido de archivos ni credenciales; el gate no usa la red.
 
 ---
 
