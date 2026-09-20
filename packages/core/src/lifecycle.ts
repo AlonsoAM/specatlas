@@ -102,6 +102,17 @@ export function deriveState(input: DeriveInput): DerivedState {
 
   if (blockingFindings > 0) {
     blockedBy.push(`${blockingFindings} hallazgo(s) bloqueante(s)`)
+    if (tasksTotal > 0 && tasksDone < tasksTotal) {
+      return {
+        state: 'building',
+        blockedBy,
+        nextAction: next(`/satlas.build ${change.slug}`, `Construir en olas (${tasksDone}/${tasksTotal} tareas) · ${blockingFindings} hallazgo(s) pendientes`, true),
+        progress,
+      }
+    }
+    if (tasksTotal > 0) {
+      return { state: 'built', blockedBy, nextAction: next(`satlas verify ${change.slug}`, 'Registrar evidencia por escenario'), progress }
+    }
     return { state: 'spec_draft', blockedBy, nextAction: next(`satlas validate --change ${change.slug}`, 'Corregir los hallazgos de la especificación'), progress }
   }
 

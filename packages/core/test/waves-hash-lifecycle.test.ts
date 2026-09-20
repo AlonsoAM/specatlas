@@ -223,4 +223,25 @@ Prosa.
     expect(raw.match(/^mockups:/gm)?.length).toBe(1)
     expect(raw).toContain('mockups: skip')
   })
+  it('con tareas hechas y hallazgos pendientes, la fase es construido (no spec en borrador)', () => {
+    const cfg = defaultConfig()
+    const delta = parseDelta('## Requisitos agregados\n\n### Requisito: REQ-A-001 — X\n#### Escenario: REQ-A-001-S1 — Caso\n- **CUANDO** a\n- **ENTONCES** b\n', 'changes/x/spec.md')
+    const meta = parseChangeMeta('schema_version: 1\nslug: x\nlane: standard\ndomain: auth\n', 'meta.yaml').meta
+    const approval = { status: 'valid' as const, approvedBy: 'Ana', approvedAt: '2026-01-01' }
+    const tasksDone = parseTasksFile('## Bloque 1 — X\n- [x] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
+    const tasksPending = parseTasksFile('## Bloque 1 — X\n- [ ] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
+
+    const built = deriveState({ change: { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta, tasks: tasksDone }, cfg, approval, blockingFindings: 25 })
+    expect(built.state).toBe('built')
+    expect(built.blockedBy.join(' ')).toContain('25 hallazgo')
+    expect(built.nextAction.command).toContain('satlas verify')
+
+    const building = deriveState({ change: { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta, tasks: tasksPending }, cfg, approval, blockingFindings: 3 })
+    expect(building.state).toBe('building')
+    expect(building.nextAction.command).toContain('/satlas.build')
+
+    const specDraft = deriveState({ change: { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta }, cfg, approval: { status: 'missing' }, blockingFindings: 2 })
+    expect(specDraft.state).toBe('spec_draft')
+    expect(specDraft.nextAction.command).toContain('satlas validate')
+  })
 })
