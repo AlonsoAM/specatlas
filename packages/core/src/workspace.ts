@@ -79,7 +79,8 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   if (deltaRaw !== undefined) {
     change.delta = parseDelta(deltaRaw, deltaFile)
     diagnostics.push(...change.delta.diagnostics)
-  } else {
+  } else if (change.meta?.lane !== 'fix') {
+    // El carril express no lleva delta a propósito: su artefacto único es fix.md.
     diagnostics.push(diag('ATLAS-FILES-002', 'warning', `El cambio "${slug}" no tiene spec.md (delta)`, { path: deltaFile }))
   }
 

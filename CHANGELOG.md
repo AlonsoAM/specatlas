@@ -34,6 +34,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **El carril express ya no pide un delta que no lleva**: un cambio `fix` avisaba de que le faltaba `spec.md` (`ATLAS-FILES-002`) cuando su artefacto único es `fix.md` por diseño.
 - **La evidencia con `npm`, `npx`, `pnpm` o `yarn` fallaba siempre en Windows**: esos lanzadores son archivos `.cmd` que `execFile` no resuelve (ENOENT) y que Node se niega a ejecutar sin shell (EINVAL), así que `satlas verify` registraba `result: fail` con la salida vacía aunque la prueba pasara. Ahora se reintenta con shell —seguro, porque el comando ya pasó el filtro de metacaracteres— y el fallo al lanzar un proceso se distingue del fallo del programa.
 
 - **Interlineado del PDF**: el avance de línea escala con el tamaño de fuente y el marcador de las listas se dibuja en su primera línea (antes los bloques grandes se solapaban entre sí).
