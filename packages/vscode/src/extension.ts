@@ -66,6 +66,8 @@ import { agentCli } from '@specatlas/core'
 import { buildNow, focusChange, statusBarText } from './views/now.js'
 import { buildHealth, healthBadge } from './views/health.js'
 import { changeForFile, fileBadge, toggleTaskLine } from './views/artefactos.js'
+import { plantillasPara } from './views/plantillas.js'
+import { comandoDeTarea, tareasDisponibles, type TareaSpecAtlas } from './views/tareas-vscode.js'
 import { laneOf, resolveCommand, stepsForLane } from './actions.js'
 import { findLivePanel, refreshLivePanels, updateLivePanel, type LivePanelEntry, type LivePanelSurface } from './live.js'
 import { startLanguageClient } from './client.js'
@@ -564,6 +566,23 @@ class ToolsProvider implements vscode.TreeDataProvider<ToolNode> {
   }
 }
 
+function buildTask(tarea: TareaSpecAtlas, folder: vscode.WorkspaceFolder, slug?: string, definition?: vscode.TaskDefinition): vscode.Task {
+  const comando = comandoDeTarea(tarea, slug)
+  const task = new vscode.Task(
+    definition ?? { type: 'specatlas', comprobacion: tarea.id, ...(slug !== undefined && tarea.porCambio ? { cambio: slug } : {}) },
+    folder,
+    tarea.nombre,
+    'specatlas',
+    new vscode.ShellExecution(comando, { cwd: folder.uri.fsPath }),
+    ['$specatlas-error', '$specatlas-aviso'],
+  )
+  task.detail = tarea.detalle
+  if (tarea.grupo === 'build') task.group = vscode.TaskGroup.Build
+  if (tarea.grupo === 'test') task.group = vscode.TaskGroup.Test
+  task.presentationOptions = { reveal: vscode.TaskRevealKind.Always, panel: vscode.TaskPanelKind.Dedicated, clear: true }
+  return task
+}
+
 /** Nodo de las vistas «Ahora» y «Salud»: mismo contrato, dos modelos puros. */
 interface PanelTreeNode {
   id: string
@@ -661,6 +680,42 @@ export function activate(context: vscode.ExtensionContext): void {
     provider.setSelected(ref.change)
     nowProvider.update(buildNow(provider.all()))
   }
+
+  // Plantillas de los artefactos: solo dentro de `.sdd/`, para no ensuciar el
+  // resto del markdown del proyecto.
+  const completions = vscode.languages.registerCompletionItemProvider(
+    { pattern: '**/.sdd/**/*.md' },
+    {
+      provideCompletionItems(document) {
+        return plantillasPara(document.uri.fsPath).map((plantilla) => {
+          const item = new vscode.CompletionItem(plantilla.prefijo, vscode.CompletionItemKind.Snippet)
+          item.detail = plantilla.titulo
+          item.documentation = new vscode.MarkdownString(plantilla.detalle)
+          item.insertText = new vscode.SnippetString(plantilla.cuerpo)
+          item.sortText = `0${plantilla.prefijo}`
+          return item
+        })
+      },
+    },
+  )
+
+  // Las comprobaciones del flujo, como tareas del editor.
+  const taskProvider = vscode.tasks.registerTaskProvider('specatlas', {
+    provideTasks() {
+      const folder = vscode.workspace.workspaceFolders?.[0]
+      if (!folder) return []
+      const slug = provider.getSelected()?.slug ?? provider.changes().find((change) => change.state !== 'archived')?.slug
+      return tareasDisponibles(slug).map((tarea) => buildTask(tarea, folder, slug))
+    },
+    resolveTask(task) {
+      const folder = vscode.workspace.workspaceFolders?.[0]
+      if (!folder) return undefined
+      const definition = task.definition as { type: string; comprobacion?: string; cambio?: string }
+      const tarea = tareasDisponibles(definition.cambio ?? 'x').find((item) => item.id === definition.comprobacion)
+      if (!tarea) return undefined
+      return buildTask(tarea, folder, definition.cambio, task.definition)
+    },
+  })
 
   // Decoración sobre los propios archivos de `.sdd/`: hallazgos y fase.
   const decorations = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>()
@@ -794,6 +849,8 @@ export function activate(context: vscode.ExtensionContext): void {
     nowView,
     healthView,
     decorationProvider,
+    completions,
+    taskProvider,
     vscode.window.onDidChangeActiveTextEditor((editor) => followEditor(editor)),
     problems,
     output,

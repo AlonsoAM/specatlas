@@ -21,6 +21,9 @@ jobs:
       - run: pnpm -r build
       - run: pnpm -r typecheck
       - run: pnpm test
+      # La extensión dentro de un VS Code real: comandos, vistas, tareas y
+      # plantillas. Necesita servidor X virtual en Linux.
+      - run: xvfb-run -a pnpm --filter specatlas-vscode test:integracion
       # El gate del flujo SDD con el código de este mismo commit.
       - run: pnpm satlas adapters --check
       - run: pnpm satlas ci

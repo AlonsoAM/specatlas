@@ -23,3 +23,7 @@ fixtures/**/bin/
 
 # Indice local de CodeGraph
 .codegraph/
+
+# Arnés de pruebas de la extensión
+packages/vscode/.vscode-test/
+packages/vscode/test-integracion/suite/

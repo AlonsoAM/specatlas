@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documento técnico — Primeros pasos, plantillas y comprobaciones del editor</title>
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<h1 id="documentacion-tecnica-primeros-pasos-plantillas-y-comprobaciones-del-editor">Documentación técnica — Primeros pasos, plantillas y comprobaciones del editor</h1>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Cambio:</b> <code>editor-productivo</code></span><span class="meta-chip"><b>Dominio:</b> editor</span><span class="meta-chip"><b>Carril:</b> full</span><span class="meta-chip"><b>Tareas:</b> 7/7</span><span class="meta-chip"><b>Actualizado:</b> 2026-09-21</span></div></blockquote>
+<h2 id="1-resumen-del-cambio">1. Resumen del cambio</h2>
+<p>Este documento describe <strong>Primeros pasos, plantillas y comprobaciones del editor</strong> (cambio <code>editor-productivo</code>), del dominio <strong>editor</strong> y carril <strong>full</strong>. Recoge el porqué, el estado anterior, el enfoque técnico, los diagramas, el mapa de archivos, la trazabilidad completa y la evidencia con la que se dio por terminado.</p>
+<div class="table-wrap"><table><thead><tr><th>Dato</th><th>Valor</th></tr></thead><tbody><tr><td>Requisitos del cambio</td><td>4 (4 nuevos, 0 modificados)</td></tr><tr><td>Escenarios especificados</td><td>11</td></tr><tr><td>Tareas</td><td>7 hechas de 7 · 4 bloque(s)</td></tr><tr><td>Evidencia</td><td>11 / 11 escenarios</td></tr><tr><td>Archivos tocados</td><td>13</td></tr><tr><td>Mockups</td><td>0 pantalla(s)</td></tr><tr><td>Carril y dominio</td><td>full · editor</td></tr></tbody></table></div>
+<h2 id="2-que-es-y-por-que">2. Qué es y por qué</h2>
+<p>Como equipo que adopta el flujo, queremos aprenderlo y usarlo sin salir del editor, para que la ceremonia no cueste más que el trabajo que ordena.</p>
+<p>Hoy pasan tres cosas. Quien empieza tiene que leerse un tutorial que vive fuera del editor para entender qué es un cambio, por qué se firma y qué cuenta como evidencia. Quien ya lo conoce escribe los artefactos de memoria —el identificador del requisito, los archivos de una tarea, el bloque de evidencia con su método y su comando— y los errores solo aparecen al validar. Y las comprobaciones del flujo viven en una terminal aparte, mientras el equipo ya lanza sus pruebas y mira sus errores en el propio editor.</p>
+<p>Hay además un riesgo que no se ve: todo lo que probamos del editor es lógica pura. Una acción declarada y nunca registrada, una vista que no abre o una plantilla que dejó de ofrecerse pasarían inadvertidas, porque nada arranca el editor para comprobarlo.</p>
+<h2 id="3-que-cambia-en-lenguaje-de-negocio">3. Qué cambia, en lenguaje de negocio</h2>
+<h3 id="req-editor-018-el-editor-ensena-el-ciclo-la-primera-vez">REQ-EDITOR-018 — El editor enseña el ciclo la primera vez</h3>
+<p>Quien abre la herramienta por primera vez no sabe qué es un cambio, ni por qué hay que firmar, ni qué cuenta como evidencia. Hoy eso se explica en un tutorial que vive fuera del editor, así que quien empieza tiene que salir de su trabajo para entenderlo. El editor debe enseñar el ciclo desde dentro, y marcar cada paso conforme se cumple.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-035</code> — el editor ofrece un recorrido de primeros pasos con las cinco etapas del ciclo: inicializar, crear un cambio, especificar, aprobar y cerrar con evidencia.</li><li><code>BR-EDITOR-036</code> — cada etapa explica para qué sirve y deja a mano la acción que la cumple.</li><li><code>BR-EDITOR-037</code> — una etapa se marca como cumplida cuando se cumple de verdad, no cuando se lee.</li></ul>
+<p><strong>Escenarios</strong>: 2 · 2 de uso · 0 de estado vacío · 0 de error o aviso.</p>
+<h3 id="req-editor-019-escribir-un-artefacto-sin-recordar-su-estructura">REQ-EDITOR-019 — Escribir un artefacto sin recordar su estructura</h3>
+<p>Cada artefacto del flujo tiene una gramática exacta: los requisitos llevan su identificador y sus escenarios, las tareas declaran archivos y lo que cubren, la evidencia declara método, comando y resultado. Escribir eso de memoria es lento y produce errores que solo aparecen al validar.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-038</code> — al escribir dentro de un artefacto del flujo se ofrecen las plantillas de lo que ese artefacto admite.</li><li><code>BR-EDITOR-039</code> — las plantillas no se ofrecen fuera de los artefactos del flujo.</li><li><code>BR-EDITOR-040</code> — cada plantilla produce contenido que la validación acepta.</li></ul>
+<p><strong>Escenarios</strong>: 3 · 3 de uso · 0 de estado vacío · 0 de error o aviso.</p>
+<h3 id="req-editor-020-las-comprobaciones-se-lanzan-como-cualquier-otra-del-proyecto">REQ-EDITOR-020 — Las comprobaciones se lanzan como cualquier otra del proyecto</h3>
+<p>El equipo ya lanza sus pruebas y su compilación desde el editor. Las comprobaciones del flujo deberían lanzarse igual, y sus hallazgos aparecer donde el equipo ya mira los errores, en vez de exigir una terminal aparte.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-041</code> — las comprobaciones del flujo se ofrecen como tareas del editor, cada una con lo que hace.</li><li><code>BR-EDITOR-042</code> — la comprobación completa queda bajo la tecla de compilación y la de trazabilidad bajo la de pruebas.</li><li><code>BR-EDITOR-043</code> — los hallazgos de una comprobación se recogen con su archivo, su línea y su gravedad.</li><li><code>BR-EDITOR-044</code> — una comprobación que opera sobre un cambio no se ofrece mientras no haya ninguno.</li></ul>
+<p><strong>Escenarios</strong>: 3 · 2 de uso · 1 de estado vacío · 0 de error o aviso.</p>
+<h3 id="req-editor-021-lo-que-solo-se-ve-en-el-editor-tambien-se-prueba">REQ-EDITOR-021 — Lo que solo se ve en el editor también se prueba</h3>
+<p>La lógica del editor se prueba sin abrirlo, pero hay cosas que solo existen dentro: que la extensión arranque, que sus acciones estén registradas, que sus vistas se abran y que las plantillas y comprobaciones lleguen a ofrecerse. Hoy nada de eso se comprueba, así que una acción declarada y no registrada pasaría inadvertida.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-045</code> — existe una comprobación que arranca el editor de verdad y verifica que la extensión activa con un proyecto del flujo.</li><li><code>BR-EDITOR-046</code> — esa comprobación verifica que cada acción declarada está registrada, que las secciones del panel se abren y que las plantillas y comprobaciones se ofrecen.</li><li><code>BR-EDITOR-047</code> — la comprobación forma parte de la verificación continua del proyecto.</li></ul>
+<p><strong>Escenarios</strong>: 3 · 2 de uso · 0 de estado vacío · 1 de error o aviso.</p>
+<h2 id="4-como-estaba-antes-as-is">4. Cómo estaba antes (AS-IS)</h2>
+<p>La extensión declara vistas, comandos y menús, pero ninguna de las tres contribuciones que VS Code ofrece para este trabajo: <code>walkthroughs</code> (primeros pasos), <code>taskDefinitions</code> + <code>problemMatchers</code> (comprobaciones) ni proveedor de completado (plantillas). El onboarding vive en <code>docs/tutorial/</code>, fuera del editor.</p>
+<p>La salida del CLI tiene un formato estable que se puede recoger: <code>NIVEL␠␠CÓDIGO ruta[:línea] — mensaje</code>. El nivel viene en español (<code>ERROR</code>, <code>AVISO</code>, <code>NOTA</code>), que no coincide con los valores que VS Code mapea por sí solo.</p>
+<p>Las pruebas del paquete (<code>packages/vscode/test/</code>) son de lógica pura con vitest: no arrancan el editor, así que nada comprueba el registro real de comandos ni las contribuciones en ejecución.</p>
+<h2 id="5-enfoque-tecnico-y-decisiones">5. Enfoque técnico y decisiones</h2>
+<p>Tres contribuciones declarativas y un arnés de pruebas nuevo, manteniendo la separación que ya funciona: los datos (plantillas y catálogo de comprobaciones) viven en módulos puros de <code>src/views/</code>, y <code>extension.ts</code> solo los registra.</p>
+<p>Las plantillas se ofrecen con un proveedor de completado filtrado por patrón de ruta (<code><strong>/.sdd/</strong>/*.md</code>) en lugar de <code>contributes.snippets</code>, porque los snippets se declaran por lenguaje y ensuciarían todo el markdown del proyecto.</p>
+<p>Para los hallazgos hacen falta <strong>dos</strong> <code>problemMatcher</code>: el nivel del CLI está en español y VS Code solo mapea <code>error</code>/<code>warning</code>/<code>info</code>, así que cada uno fija su gravedad y captura su propio nivel.</p>
+<p>El arnés de integración usa <code>@vscode/test-cli</code>, que descarga VS Code y ejecuta mocha dentro del editor. Los archivos se escriben en <code>.cts</code> para que compilen a CommonJS: el paquete es ESM y el anfitrión de extensiones carga CommonJS.</p>
+<p>Alternativas descartadas:</p>
+<ul><li><strong><code>contributes.snippets</code></strong>: no permite filtrar por ruta.</li><li><strong>Un solo <code>problemMatcher</code> con la gravedad capturada</strong>: VS Code no reconoce <code>AVISO</code> como gravedad.</li><li><strong>Extender vitest con un entorno falso de VS Code</strong>: probaría el doble, no el editor.</li></ul>
+<h2 id="6-diagramas">6. Diagramas</h2>
+<div class="mermaid-block callout"><pre class="mermaid">flowchart TD
+  P[views/plantillas] --&gt; C[CompletionItemProvider en .sdd]
+  T[views/tareas-vscode] --&gt; K[TaskProvider specatlas]
+  K --&gt; M[problemMatchers error y aviso]
+  M --&gt; PR[Panel de problemas]
+  W[media/walkthrough] --&gt; G[Primeros pasos]
+  I[test-integracion] --&gt; V[VS Code real]
+  V --&gt; R[comandos, vistas, tareas y plantillas]</pre><p><small>Diagrama mermaid — visible con la vista previa de Markdown del editor.</small></p></div>
+<h2 id="7-diseno-por-capas-y-componentes">7. Diseño por capas y componentes</h2>
+<div class="table-wrap"><table><thead><tr><th>Módulo</th><th>Responsabilidad</th></tr></thead><tbody><tr><td><code>src/views/plantillas.ts</code></td><td>Catálogo de plantillas y a qué artefacto pertenece cada una</td></tr><tr><td><code>src/views/tareas-vscode.ts</code></td><td>Catálogo de comprobaciones, su grupo y su comando</td></tr><tr><td><code>src/extension.ts</code></td><td>Registro del proveedor de completado y del proveedor de tareas</td></tr><tr><td><code>media/walkthrough/*.md</code></td><td>Contenido de las cinco etapas</td></tr><tr><td><code>package.json</code></td><td><code>walkthroughs</code>, <code>taskDefinitions</code>, <code>problemMatchers</code></td></tr><tr><td><code>test-integracion/</code></td><td>Arnés que arranca VS Code y su proyecto de prueba</td></tr></tbody></table></div>
+<h2 id="8-mapa-de-archivos">8. Mapa de archivos</h2>
+<p>Cada archivo, la tarea que lo tocó y el requisito al que responde.</p>
+<div class="table-wrap"><table><thead><tr><th>Archivo</th><th>Tareas</th><th>Requisitos que cubre</th></tr></thead><tbody><tr><td><code>.github/workflows/ci.yml</code></td><td>T4.2</td><td>REQ-EDITOR-021</td></tr><tr><td><code>packages/vscode/.vscode-test.mjs</code></td><td>T4.1</td><td>REQ-EDITOR-021</td></tr><tr><td><code>packages/vscode/media/walkthrough/aprobar.md</code></td><td>T1.1</td><td>REQ-EDITOR-018</td></tr><tr><td><code>packages/vscode/media/walkthrough/cambio.md</code></td><td>T1.1</td><td>REQ-EDITOR-018</td></tr><tr><td><code>packages/vscode/media/walkthrough/especificar.md</code></td><td>T1.1</td><td>REQ-EDITOR-018</td></tr><tr><td><code>packages/vscode/media/walkthrough/evidencia.md</code></td><td>T1.1</td><td>REQ-EDITOR-018</td></tr><tr><td><code>packages/vscode/media/walkthrough/inicializar.md</code></td><td>T1.1</td><td>REQ-EDITOR-018</td></tr><tr><td><code>packages/vscode/package.json</code></td><td>T3.2</td><td>REQ-EDITOR-020</td></tr><tr><td><code>packages/vscode/src/views/plantillas.ts</code></td><td>T2.1</td><td>REQ-EDITOR-019</td></tr><tr><td><code>packages/vscode/src/views/tareas-vscode.ts</code></td><td>T3.1</td><td>REQ-EDITOR-020</td></tr><tr><td><code>packages/vscode/test-integracion/src/extension.test.cts</code></td><td>T4.2</td><td>REQ-EDITOR-021</td></tr><tr><td><code>packages/vscode/test-integracion/tsconfig.json</code></td><td>T4.1</td><td>REQ-EDITOR-021</td></tr><tr><td><code>packages/vscode/test/plantillas-tareas.test.ts</code></td><td>T2.2</td><td>REQ-EDITOR-019</td></tr></tbody></table></div>
+<h2 id="9-trazabilidad-requisito-escenario-tarea-evidencia">9. Trazabilidad requisito → escenario → tarea → evidencia</h2>
+<p>4 requisito(s) · 11 escenario(s) · 11 con tarea · 11 con evidencia favorable · <strong>0 hueco(s)</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Requisito</th><th>Escenario</th><th>Tareas</th><th>Evidencia</th></tr></thead><tbody><tr><td>REQ-EDITOR-018</td><td><code>REQ-EDITOR-018-S1</code> Primer contacto con la herramienta</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-018</td><td><code>REQ-EDITOR-018-S2</code> Una etapa se cumple</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-019</td><td><code>REQ-EDITOR-019-S1</code> Escribir un requisito</td><td>T2.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-019</td><td><code>REQ-EDITOR-019-S2</code> Escribir una tarea</td><td>T2.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-019</td><td><code>REQ-EDITOR-019-S3</code> Un archivo fuera del flujo</td><td>T2.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-020</td><td><code>REQ-EDITOR-020-S1</code> Lanzar la comprobación completa</td><td>T3.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-020</td><td><code>REQ-EDITOR-020-S2</code> Los hallazgos van donde el equipo mira</td><td>T3.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-020</td><td><code>REQ-EDITOR-020-S3</code> Sin cambios en curso</td><td>T3.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-021</td><td><code>REQ-EDITOR-021-S1</code> La extensión arranca</td><td>T4.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-021</td><td><code>REQ-EDITOR-021-S2</code> Una acción declarada y no registrada</td><td>T4.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-021</td><td><code>REQ-EDITOR-021-S3</code> Las secciones del panel se abren</td><td>T4.2</td><td>pass</td></tr></tbody></table></div>
+<h2 id="10-pruebas-y-evidencia">10. Pruebas y evidencia</h2>
+<p>11 de 11 escenario(s) con evidencia favorable (11 ejecutable). Registrada por Alonso Anchante entre el 2026-09-21 y el 2026-09-21.</p>
+<div class="table-wrap"><table><thead><tr><th>Escenario</th><th>Qué se comprobó</th><th>Método</th><th>Resultado</th><th>Fecha</th></tr></thead><tbody><tr><td><code>REQ-EDITOR-018-S1</code></td><td>Primer contacto con la herramienta</td><td>executable</td><td>pass</td><td>2026-09-21 16:57</td></tr><tr><td><code>REQ-EDITOR-018-S2</code></td><td>Una etapa se cumple</td><td>executable</td><td>pass</td><td>2026-09-21 16:57</td></tr><tr><td><code>REQ-EDITOR-019-S1</code></td><td>Escribir un requisito</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-019-S2</code></td><td>Escribir una tarea</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-019-S3</code></td><td>Un archivo fuera del flujo</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-020-S1</code></td><td>Lanzar la comprobación completa</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-020-S3</code></td><td>Sin cambios en curso</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-020-S2</code></td><td>Los hallazgos van donde el equipo mira</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-021-S1</code></td><td>La extensión arranca</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-021-S2</code></td><td>Una acción declarada y no registrada</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr><tr><td><code>REQ-EDITOR-021-S3</code></td><td>Las secciones del panel se abren</td><td>executable</td><td>pass</td><td>2026-09-21 16:58</td></tr></tbody></table></div>
+<h3 id="10-1-como-se-reproduce-la-evidencia">10.1 Cómo se reproduce la evidencia</h3>
+<p>Comandos con los que se obtuvo la evidencia ejecutable:</p>
+<ul><li><code>npx vitest run packages/vscode/test/plantillas-tareas.test.ts</code> — 5 escenario(s)</li><li><code>npx vitest run packages/vscode/test/contribuciones.test.ts</code> — 3 escenario(s)</li><li><code>pnpm --filter specatlas-vscode test:integracion</code> — 3 escenario(s)</li></ul>
+<h2 id="11-riesgos-y-mitigaciones">11. Riesgos y mitigaciones</h2>
+<div class="table-wrap"><table><thead><tr><th>Riesgo</th><th>Mitigación</th></tr></thead><tbody><tr><td>Las plantillas ensucian el markdown del proyecto</td><td>El proveedor se filtra por patrón de ruta, y hay prueba de que fuera no aparecen</td></tr><tr><td>El formato de los hallazgos cambia y los matchers dejan de recoger</td><td>El formato de salida está cubierto por las pruebas del CLI; los matchers viven junto a las tareas que los usan</td></tr><tr><td>Las pruebas del editor son lentas o frágiles en la verificación continua</td><td>Arrancan una sola instancia, con las extensiones ajenas desactivadas y un proyecto mínimo propio</td></tr><tr><td>En Linux no hay pantalla para arrancar el editor</td><td>La verificación continua lo ejecuta con servidor X virtual</td></tr></tbody></table></div>
+<h2 id="12-como-se-revierte">12. Cómo se revierte</h2>
+<p>Revertir el commit: desaparecen las tres contribuciones y el arnés. No cambia ningún artefacto del flujo ni el comportamiento del núcleo.</p>
+<h2 id="13-pendientes-y-deuda-conocida">13. Pendientes y deuda conocida</h2>
+<p>El informe de consistencia del cambio está en <code>analyze.md</code>: explica qué se comprobó antes de dar el cambio por cerrado.</p>
+<h2 id="notas">Notas</h2>
+<p>(Escribe aquí lo que quieras conservar entre regeneraciones.)</p>
+</article>
+</body>
+</html>

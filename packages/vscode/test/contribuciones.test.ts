@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest'
 interface Manifest {
   activationEvents: string[]
   contributes: {
+    walkthroughs?: Array<{ id: string; steps: Array<{ id: string; media: { markdown: string }; completionEvents?: string[] }> }>
+    taskDefinitions?: Array<{ type: string; properties: Record<string, unknown> }>
+    problemMatchers?: Array<{ name: string; severity: string; pattern: { regexp: string } }>
     commands: Array<{ command: string; title: string; enablement?: string }>
     configuration: { properties: Record<string, unknown> }
     views: Record<string, Array<{ id: string }>>
@@ -92,5 +95,56 @@ describe('el editor solo ofrece lo que puede hacer', () => {
     const { contributes } = await manifest()
     const ocultos = contributes.menus['commandPalette']?.filter((entry) => entry.when === 'false').map((entry) => entry.command)
     expect(ocultos).toEqual(expect.arrayContaining(['specatlas.focusNow', 'specatlas.focusHealth', 'specatlas.openAt', 'specatlas.openPreview']))
+  })
+})
+
+describe('el editor enseña el ciclo y recoge lo que comprueba', () => {
+  it('el recorrido de primeros pasos cubre las cinco etapas, con su contenido', async () => {
+    const { contributes } = await manifest()
+    const recorrido = contributes.walkthroughs?.[0]
+    expect(recorrido?.id).toBe('specatlas.primerosPasos')
+    expect(recorrido?.steps.map((step) => step.id)).toEqual([
+      'specatlas.paso.inicializar',
+      'specatlas.paso.cambio',
+      'specatlas.paso.especificar',
+      'specatlas.paso.aprobar',
+      'specatlas.paso.evidencia',
+    ])
+    for (const step of recorrido?.steps ?? []) {
+      const media = path.join(__dirname, '..', step.media.markdown)
+      await expect(fs.access(media), `falta el contenido de ${step.id}`).resolves.toBeUndefined()
+    }
+  })
+
+  it('cada etapa se marca cuando se cumple, no cuando se lee', async () => {
+    const { contributes } = await manifest()
+    for (const step of contributes.walkthroughs?.[0]?.steps ?? []) {
+      expect(step.completionEvents?.length, `${step.id} no declara cuándo se cumple`).toBeGreaterThan(0)
+    }
+  })
+
+  it('las comprobaciones se declaran como tareas del editor', async () => {
+    const { contributes } = await manifest()
+    const definicion = contributes.taskDefinitions?.find((item) => item.type === 'specatlas')
+    expect(definicion).toBeDefined()
+    expect(Object.keys(definicion?.properties ?? {})).toEqual(expect.arrayContaining(['comprobacion', 'cambio']))
+  })
+
+  it('los hallazgos se recogen con su gravedad, archivo y línea', async () => {
+    const { contributes } = await manifest()
+    const matchers = contributes.problemMatchers ?? []
+    // El CLI escribe el nivel en español y VS Code solo mapea error/warning/info,
+    // así que cada gravedad necesita su propio patrón.
+    expect(matchers.map((matcher) => matcher.severity).sort()).toEqual(['error', 'warning'])
+
+    const linea = 'ERROR  LINT-BIZ-003 .sdd/changes/x/spec.md:5 — El requisito sigue siendo la plantilla'
+    const error = matchers.find((matcher) => matcher.severity === 'error')!
+    const captura = new RegExp(error.pattern.regexp).exec(linea)
+    expect(captura?.[1]).toBe('LINT-BIZ-003')
+    expect(captura?.[2]).toBe('.sdd/changes/x/spec.md')
+    expect(captura?.[3]).toBe('5')
+
+    const aviso = matchers.find((matcher) => matcher.severity === 'warning')!
+    expect(new RegExp(aviso.pattern.regexp).test('AVISO  ATLAS-DRIFT-001 .sdd/specs/auth/anchors.yaml — el ancla ya no existe')).toBe(true)
   })
 })

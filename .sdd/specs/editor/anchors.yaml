@@ -130,3 +130,32 @@ anchors:
       - packages/vscode/package.json
     updated: 2026-09-21
     source: archive
+  - requirement: REQ-EDITOR-018
+    files:
+      - packages/vscode/media/walkthrough/aprobar.md
+      - packages/vscode/media/walkthrough/cambio.md
+      - packages/vscode/media/walkthrough/especificar.md
+      - packages/vscode/media/walkthrough/evidencia.md
+      - packages/vscode/media/walkthrough/inicializar.md
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-019
+    files:
+      - packages/vscode/src/views/plantillas.ts
+      - packages/vscode/test/plantillas-tareas.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-020
+    files:
+      - packages/vscode/package.json
+      - packages/vscode/src/views/tareas-vscode.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-021
+    files:
+      - .github/workflows/ci.yml
+      - packages/vscode/.vscode-test.mjs
+      - packages/vscode/test-integracion/src/extension.test.cts
+      - packages/vscode/test-integracion/tsconfig.json
+    updated: 2026-09-21
+    source: archive

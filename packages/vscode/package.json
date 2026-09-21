@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.58",
+  "version": "0.0.59",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -432,14 +432,142 @@
           "description": "Activar el servidor de lenguaje de SpecAtlas (diagnósticos, CodeLens, navegación y quick fixes en .sdd/)."
         }
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "specatlas.primerosPasos",
+        "title": "Empezar con SpecAtlas",
+        "description": "El ciclo completo: del acuerdo escrito a la evidencia de que funciona.",
+        "when": "true",
+        "steps": [
+          {
+            "id": "specatlas.paso.inicializar",
+            "title": "Inicializa el proyecto",
+            "description": "SpecAtlas guarda su estado en `.sdd/`, dentro de tu repositorio.\n[Inicializar workspace](command:specatlas.init)\n[Adoptar un proyecto existente](command:specatlas.adopt)",
+            "media": {
+              "markdown": "media/walkthrough/inicializar.md"
+            },
+            "completionEvents": [
+              "onContext:specatlas.initialized"
+            ]
+          },
+          {
+            "id": "specatlas.paso.cambio",
+            "title": "Crea tu primer cambio",
+            "description": "Nada se toca sin un cambio detrás: elige su carril y empieza.\n[Nuevo cambio](command:specatlas.new)",
+            "media": {
+              "markdown": "media/walkthrough/cambio.md"
+            },
+            "completionEvents": [
+              "onContext:specatlas.hasChanges"
+            ]
+          },
+          {
+            "id": "specatlas.paso.especificar",
+            "title": "Especifica en lenguaje de negocio",
+            "description": "Qué y por qué, nunca cómo. La validación te dice dónde falla.\n[Validar especificaciones](command:specatlas.validate)",
+            "media": {
+              "markdown": "media/walkthrough/especificar.md"
+            },
+            "completionEvents": [
+              "onCommand:specatlas.validate"
+            ]
+          },
+          {
+            "id": "specatlas.paso.aprobar",
+            "title": "Aprueba con nombre y fecha",
+            "description": "La firma guarda quién aprobó y la huella del documento.\n[Generar la propuesta](command:specatlas.present)\n[Firmar la aprobación](command:specatlas.approve)",
+            "media": {
+              "markdown": "media/walkthrough/aprobar.md"
+            },
+            "completionEvents": [
+              "onCommand:specatlas.approve"
+            ]
+          },
+          {
+            "id": "specatlas.paso.evidencia",
+            "title": "Cierra con evidencia",
+            "description": "Terminado significa que hay un comando ejecutado que lo respalda.\n[Registrar evidencia](command:specatlas.verify)\n[Ver la trazabilidad](command:specatlas.trace)",
+            "media": {
+              "markdown": "media/walkthrough/evidencia.md"
+            },
+            "completionEvents": [
+              "onCommand:specatlas.verify"
+            ]
+          }
+        ]
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "specatlas",
+        "required": [
+          "comprobacion"
+        ],
+        "properties": {
+          "comprobacion": {
+            "type": "string",
+            "description": "Comprobación del flujo a ejecutar",
+            "enum": [
+              "ci",
+              "validate",
+              "trace",
+              "drift",
+              "doctor",
+              "analyze"
+            ]
+          },
+          "cambio": {
+            "type": "string",
+            "description": "Slug del cambio (solo para las comprobaciones que operan sobre uno)"
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "specatlas-error",
+        "owner": "specatlas",
+        "source": "SpecAtlas",
+        "severity": "error",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^ERROR\\s+([A-Z][A-Z0-9-]+)\\s+(\\S+?)(?::(\\d+))?\\s+—\\s+(.+)$",
+          "code": 1,
+          "file": 2,
+          "line": 3,
+          "message": 4
+        }
+      },
+      {
+        "name": "specatlas-aviso",
+        "owner": "specatlas",
+        "source": "SpecAtlas",
+        "severity": "warning",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^AVISO\\s+([A-Z][A-Z0-9-]+)\\s+(\\S+?)(?::(\\d+))?\\s+—\\s+(.+)$",
+          "code": 1,
+          "file": 2,
+          "line": 3,
+          "message": 4
+        }
+      }
+    ]
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsup && node scripts/copy-assets.mjs",
     "package": "vsce package --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode",
     "publish:vsce": "vsce publish --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode",
-    "publish:ovsx": "ovsx publish"
+    "publish:ovsx": "ovsx publish",
+    "test:integracion": "tsc -p test-integracion/tsconfig.json && vscode-test"
   },
   "dependencies": {
     "@specatlas/adapters": "workspace:*",
@@ -449,9 +577,13 @@
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/vscode": "1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
     "@vscode/vsce": "^3.2.1",
     "mermaid": "^11.4.0",
+    "mocha": "^12.0.2",
     "ovsx": "^0.10.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"

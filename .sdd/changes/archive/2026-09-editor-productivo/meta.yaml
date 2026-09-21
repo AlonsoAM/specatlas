@@ -1,0 +1,8 @@
+# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.
+schema_version: 1
+slug: editor-productivo
+lane: full
+title: Primeros pasos, plantillas y comprobaciones del editor
+domain: editor
+created: 2026-09-21
+mockups: skip

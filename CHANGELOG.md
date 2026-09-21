@@ -4,6 +4,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.36] — 2026-09-21
+
+### Añadido
+
+- **El editor enseña el ciclo la primera vez**: recorrido de primeros pasos con las cinco etapas (inicializar, crear un cambio, especificar, aprobar, cerrar con evidencia), cada una con su explicación y su acción; las etapas se marcan cuando se cumplen de verdad, no cuando se leen.
+- **Plantillas de los artefactos**: escribiendo dentro de `.sdd/` se ofrecen `req`, `esc`, `regla`, `bloque`, `tarea`, `evidencia`, `hallazgo`, `pregunta` y `contrato`, cada una donde corresponde y produciendo contenido que la validación acepta. No se ofrecen fuera del flujo.
+- **Las comprobaciones, como tareas del editor**: `ci`, `validate`, `trace`, `drift`, `doctor` y `analyze` se lanzan con la tecla de compilación o de pruebas, y sus hallazgos se recogen en el panel de problemas con archivo, línea y gravedad (dos `problemMatcher`, uno por nivel, porque el CLI escribe `ERROR` y `AVISO` en español).
+- **La extensión se prueba dentro de un VS Code real**: `pnpm --filter specatlas-vscode test:integracion` arranca el editor con un proyecto del flujo y verifica que la extensión activa, que cada acción declarada está registrada, que las cuatro secciones del panel abren y que plantillas y comprobaciones se ofrecen. La verificación continua lo ejecuta con servidor X virtual.
+
 ## [0.1.35] — 2026-09-21
 
 ### Añadido

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta de cambio — Primeros pasos, plantillas y comprobaciones del editor</title>
+<style>:root { color-scheme: light; --bg:#f4f6fa; --card:#ffffff; --elev:#f7f9fc; --line:#dde3ec; --line-soft:#e8ecf3; --ink:#161c2b; --muted:#5a6577; --faint:#8b94a6; --accent:#2f6fe0; --accent-soft:rgba(47,111,224,.10); --ok:#1e9e4b; --warn:#b57812; --bad:#cf3b45; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg:#0d1017; --card:#151a24; --elev:#1b2130; --line:#2a3243; --line-soft:#212938; --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789; --accent:#5b9bff; --accent-soft:rgba(91,155,255,.12); --ok:#46c46a; --warn:#e0a33a; --bad:#f0616a; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4,p { margin:0; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size:.88em; background:var(--elev); border:1px solid var(--line-soft); border-radius:5px; padding:1px 5px; }
+.page { max-width:1180px; margin:0 auto; padding:26px 20px 80px; display:grid; grid-template-columns:230px 1fr; gap:26px; }
+.toc { position:sticky; top:20px; align-self:start; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:14px; }
+.toc h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--faint); margin-bottom:10px; }
+.toc ol { margin:0; padding-left:18px; color:var(--muted); font-size:13px; display:flex; flex-direction:column; gap:7px; }
+.toc a { color:var(--muted); }
+.toc a:hover { color:var(--ink); }
+.toc .toc-actions { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+.doc { min-width:0; display:flex; flex-direction:column; gap:22px; }
+section.card { border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden; }
+.card-head { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; padding:16px 20px; border-bottom:1px solid var(--line-soft); }
+.card-head .num { font-family: ui-monospace, Consolas, monospace; font-size:12px; color:var(--faint); }
+.card-head h2 { font-size:19px; letter-spacing:-.01em; }
+.card-head .sub { color:var(--faint); font-size:12.5px; margin-left:auto; }
+.card-body { padding:18px 20px; }
+.cover { padding:26px 24px; }
+.cover .brand { display:flex; align-items:center; gap:12px; color:var(--accent); }
+.cover .kicker { font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.cover h1 { font-size:30px; line-height:1.15; letter-spacing:-.02em; margin:10px 0 6px; }
+.cover .lead { color:var(--muted); max-width:64ch; }
+.meta-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; border:1px solid var(--line); background:var(--elev); color:var(--muted); font-size:12px; }
+.chip b { color:var(--ink); font-weight:600; }
+.cover-foot { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+.sign-state { border:1px solid var(--warn); background:color-mix(in srgb, var(--warn) 10%, transparent); border-radius:8px; padding:12px 14px; }
+.sign-state.ok { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 10%, transparent); }
+.sign-state.stale { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 10%, transparent); }
+.sign-state .ss-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.sign-state b { display:block; font-size:14.5px; margin:3px 0; }
+.sign-state p { color:var(--muted); font-size:12.5px; }
+.hash-box { border:1px solid var(--line); background:var(--elev); border-radius:8px; padding:12px 14px; }
+.hash-box .hb-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); }
+.hash-box code { display:block; border:0; background:transparent; padding:0; margin-top:6px; word-break:break-all; }
+.callout { border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--elev); border-radius:8px; padding:12px 14px; color:var(--muted); font-size:13px; }
+.callout.warn { border-left-color:var(--warn); background:color-mix(in srgb, var(--warn) 9%, transparent); }
+.callout.bad { border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 9%, transparent); }
+.callout.ok { border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 9%, transparent); }
+.req { border-top:1px solid var(--line-soft); padding-top:14px; margin-top:14px; }
+.req:first-of-type { border-top:0; margin-top:0; padding-top:0; }
+.req h3 { font-size:15px; }
+.req .req-id { font-family: ui-monospace, Consolas, monospace; font-size:12.5px; color:var(--accent); }
+.req p { color:var(--muted); font-size:13.5px; margin-top:6px; }
+.req ul { margin:8px 0 0 18px; padding:0; color:var(--muted); font-size:13.5px; }
+.scn { border-left:3px solid var(--accent); background:var(--elev); border-radius:6px; padding:9px 12px; margin-top:10px; }
+.scn b { font-size:13px; }
+.scn .steps { margin-top:5px; color:var(--muted); font-size:13px; }
+.scn .steps span { display:block; }
+.scn .steps b { color:var(--ink); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { border:1px solid var(--line-soft); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--elev); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.pill { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+.pill.pass { color:var(--ok); border-color:var(--ok); }
+.pill.fail { color:var(--bad); border-color:var(--bad); }
+.pill.pending, .pill.skipped { color:var(--warn); border-color:var(--warn); }
+.mockups { display:grid; gap:18px; }
+.mockup { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+.mockup header { padding:10px 14px; border-bottom:1px solid var(--line-soft); font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.mockup header .btn { min-height:28px; padding:0 10px; font-size:12px; }
+.mockup-body { padding:12px 14px; display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12.5px; }
+.mockup-file { font-family: ui-monospace, Consolas, monospace; }
+.mockup iframe { width:100%; height:560px; border:0; background:white; display:block; }
+.mockup.phone iframe { max-width:420px; margin:0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:12px; }
+.grid-shots img { width:100%; border:1px solid var(--line); border-radius:10px; }
+.signature { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.sign-line { border:1px dashed var(--accent); border-radius:8px; padding:16px; background:var(--accent-soft); }
+.sign-line .sl-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:0 0 6px; margin-bottom:18px; color:var(--muted); font-size:12.5px; }
+.sign-line .sl-row:last-child { border-bottom:0; margin-bottom:0; padding-top:14px; }
+.sign-help { color:var(--muted); font-size:12.5px; }
+.btn { display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 14px; border-radius:8px; border:1px solid var(--line); background:var(--elev); color:var(--ink); cursor:pointer; font:inherit; font-size:12.5px; text-decoration:none; }
+.btn.primary { background:var(--accent); border-color:transparent; color:#fff; }
+.footer { color:var(--faint); font-size:11.5px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px; }
+@media (max-width: 1000px) { .page { grid-template-columns:1fr; padding:18px 14px 60px; } .toc { position:static; order:-1; } .cover-foot, .signature { grid-template-columns:1fr; } .cover h1 { font-size:24px; } }
+@media print {
+  @page { size:A4; margin:16mm; }
+  :root { --bg:#fff; --card:#fff; --elev:#fafafa; --line:#ccc; --line-soft:#e2e2e2; --ink:#111; --muted:#444; --faint:#666; --accent:#111; --accent-soft:#f3f3f3; }
+  body { background:#fff; font-size:12px; }
+  .page { display:block; max-width:none; padding:0; }
+  .toc, .btn { display:none !important; }
+  section.card { break-inside:avoid; border-color:#ccc; }
+  .cover { break-after:page; }
+  #mockups { break-before:page; }
+  #firma { break-before:page; }
+  .sign-line { background:#fff; }
+}</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc" aria-label="Contenido">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#identidad">Identidad del cambio</a></li>
+      <li><a href="#resumen">Resumen de negocio</a></li>
+      <li><a href="#especificacion">Especificación</a></li>
+      <li><a href="#criterios">Criterios de aceptación</a></li>
+      <li><a href="#mockups">Mockups</a></li>
+      <li><a href="#firma">Firma de aprobación</a></li>
+    </ol>
+    <div class="toc-actions">
+      <button type="button" class="btn primary" onclick="window.print()">⎙ Imprimir / Guardar PDF</button>
+      <span style="color:var(--faint);font-size:11.5px">Se imprime desde el propio navegador; sin servicios externos.</span>
+    </div>
+  </aside>
+
+  <main class="doc">
+    <section class="card cover" id="identidad">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" opacity=".5"></path>
+          <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"></path>
+          <circle cx="7.2" cy="14.8" r="1.5" fill="currentColor" stroke="none"></circle>
+          <circle cx="16.6" cy="7.3" r="1.5" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <div>
+          <p class="kicker">SpecAtlas · Propuesta de cambio</p>
+          <p style="color:var(--muted);font-size:12.5px">SpecAtlas</p>
+        </div>
+      </div>
+      <h1>Primeros pasos, plantillas y comprobaciones del editor</h1>
+      <p class="lead">Esta presentación reúne la propuesta, la especificación y el contrato visual del cambio <b>editor-productivo</b> para su revisión y firma.</p>
+      <div class="meta-chips">
+        <span class="chip">cambio <b>editor-productivo</b></span>
+        <span class="chip">carril <b>full</b></span>
+        <span class="chip">dominio <b>editor</b></span>
+        <span class="chip">requisitos <b>4</b></span>
+        <span class="chip">escenarios <b>11</b></span>
+        <span class="chip">evidencia <b>0/11</b></span>
+        <span class="chip">mockups <b>0</b></span>
+        <span class="chip">Generado <b>2026-09-21 16:54:17 -05:00</b></span>
+      </div>
+      <div class="cover-foot">
+        <div class="sign-state"><span class="ss-label">Firma de aprobación</span><b>Pendiente de aprobación.</b><p>Esta propuesta se aprueba firmando la especificación (huella + autor). Cualquier cambio posterior invalida la firma.</p></div>
+        <div class="hash-box">
+          <span class="hb-label">Huella</span>
+          <code>sha256:b760cf0427a5feef826d52e74302e0221cc8eba8c055bb2c6cf8b037dda6e2d0</code>
+          <p style="color:var(--muted);font-size:12px;margin-top:8px">La firma se registra con la huella de la especificación y la fecha.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="resumen">
+      <div class="card-head"><span class="num">01</span><h2>Resumen de negocio</h2></div>
+      <div class="card-body"><h1 id="propuesta-primeros-pasos-plantillas-y-comprobaciones-del-editor">Propuesta — Primeros pasos, plantillas y comprobaciones del editor</h1>
+<h2 id="por-que">Por qué</h2>
+<p>Como equipo que adopta el flujo, queremos aprenderlo y usarlo sin salir del editor, para que la ceremonia no cueste más que el trabajo que ordena.</p>
+<p>Hoy pasan tres cosas. Quien empieza tiene que leerse un tutorial que vive fuera del editor para entender qué es un cambio, por qué se firma y qué cuenta como evidencia. Quien ya lo conoce escribe los artefactos de memoria —el identificador del requisito, los archivos de una tarea, el bloque de evidencia con su método y su comando— y los errores solo aparecen al validar. Y las comprobaciones del flujo viven en una terminal aparte, mientras el equipo ya lanza sus pruebas y mira sus errores en el propio editor.</p>
+<p>Hay además un riesgo que no se ve: todo lo que probamos del editor es lógica pura. Una acción declarada y nunca registrada, una vista que no abre o una plantilla que dejó de ofrecerse pasarían inadvertidas, porque nada arranca el editor para comprobarlo.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<ul><li>Un <strong>recorrido de primeros pasos</strong> dentro del editor, con las cinco etapas del ciclo, la acción de cada una y marcado automático cuando se cumplen de verdad.</li><li><strong>Plantillas de los artefactos</strong> al escribir dentro del flujo: requisito, escenario, regla, bloque, tarea, evidencia, hallazgo de revisión, pregunta y contrato. Solo donde corresponde, y produciendo contenido que la validación acepta.</li><li>Las <strong>comprobaciones del flujo como tareas del editor</strong>: la completa bajo la tecla de compilación, la trazabilidad bajo la de pruebas, y los hallazgos recogidos con su archivo, su línea y su gravedad.</li><li>Una <strong>comprobación que arranca el editor de verdad</strong> y verifica lo que solo existe dentro: que la extensión active, que cada acción declarada esté registrada, que las secciones abran y que plantillas y comprobaciones se ofrezcan.</li></ul>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>La lógica del flujo y sus gates: no cambia ninguna regla.</li><li>El panel principal y el panel lateral, ya rediseñados.</li><li>La traducción de la interfaz.</li><li>Atajos de teclado propios: se dejan a la configuración de cada equipo.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Alguien que nunca usó la herramienta completa su primer cambio sin salir del editor.</li><li>Escribir un requisito, una tarea o una evidencia deja de exigir recordar su estructura.</li><li>Las comprobaciones se lanzan con la misma tecla que el resto del proyecto y sus hallazgos aparecen donde el equipo ya mira.</li><li>Una acción declarada y no registrada hace fallar la verificación continua, en vez de descubrirse en uso.</li></ul></div>
+    </section>
+
+    <section class="card" id="especificacion">
+      <div class="card-head"><span class="num">02</span><h2>Especificación</h2><span class="sub">4 requisito(s) · 11 escenario(s)</span></div>
+      <div class="card-body"><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-018</span> — El editor enseña el ciclo la primera vez <span class="pill">agregado</span></h3>
+  <p>Quien abre la herramienta por primera vez no sabe qué es un cambio, ni por qué hay que firmar, ni qué cuenta como evidencia. Hoy eso se explica en un tutorial que vive fuera del editor, así que quien empieza tiene que salir de su trabajo para entenderlo. El editor debe enseñar el ciclo desde dentro, y marcar cada paso conforme se cumple.</p>
+  <ul><li><code>BR-EDITOR-035</code> — el editor ofrece un recorrido de primeros pasos con las cinco etapas del ciclo: inicializar, crear un cambio, especificar, aprobar y cerrar con evidencia.</li><li><code>BR-EDITOR-036</code> — cada etapa explica para qué sirve y deja a mano la acción que la cumple.</li><li><code>BR-EDITOR-037</code> — una etapa se marca como cumplida cuando se cumple de verdad, no cuando se lee.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-018-S1 — Primer contacto con la herramienta</b><div class="steps"><span><b>CUANDO</b> alguien abre el recorrido de primeros pasos</span><span><b>ENTONCES</b> ve las cinco etapas del ciclo, cada una con su explicación y su acción</span></div></div><div class="scn"><b>REQ-EDITOR-018-S2 — Una etapa se cumple</b><div class="steps"><span><b>CUANDO</b> se inicializa el proyecto o se crea el primer cambio</span><span><b>ENTONCES</b> la etapa correspondiente queda marcada como cumplida</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-019</span> — Escribir un artefacto sin recordar su estructura <span class="pill">agregado</span></h3>
+  <p>Cada artefacto del flujo tiene una gramática exacta: los requisitos llevan su identificador y sus escenarios, las tareas declaran archivos y lo que cubren, la evidencia declara método, comando y resultado. Escribir eso de memoria es lento y produce errores que solo aparecen al validar.</p>
+  <ul><li><code>BR-EDITOR-038</code> — al escribir dentro de un artefacto del flujo se ofrecen las plantillas de lo que ese artefacto admite.</li><li><code>BR-EDITOR-039</code> — las plantillas no se ofrecen fuera de los artefactos del flujo.</li><li><code>BR-EDITOR-040</code> — cada plantilla produce contenido que la validación acepta.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-019-S1 — Escribir un requisito</b><div class="steps"><span><b>CUANDO</b> se escribe dentro de la especificación de un cambio</span><span><b>ENTONCES</b> se ofrecen las plantillas de requisito, escenario y regla</span></div></div><div class="scn"><b>REQ-EDITOR-019-S2 — Escribir una tarea</b><div class="steps"><span><b>CUANDO</b> se escribe dentro del artefacto de tareas</span><span><b>ENTONCES</b> se ofrecen las plantillas de bloque y de tarea, y no las de la especificación</span></div></div><div class="scn"><b>REQ-EDITOR-019-S3 — Un archivo fuera del flujo</b><div class="steps"><span><b>CUANDO</b> se escribe en un archivo que no pertenece al flujo</span><span><b>ENTONCES</b> no se ofrece ninguna plantilla del flujo</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-020</span> — Las comprobaciones se lanzan como cualquier otra del proyecto <span class="pill">agregado</span></h3>
+  <p>El equipo ya lanza sus pruebas y su compilación desde el editor. Las comprobaciones del flujo deberían lanzarse igual, y sus hallazgos aparecer donde el equipo ya mira los errores, en vez de exigir una terminal aparte.</p>
+  <ul><li><code>BR-EDITOR-041</code> — las comprobaciones del flujo se ofrecen como tareas del editor, cada una con lo que hace.</li><li><code>BR-EDITOR-042</code> — la comprobación completa queda bajo la tecla de compilación y la de trazabilidad bajo la de pruebas.</li><li><code>BR-EDITOR-043</code> — los hallazgos de una comprobación se recogen con su archivo, su línea y su gravedad.</li><li><code>BR-EDITOR-044</code> — una comprobación que opera sobre un cambio no se ofrece mientras no haya ninguno.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-020-S1 — Lanzar la comprobación completa</b><div class="steps"><span><b>CUANDO</b> el equipo busca las tareas del proyecto</span><span><b>ENTONCES</b> encuentra las comprobaciones del flujo, con la completa bajo la tecla de compilación</span></div></div><div class="scn"><b>REQ-EDITOR-020-S2 — Los hallazgos van donde el equipo mira</b><div class="steps"><span><b>CUANDO</b> una comprobación termina con hallazgos</span><span><b>ENTONCES</b> cada uno se recoge con su archivo, su línea y su gravedad</span></div></div><div class="scn"><b>REQ-EDITOR-020-S3 — Sin cambios en curso</b><div class="steps"><span><b>CUANDO</b> el proyecto no tiene ningún cambio</span><span><b>ENTONCES</b> las comprobaciones que operan sobre un cambio no se ofrecen</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-021</span> — Lo que solo se ve en el editor también se prueba <span class="pill">agregado</span></h3>
+  <p>La lógica del editor se prueba sin abrirlo, pero hay cosas que solo existen dentro: que la extensión arranque, que sus acciones estén registradas, que sus vistas se abran y que las plantillas y comprobaciones lleguen a ofrecerse. Hoy nada de eso se comprueba, así que una acción declarada y no registrada pasaría inadvertida.</p>
+  <ul><li><code>BR-EDITOR-045</code> — existe una comprobación que arranca el editor de verdad y verifica que la extensión activa con un proyecto del flujo.</li><li><code>BR-EDITOR-046</code> — esa comprobación verifica que cada acción declarada está registrada, que las secciones del panel se abren y que las plantillas y comprobaciones se ofrecen.</li><li><code>BR-EDITOR-047</code> — la comprobación forma parte de la verificación continua del proyecto.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-021-S1 — La extensión arranca</b><div class="steps"><span><b>CUANDO</b> se ejecuta la comprobación del editor sobre un proyecto del flujo</span><span><b>ENTONCES</b> la extensión queda activa</span></div></div><div class="scn"><b>REQ-EDITOR-021-S2 — Una acción declarada y no registrada</b><div class="steps"><span><b>CUANDO</b> una acción se declara pero no llega a registrarse</span><span><b>ENTONCES</b> la comprobación falla nombrando esa acción</span></div></div><div class="scn"><b>REQ-EDITOR-021-S3 — Las secciones del panel se abren</b><div class="steps"><span><b>CUANDO</b> la comprobación pide abrir cada sección del panel lateral</span><span><b>ENTONCES</b> todas responden</span></div></div>
+</article></div>
+    </section>
+
+    <section class="card" id="criterios">
+      <div class="card-head"><span class="num">03</span><h2>Criterios de aceptación</h2><span class="sub">0/11 con evidencia pass</span></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-EDITOR-018-S1</code></td><td>Primer contacto con la herramienta</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-018-S2</code></td><td>Una etapa se cumple</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-019-S1</code></td><td>Escribir un requisito</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-019-S2</code></td><td>Escribir una tarea</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-019-S3</code></td><td>Un archivo fuera del flujo</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-020-S1</code></td><td>Lanzar la comprobación completa</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-020-S2</code></td><td>Los hallazgos van donde el equipo mira</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-020-S3</code></td><td>Sin cambios en curso</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-021-S1</code></td><td>La extensión arranca</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-021-S2</code></td><td>Una acción declarada y no registrada</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-EDITOR-021-S3</code></td><td>Las secciones del panel se abren</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="card" id="mockups">
+      <div class="card-head"><span class="num">04</span><h2>Mockups</h2><span class="sub">0 pantalla(s)</span></div>
+      <div class="card-body"><div class="callout">Este cambio no declara mockups.</div></div>
+    </section>
+
+    <section class="card" id="firma">
+      <div class="card-head"><span class="num">05</span><h2>Firma de aprobación</h2><span class="sub">acto humano · queda auditado</span></div>
+      <div class="card-body">
+        <div class="signature">
+          <div class="sign-line">
+            <div class="sl-row"><span>Nombre de quien aprueba</span><span style="font-family:ui-monospace,Consolas,monospace">____________________</span></div>
+            <div class="sl-row"><span>Fecha de la firma</span><span style="font-family:ui-monospace,Consolas,monospace">____ / ____ / ________</span></div>
+          </div>
+          <div>
+            <p class="sign-help">La firma se registra con la huella de la especificación y la fecha.</p>
+            <p class="sign-help" style="margin-top:8px"><code>satlas approve editor-productivo --by &quot;&lt;nombre&gt;&quot; --channel presentation</code></p>
+            <p class="sign-help" style="margin-top:10px">La especificación cambió después de firmarse: la firma quedó obsoleta y hay que volver a aprobar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer"><span>SpecAtlas · SpecAtlas · 2026-09-21 16:54:17 -05:00</span><span>sha256:b760cf0427a5feef826d52e74302e0221cc8eba8c055bb2c6cf8b037dda6e2d0</span></div>
+  </main>
+</div>
+<script>
+(function () {
+  // Mejora progresiva: donde los scripts corren (navegador) el mockup se previsualiza en linea.
+  // Donde no corren (webview con CSP) la tarjeta con el enlace ya es suficiente y nada queda en blanco.
+  // Incrustada en otra pagina (el panel del editor la mete en un iframe) las rutas relativas
+  // no resuelven: se queda la tarjeta con el enlace y no se monta ningun marco en blanco.
+  try { if (window.top !== window.self) return; } catch (error) { return; }
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.mockup[data-mockup]'));
+  cards.forEach(function (card) {
+    var frame = document.createElement('iframe');
+    frame.setAttribute('src', card.getAttribute('data-mockup'));
+    frame.setAttribute('loading', 'lazy');
+    frame.setAttribute('title', card.getAttribute('data-title') || 'mockup');
+    var body = card.querySelector('.mockup-body');
+    if (body) body.style.display = 'none';
+    card.appendChild(frame);
+  });
+})();
+</script>
+</body>
+</html>

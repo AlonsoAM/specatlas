@@ -1,0 +1,12 @@
+# Proyecto mínimo para las pruebas de integración de la extensión.
+schema_version: 1
+project:
+  name: Pruebas
+  language: es
+lanes:
+  default: standard
+  allowed: [fix, standard, full]
+gates:
+  approval: file
+trace:
+  prefix: REQ
