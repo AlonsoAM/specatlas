@@ -37,12 +37,23 @@
     "views": {
       "specatlas": [
         {
+          "id": "specatlas.now",
+          "name": "Ahora",
+          "icon": "media/atlas.svg"
+        },
+        {
           "id": "specatlas.explorer",
           "name": "Workspace SDD"
         },
         {
+          "id": "specatlas.health",
+          "name": "Salud",
+          "visibility": "collapsed"
+        },
+        {
           "id": "specatlas.tools",
-          "name": "Paneles y acciones"
+          "name": "Acciones",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -139,19 +150,99 @@
         "command": "specatlas.mockups.decide",
         "title": "SpecAtlas: Decidir mockups del cambio (sí/no)",
         "icon": "$(device-mobile)"
+      },
+      {
+        "command": "specatlas.focusNow",
+        "title": "SpecAtlas: Ir a «Ahora»",
+        "icon": "$(compass)"
+      },
+      {
+        "command": "specatlas.focusHealth",
+        "title": "SpecAtlas: Ir a «Salud»",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "specatlas.drift",
+        "title": "SpecAtlas: Anclas y deriva del código",
+        "icon": "$(compass-dot)"
+      },
+      {
+        "command": "specatlas.impact",
+        "title": "SpecAtlas: Impacto de un requisito o archivo",
+        "icon": "$(references)"
+      },
+      {
+        "command": "specatlas.review",
+        "title": "SpecAtlas: Revisión de código",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "specatlas.explain",
+        "title": "SpecAtlas: Explicar un código de diagnóstico",
+        "icon": "$(question)"
+      },
+      {
+        "command": "specatlas.adopt",
+        "title": "SpecAtlas: Adoptar un proyecto existente",
+        "icon": "$(repo)"
+      },
+      {
+        "command": "specatlas.watch",
+        "title": "SpecAtlas: Vigilar el workspace (terminal)",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "specatlas.runNext",
+        "title": "SpecAtlas: Ejecutar la siguiente acción",
+        "icon": "$(play)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "specatlas.runNext",
+          "when": "view == specatlas.now && specatlas.initialized",
+          "group": "navigation@1"
+        },
+        {
+          "command": "specatlas.panel",
+          "when": "view == specatlas.now",
+          "group": "navigation@2"
+        },
+        {
+          "command": "specatlas.refresh",
+          "when": "view == specatlas.now",
+          "group": "navigation@3"
+        },
+        {
+          "command": "specatlas.new",
+          "when": "view == specatlas.explorer && specatlas.initialized",
+          "group": "navigation@1"
+        },
+        {
           "command": "specatlas.refresh",
           "when": "view == specatlas.explorer",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "specatlas.init",
           "when": "view == specatlas.explorer && !specatlas.initialized",
-          "group": "navigation"
+          "group": "navigation@1"
+        },
+        {
+          "command": "specatlas.ci",
+          "when": "view == specatlas.health",
+          "group": "navigation@1"
+        },
+        {
+          "command": "specatlas.drift",
+          "when": "view == specatlas.health",
+          "group": "navigation@2"
+        },
+        {
+          "command": "specatlas.refresh",
+          "when": "view == specatlas.health",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -234,6 +325,36 @@
           "command": "specatlas.verify",
           "when": "view == specatlas.explorer && viewItem =~ /file-(verify|fix)/",
           "group": "inline"
+        },
+        {
+          "command": "specatlas.explain",
+          "when": "view == specatlas.health && viewItem =~ /^healthDiagnostic/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.drift",
+          "when": "view == specatlas.health && viewItem == healthDrift",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.runNext",
+          "when": "view == specatlas.now && viewItem =~ /^nowAction/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.copyNext",
+          "when": "view == specatlas.now && viewItem =~ /^nowAction/",
+          "group": "1_ciclo@1"
+        },
+        {
+          "command": "specatlas.panel",
+          "when": "view == specatlas.now && viewItem =~ /^nowChange/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.review",
+          "when": "view == specatlas.now && viewItem == nowReview",
+          "group": "inline"
         }
       ],
       "commandPalette": [
@@ -244,13 +365,27 @@
         {
           "command": "specatlas.runNext",
           "when": "false"
+        },
+        {
+          "command": "specatlas.focusNow",
+          "when": "false"
+        },
+        {
+          "command": "specatlas.focusHealth",
+          "when": "false"
         }
       ]
     },
     "viewsWelcome": [
       {
+        "view": "specatlas.now",
+        "when": "!specatlas.initialized",
+        "contents": "Este proyecto todavía no usa SpecAtlas.\n\nEl flujo guarda su estado en `.sdd/`: specs vivas, cambios, evidencia y firmas.\n\n[Inicializar workspace](command:specatlas.init)\n[Adoptar un proyecto existente](command:specatlas.adopt)\n\nSi es tu primera vez, el [tutorial](https://github.com/AlonsoAM/specatlas/blob/main/docs/tutorial/TUTORIAL.md) recorre el ciclo completo."
+      },
+      {
         "view": "specatlas.explorer",
-        "contents": "SpecAtlas no está inicializado en este workspace.\n[Inicializar SpecAtlas](command:specatlas.init)\n[Compilar adaptadores](command:specatlas.adapters)\n[Refrescar](command:specatlas.refresh)\n\nTambién puedes ejecutar `satlas init` y `satlas adapters` en la terminal.\n\nMás información en la [documentación](https://github.com/specatlas)."
+        "when": "!specatlas.initialized",
+        "contents": "[Inicializar workspace](command:specatlas.init)"
       }
     ],
     "configuration": {

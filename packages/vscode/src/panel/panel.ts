@@ -3,6 +3,7 @@ import { noticePage, panelPage, type PanelSection } from './shell.js'
 import { resumenSection } from './sections/resumen.js'
 import { flujoSection } from './sections/flujo.js'
 import { trazabilidadSection } from './sections/trazabilidad.js'
+import { codigoSection } from './sections/codigo.js'
 import { metricasSection } from './sections/metricas.js'
 import { documentosSection } from './sections/documentos.js'
 import { accionesSection } from './sections/acciones.js'
@@ -11,7 +12,7 @@ import { escapeHtml } from './html.js'
 export const PANEL_KEY = 'panel'
 export const PANEL_VIEW_TYPE = 'specatlas.panel'
 export const PANEL_TITLE = 'Panel principal'
-export const PANEL_SECTIONS = ['resumen', 'flujo', 'trazabilidad', 'metricas', 'documentos', 'acciones'] as const
+export const PANEL_SECTIONS = ['resumen', 'flujo', 'trazabilidad', 'codigo', 'metricas', 'documentos', 'acciones'] as const
 export type PanelSectionId = (typeof PANEL_SECTIONS)[number]
 
 export function isPanelSection(value: unknown): value is PanelSectionId {
@@ -33,6 +34,7 @@ export function renderPanelHtml(model: PanelModel, active: PanelSectionId, nonce
   const resumen = resumenSection(model)
   const flujo = flujoSection(model)
   const trazabilidad = trazabilidadSection(model)
+  const codigo = codigoSection(model)
   const metricas = metricasSection(model)
   const documentos = documentosSection(model, {
     ...(opts.mermaidUri ? { mermaidUri: opts.mermaidUri } : {}),
@@ -44,6 +46,7 @@ export function renderPanelHtml(model: PanelModel, active: PanelSectionId, nonce
     { id: 'resumen', label: 'Resumen', html: resumen.html },
     { id: 'flujo', label: 'Flujo', html: flujo.html, script: flujo.script },
     { id: 'trazabilidad', label: 'Trazabilidad', html: trazabilidad.html, script: trazabilidad.script },
+    { id: 'codigo', label: 'Código', html: codigo.html },
     { id: 'metricas', label: 'Métricas', html: metricas.html },
     { id: 'documentos', label: 'Documentos', html: documentos.html, script: documentos.script },
     { id: 'acciones', label: 'Acciones', html: acciones.html, script: acciones.script },

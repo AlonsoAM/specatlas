@@ -34,6 +34,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ### Corregido
 
+- **La evidencia con `npm`, `npx`, `pnpm` o `yarn` fallaba siempre en Windows**: esos lanzadores son archivos `.cmd` que `execFile` no resuelve (ENOENT) y que Node se niega a ejecutar sin shell (EINVAL), así que `satlas verify` registraba `result: fail` con la salida vacía aunque la prueba pasara. Ahora se reintenta con shell —seguro, porque el comando ya pasó el filtro de metacaracteres— y el fallo al lanzar un proceso se distingue del fallo del programa.
+
 - **Interlineado del PDF**: el avance de línea escala con el tamaño de fuente y el marcador de las listas se dibuja en su primera línea (antes los bloques grandes se solapaban entre sí).
 - **Documentación con contenido real**: la documentación técnica pasa a 13 secciones con resumen de cifras, los requisitos en lenguaje de negocio con sus reglas, el mapa de archivos (archivo → tarea → requisito), la trazabilidad con cabecera y resumen de huecos, y la evidencia con lo que comprueba cada escenario y los comandos con que se reproduce. El **manual de usuario** deja de ser un volcado de escenarios: primeros pasos, recorrido por pantallas con sus estados, tareas paso a paso («qué haces» / «qué ocurre»), estados vacíos, problemas frecuentes, reglas de negocio y glosario.
 - **`analyze.md` explica para qué sirve**: el informe abre diciendo qué comprueba (consistencia entre artefactos, no el código), cómo se regenera, qué significa su estado y cuál es el siguiente paso; añade la tabla **Qué se comprobó** (especificación, trazabilidad, tareas y olas, plan, evidencia, mockups y packs, con el resultado de cada comprobación) y los hallazgos incluyen la columna **Qué hacer**.

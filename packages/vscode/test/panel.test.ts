@@ -107,9 +107,9 @@ describe('panel principal: página y secciones', () => {
   const c = change()
   const html = renderPanelHtml(model(c), 'resumen', 'nonce-test')
 
-  it('[REQ-EDITOR-001-S1][REQ-EDITOR-001-S2] es una sola página con las seis secciones internas', () => {
+  it('[REQ-EDITOR-001-S1][REQ-EDITOR-001-S2] es una sola página con sus secciones internas', () => {
     const tabs = [...html.matchAll(/data-section-tab="([^"]+)"/g)].map((match) => match[1])
-    expect(tabs).toEqual(['resumen', 'flujo', 'trazabilidad', 'metricas', 'documentos', 'acciones'])
+    expect(tabs).toEqual(['resumen', 'flujo', 'trazabilidad', 'codigo', 'metricas', 'documentos', 'acciones'])
     expect(html).toContain('role="tablist"')
   })
 

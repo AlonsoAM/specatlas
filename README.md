@@ -46,6 +46,7 @@ F0 (fundaciones) en desarrollo:
 | Higiene del flujo: la plantilla no pasa los gates (`LINT-BIZ-003`), invocación de agente por target, `satlas pause`/`resume`, carriles permitidos y sugerencia de comando | ✅ |
 | Specs vivas ancladas al código: `anchors.yaml` por dominio, `satlas drift`, `satlas impact`, `satlas review` con gate real y `satlas amend` | ✅ |
 | Experiencia de trabajo: tareas con sub-viñetas, `satlas watch`, `satlas next --run`, `satlas explain` y el gate SDD sobre este propio repo | ✅ |
+| Editor rediseñado: vistas **Ahora** y **Salud**, barra de estado con el paso que toca, bienvenida y sección **Código** en el panel | ✅ |
 
 ## Requisitos
 

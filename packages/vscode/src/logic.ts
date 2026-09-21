@@ -2,6 +2,7 @@ import path from 'node:path'
 import {
   primaryTarget,
   type AgentTarget,
+  checkDrift,
   checkTrace,
   computeInputsHash,
   deriveState,
@@ -14,6 +15,9 @@ import {
   clarifyAdvisory,
   contractsAdvisory,
   docsAdvisory,
+  openBlockingFindings,
+  reviewAdvisory,
+  reviewPassed,
   loadWorkspace,
   evaluatePacks,
   mockupsReady,
@@ -110,6 +114,28 @@ export interface SnapshotChange {
   blocking: number
   files: SnapshotFile[]
   mockups: SnapshotMockups
+  review?: SnapshotReview
+}
+
+export interface SnapshotReview {
+  verdict: string
+  open: number
+  blocking: number
+  passed: boolean
+}
+
+export interface SnapshotDriftItem {
+  domain: string
+  requirement: string
+  anchor: string
+  kind: 'missing-file' | 'missing-symbol'
+}
+
+export interface SnapshotDrift {
+  mode: string
+  domains: number
+  checked: number
+  broken: SnapshotDriftItem[]
 }
 
 export interface SnapshotSpecItem {
@@ -160,6 +186,8 @@ export interface Snapshot {
   fixes: SnapshotFix[]
   archived: SnapshotArchived[]
   diagnostics: FlatDiagnostic[]
+  /** Deriva entre las specs vivas y el código; ausente en snapshots de versiones previas. */
+  drift?: SnapshotDrift
   summary: { specs: number; changes: number; fixes: number; errors: number; warnings: number }
 }
 
@@ -222,7 +250,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
     })
 
-    const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
+    const phaseAdvisories = [...clarifyAdvisory(change, config), ...reviewAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
     for (const finding of [...lintFindings, ...trace.findings, ...phaseAdvisories]) diagnostics.push(toFlat(finding))
     if (packEvaluation) {
       const evaluations = evaluatePacks(packEvaluation.packs, change, config)
@@ -255,10 +283,30 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       blocking,
       files: await changeFiles(change, mockups.items ?? []),
       mockups,
+      ...(change.review !== undefined
+        ? {
+            review: {
+              verdict: change.review.verdict,
+              open: change.review.findings.filter((finding) => !finding.resolved).length,
+              blocking: openBlockingFindings(change.review).length,
+              passed: reviewPassed(change.review),
+            },
+          }
+        : {}),
     })
   }
 
   const sortedChanges = sortChanges(changes)
+
+  // Deriva entre las specs vivas y el código (anclas): alimenta la vista de salud.
+  const driftReport = await checkDrift({ root, config })
+  const drift: SnapshotDrift = {
+    mode: driftReport.mode,
+    domains: driftReport.domains,
+    checked: driftReport.checked,
+    broken: driftReport.drifted.map((item) => ({ domain: item.domain, requirement: item.requirement, anchor: item.anchor, kind: item.kind })),
+  }
+  for (const finding of driftReport.findings) diagnostics.push(toFlat(finding))
 
   const livingFixes = await loadLivingFixes(root)
   const fixes: SnapshotFix[] = livingFixes.map((fix) => ({
@@ -292,6 +340,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
     projectName: config.project.name,
     language: config.project.language,
     agent: primaryTarget(config),
+    drift,
     specs: workspace.specs.map((spec) => ({
       domain: spec.domain,
       ...(spec.spec.title !== undefined ? { title: spec.spec.title } : {}),
