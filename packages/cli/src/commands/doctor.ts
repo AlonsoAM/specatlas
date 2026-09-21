@@ -3,6 +3,7 @@ import { countBySeverity, runDoctor, upgradeAdvisory } from '@specatlas/core'
 import { checkAdapters } from '@specatlas/adapters'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { msg } from '../messages.js'
+import { detectarTema, encabezado, exito } from '../ui.js'
 import { resolveWorkflowDir } from '../paths.js'
 
 export async function runDoctorCommand(ctx: CliContext): Promise<CommandResult> {
@@ -27,19 +28,13 @@ export async function runDoctorCommand(ctx: CliContext): Promise<CommandResult> 
   report.findings.push(...advisory.diagnostics)
   report.summary = countBySeverity(report.findings)
 
-  const lines: string[] = [msg('doctor.title', ctx.language), '']
+  const tema = detectarTema()
+  const lines: string[] = encabezado(tema, msg('doctor.title', ctx.language))
 
   if (report.findings.length === 0) {
-    lines.push('Sin hallazgos. El workspace está sano.')
-  } else {
-    for (const finding of report.findings) {
-      const location = finding.path ? ` ${path.relative(ctx.cwd, finding.path)}${finding.line ? `:${finding.line}` : ''}` : ''
-      lines.push(`  ${finding.severity.toUpperCase()}  ${finding.code}${location} — ${finding.message}`)
-      if (finding.suggestion) lines.push(`       ↳ ${finding.suggestion}`)
-    }
-    lines.push('')
-    lines.push(`${report.summary.errors} errores, ${report.summary.warnings} avisos, ${report.summary.infos} notas`)
+    lines.push(exito(tema, 'El workspace está sano.'))
   }
+  // Los hallazgos los pinta la capa de presentación: aquí se duplicaban.
 
   return {
     exitCode: report.summary.errors > 0 ? 1 : 0,

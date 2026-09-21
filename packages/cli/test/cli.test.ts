@@ -200,7 +200,9 @@ describe('CLI e2e (F0)', () => {
     expect(data.fixes[0]?.slug).toBe('arreglo-login')
     expect(data.fixes[0]?.result).toBe('pass')
     expect(data.fixes[0]?.domain).toBe('auth')
-    expect((status.text ?? []).join('\n')).toContain('Fixes vivos: 1')
+    const textoEstado = (status.text ?? []).join('\n')
+    expect(textoEstado).toContain('Fixes vivos')
+    expect(textoEstado).toContain('arreglo-login')
   })
 
   it('init → new → validate → trace → waves → status → doctor → archive', async () => {

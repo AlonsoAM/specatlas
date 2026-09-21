@@ -21,3 +21,20 @@ anchors:
       - packages/cli/src/catalog.ts
     updated: 2026-09-21
     source: archive
+  - requirement: REQ-CLI-004
+    files:
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/ci.ts
+      - packages/cli/src/commands/doctor.ts
+      - packages/cli/src/commands/next.ts
+      - packages/cli/src/commands/status.ts
+      - packages/cli/src/commands/validate.ts
+      - packages/cli/src/ui.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-CLI-005
+    files:
+      - packages/cli/src/messages.ts
+      - packages/cli/test/ui.test.ts
+    updated: 2026-09-21
+    source: archive

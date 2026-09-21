@@ -4,6 +4,7 @@ import { COMMANDS, requireWorkspace, type CliContext, type CommandResult } from 
 import { evaluateChange } from '../evaluate.js'
 import { msg } from '../messages.js'
 import { runNextAction } from '../run-next.js'
+import { detectarTema, encabezado, filaAlineada, pinta, siguienteAccion, simbolos } from '../ui.js'
 
 export async function runNext(ctx: CliContext): Promise<CommandResult> {
   const { workspace, config, approvals } = await requireWorkspace(ctx)
@@ -57,7 +58,9 @@ export async function runNext(ctx: CliContext): Promise<CommandResult> {
     }
   }
 
-  const lines: string[] = [msg('next.title', ctx.language), '']
+  const tema = detectarTema()
+  const s = simbolos(tema)
+  const lines: string[] = encabezado(tema, msg('next.title', ctx.language))
   const data: unknown[] = []
   let hasErrors = false
 
@@ -65,15 +68,25 @@ export async function runNext(ctx: CliContext): Promise<CommandResult> {
     const evaluation = await evaluateChange(workspace, config, change, approvals)
     if (evaluation.blocking > 0) hasErrors = true
     const { state, nextAction, blockedBy } = evaluation.state
-    lines.push(`  ${change.slug} — ${stateLabel(state)}`)
-    lines.push(`    ${msg('status.next', ctx.language)} ${nextAction.command}`)
-    lines.push(`    ${nextAction.description}${nextAction.requiresAgent ? ' (requiere agente)' : ''}`)
-    for (const block of blockedBy) lines.push(`    bloqueado por: ${block}`)
+    const actor = nextAction.requiresAgent
+      ? pinta(tema, 'azul', 'con agente')
+      : /^satlas (approve|archive|amend|pause|resume)/.test(nextAction.command)
+        ? pinta(tema, 'morado', 'humana')
+        : pinta(tema, 'verde', 'local')
+
+    lines.push(
+      filaAlineada([
+        { texto: `  ${pinta(tema, 'negrita', change.slug)}`, ancho: 30 },
+        { texto: pinta(tema, 'gris', stateLabel(state)) },
+      ]),
+    )
+    lines.push(...siguienteAccion(tema, nextAction.command, `${nextAction.description}  ${s.separador}  ${actor}`))
+    for (const block of blockedBy) lines.push(`      ${pinta(tema, 'amarillo', s.bloqueo)} ${pinta(tema, 'gris', block)}`)
     lines.push('')
     data.push({ slug: change.slug, state, next: nextAction.command, blockedBy, requiresAgent: nextAction.requiresAgent })
   }
 
-  if (targets.length === 0) lines.push('Sin cambios activos.')
+  if (targets.length === 0) lines.push(pinta(tema, 'gris', '  Sin cambios activos.'))
 
   return { exitCode: hasErrors ? 1 : 0, diagnostics: [], data: { changes: data }, text: lines }
 }

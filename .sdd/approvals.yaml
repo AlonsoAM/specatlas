@@ -55,3 +55,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-21 17:10:43 -05:00
     channel: cli
+  - artifact: changes/terminal-legible/spec.md
+    artifact_hash: sha256:78f9c591ee36274ec64fa9b55c9bdc1508eb12f2dff63e2eed1a993e1d6f60ce
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-21 17:37:11 -05:00
+    channel: cli

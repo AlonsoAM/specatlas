@@ -4,6 +4,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.39] — 2026-09-21
+
+### Añadido
+
+- **La terminal se lee de un vistazo**: cada respuesta abre con su título y el contexto del proyecto; lo que bloquea, lo que avisa y lo que va bien se distinguen por color **y** por una marca propia (así siguen distinguiéndose sin color); el avance de tareas y evidencia lleva barra proporcional junto al número; la siguiente acción se destaca y dice quién la ejecuta; y los hallazgos se presentan en orden — marca, código, dónde ocurre, qué pasa y qué hacer — con un recuento final que respeta el singular y el plural.
+- **La presentación se adapta a su destino**: texto plano cuando la salida no es una terminal interactiva, respetando `NO_COLOR`, `FORCE_COLOR` y `TERM=dumb`; símbolos simples en consolas que no dibujan los ampliados (o con `SPECATLAS_ASCII=1`); y ancho ajustado al de la ventana. `--json` sigue sin adornos. Sin dependencias nuevas.
+
+### Corregido
+
+- **`satlas doctor` repetía cada hallazgo**: los imprimía en su propio texto y otra vez en la capa de presentación.
+
 ## [0.1.38] — 2026-09-21
 
 ### Corregido

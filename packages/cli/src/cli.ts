@@ -12,6 +12,7 @@ import {
 import { flagBool, flagString, parseArgs, type Flags } from './args.js'
 import { CATALOG } from './catalog.js'
 import { msg } from './messages.js'
+import { detectarTema, formatearDiagnostico, resumenHallazgos } from './ui.js'
 import { cliVersion } from './version.js'
 import { runAdapters } from './commands/adapters.js'
 import { runAdopt } from './commands/adopt.js'
@@ -233,15 +234,28 @@ function printResult(command: string, result: CommandResult, json: boolean, lang
     process.stdout.write(`${JSON.stringify(toEnvelope(command, result), null, 2)}\n`)
     return
   }
+  const tema = detectarTema()
   const lines: string[] = [...(result.text ?? [])]
+  if (result.diagnostics.length > 0) lines.push('')
   for (const d of result.diagnostics) {
-    const location = d.path ? ` ${path.relative(process.cwd(), d.path)}${d.line ? `:${d.line}` : ''}` : ''
-    lines.push(`${d.severity === 'error' ? 'ERROR' : d.severity === 'warning' ? 'AVISO' : 'NOTA'}  ${d.code}${location} — ${d.message}`)
-    if (d.suggestion) lines.push(`       ↳ ${d.suggestion}`)
+    const ruta = d.path ? path.relative(process.cwd(), d.path) : undefined
+    lines.push(
+      ...formatearDiagnostico(
+        tema,
+        {
+          code: d.code,
+          severity: d.severity,
+          message: d.message,
+          ...(d.line !== undefined ? { line: d.line } : {}),
+          ...(d.suggestion !== undefined ? { suggestion: d.suggestion } : {}),
+        },
+        ruta,
+      ),
+    )
   }
-  const counts = countBySeverity(result.diagnostics)
   if (result.diagnostics.length > 0) {
-    lines.push(`${counts.errors} ${msg('label.errors', language)}, ${counts.warnings} ${msg('label.warnings', language)}, ${counts.infos} ${msg('label.infos', language)}`)
+    lines.push('')
+    lines.push(resumenHallazgos(tema, countBySeverity(result.diagnostics)))
   }
   if (lines.length > 0) process.stdout.write(`${lines.join('\n')}\n`)
 }

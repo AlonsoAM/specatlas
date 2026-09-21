@@ -4,6 +4,7 @@ import { runCiGate, toSarifText, writeText } from '@specatlas/core'
 import { checkAdapters } from '@specatlas/adapters'
 import { flagBool, flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
+import { detectarTema, encabezado, filaAlineada, pinta, simbolos } from '../ui.js'
 import { resolveWorkflowDir } from '../paths.js'
 import { cliVersion } from '../version.js'
 
@@ -35,7 +36,7 @@ export async function runCi(ctx: CliContext): Promise<CommandResult> {
   const gate = await runCiGate({ root, strict, extra })
 
   const diagnostics: Diagnostic[] = [...gate.diagnostics]
-  const lines = ['CI de SpecAtlas', '']
+  const lines = encabezado(detectarTema(), 'Comprobación continua', strict ? 'modo estricto' : undefined)
   let sarifWritten: string | undefined
   if (sarifPath) {
     const target = path.resolve(ctx.cwd, sarifPath)
@@ -51,14 +52,26 @@ export async function runCi(ctx: CliContext): Promise<CommandResult> {
       })
     }
   }
+  const tema = detectarTema()
+  const s = simbolos(tema)
   for (const check of gate.checks) {
     // Un aviso no es una falla: solo bloquea en modo estricto, y el veredicto final lo dice.
-    const mark = check.errors > 0 ? 'FALLA' : check.warnings > 0 ? 'AVISO' : 'OK  '
-    lines.push(`  ${mark} ${check.name}: ${check.errors} errores, ${check.warnings} avisos`)
+    const marca = check.errors > 0 ? pinta(tema, 'rojo', s.error) : check.warnings > 0 ? pinta(tema, 'amarillo', s.aviso) : pinta(tema, 'verde', s.ok)
+    const detalle =
+      check.errors === 0 && check.warnings === 0
+        ? pinta(tema, 'gris', 'sin hallazgos')
+        : [check.errors > 0 ? pinta(tema, 'rojo', `${check.errors} ${check.errors === 1 ? 'error' : 'errores'}`) : '', check.warnings > 0 ? pinta(tema, 'amarillo', `${check.warnings} ${check.warnings === 1 ? 'aviso' : 'avisos'}`) : '']
+            .filter((parte) => parte !== '')
+            .join(pinta(tema, 'gris', ` ${s.separador} `))
+    lines.push(filaAlineada([{ texto: `  ${marca} ${check.name}`, ancho: 46 }, { texto: detalle }]))
   }
   lines.push('')
-  lines.push(gate.failed ? 'Resultado: BLOQUEADO' : 'Resultado: OK')
-  if (strict) lines.push('(modo estricto: los avisos también bloquean)')
+  lines.push(
+    gate.failed
+      ? `  ${pinta(tema, ['rojo', 'negrita'], `${s.error} BLOQUEADO`)}${pinta(tema, 'gris', ' — resuelve los hallazgos antes de continuar')}`
+      : `  ${pinta(tema, ['verde', 'negrita'], `${s.ok} TODO EN ORDEN`)}`,
+  )
+  if (strict) lines.push(pinta(tema, 'gris', '  (modo estricto: los avisos también bloquean)'))
   if (sarifPath) {
     lines.push(sarifWritten ? `Informe SARIF: ${sarifWritten} (${gate.diagnostics.length} hallazgo(s))` : `Informe SARIF: no se pudo escribir en "${sarifPath}"`)
   }

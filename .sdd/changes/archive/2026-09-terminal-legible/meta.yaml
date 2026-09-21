@@ -1,0 +1,8 @@
+# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.
+schema_version: 1
+slug: terminal-legible
+lane: standard
+title: La terminal se lee de un vistazo
+domain: cli
+created: 2026-09-21
+mockups: skip
