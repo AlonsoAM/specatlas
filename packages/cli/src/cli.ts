@@ -28,6 +28,7 @@ import { runImpact } from './commands/impact.js'
 import { runLink } from './commands/link.js'
 import { runProfile } from './commands/profile.js'
 import { runDoctorCommand } from './commands/doctor.js'
+import { runExplain } from './commands/explain.js'
 import { runHash } from './commands/hash.js'
 import { runHelp } from './commands/help.js'
 import { runInit } from './commands/init.js'
@@ -47,6 +48,7 @@ import { runTrace } from './commands/trace.js'
 import { runUpgrade } from './commands/upgrade.js'
 import { runValidate } from './commands/validate.js'
 import { runVerify } from './commands/verify.js'
+import { runWatch } from './commands/watch.js'
 import { runWaves } from './commands/waves.js'
 
 export interface CliContext {
@@ -83,6 +85,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   trace: runTrace,
   waves: runWaves,
   doctor: runDoctorCommand,
+  watch: runWatch,
   drift: runDrift,
   impact: runImpact,
   clarify: runClarify,
@@ -97,6 +100,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   profile: runProfile,
   packs: runPacks,
   hash: runHash,
+  explain: runExplain,
   verify: runVerify,
   analyze: runAnalyzeCommand,
   review: runReview,

@@ -45,6 +45,7 @@ F0 (fundaciones) en desarrollo:
 | F3: **contratos del cambio** (OpenAPI/GraphQL/protobuf) y **multi-repo** (`satlas link`) | ✅ |
 | Higiene del flujo: la plantilla no pasa los gates (`LINT-BIZ-003`), invocación de agente por target, `satlas pause`/`resume`, carriles permitidos y sugerencia de comando | ✅ |
 | Specs vivas ancladas al código: `anchors.yaml` por dominio, `satlas drift`, `satlas impact`, `satlas review` con gate real y `satlas amend` | ✅ |
+| Experiencia de trabajo: tareas con sub-viñetas, `satlas watch`, `satlas next --run`, `satlas explain` y el gate SDD sobre este propio repo | ✅ |
 
 ## Requisitos
 
@@ -189,6 +190,29 @@ satlas amend reset-password --reason "negocio subió el bloqueo a 30 minutos" --
 ```
 
 La enmienda queda en `meta.yaml` (motivo, autor, fecha, huella que se deja atrás y huella que se firma) y la spec recupera su firma vigente. Sin aprobación previa, sin motivo o sin cambios reales, no hay enmienda.
+
+## El bucle de trabajo
+
+```bash
+satlas watch              # recomprueba y dice el siguiente paso cada vez que cambia .sdd/
+satlas next <slug> --run  # ejecuta esa siguiente acción
+satlas explain TRACE-002  # qué significa un código, por qué importa y cómo se cierra
+```
+
+`satlas next --run` ejecuta el comando determinista, abre el asistente configurado cuando el paso es del agente, y **se niega** a disparar lo que firma una persona (aprobar, archivar, enmendar, pausar): lo explica y se detiene.
+
+### Las tareas se escriben como salgan
+
+Los metadatos de una tarea valen en la misma línea o como sub-viñetas debajo — lo que resulte natural al escribir markdown:
+
+```markdown
+- [ ] T1.1 Formulario de acceso · Archivos: src/login.ts · Cubre: REQ-AUTH-001-S1
+
+- [ ] T1.2 Validación del formulario
+  - Archivos: src/login.ts, src/validaciones.ts
+  - Cubre: REQ-AUTH-001-S2
+  - Reversión: revertir commit
+```
 
 ## Packs de cumplimiento (opcional)
 

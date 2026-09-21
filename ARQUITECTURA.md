@@ -1066,7 +1066,7 @@ Si se excede, los tests de rendimiento fallan en CI (fixture sintético).
 
 | Riesgo | Mitigación |
 |---|---|
-| Gramáticas rígidas que frustren al usuario (falsos positivos de linter) | Severidades configurables (`off/advisory/blocking`) por regla; `satlas lint explain <código>`; vocabularios locales |
+| Gramáticas rígidas que frustren al usuario (falsos positivos de linter) | Severidades configurables (`off/advisory/blocking`) por gate; **`satlas explain <código>`** (implementado); metadatos de tarea en la misma línea o como sub-viñetas; vocabularios locales |
 | Parsers frágiles ante ediciones humanas | Propiedades de round-trip con `fast-check` + diagnósticos con `path:line` y quick fixes en el LSP |
 | `cdp` inestable entre versiones de Chrome/Edge | Abstracción `BrowserAdapter` + fallback `playwright` + validación estática `none` |
 | Golden tests frágiles por cambios de agentes | Snapshot por target con revisión explícita; el target `generic` nunca depende de formatos ajenos |

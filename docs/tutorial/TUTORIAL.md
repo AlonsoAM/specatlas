@@ -640,6 +640,9 @@ integrations:
 | `satlas profile detect|list|create` | Perfiles de stack | No |
 | `satlas adapters [--targets] [--check]` | Compila prompts a agentes | No |
 | `satlas hash <archivo>|--text` | sha256 para evidencia | No |
+| `satlas watch` | Recomprueba y dice el siguiente paso al cambiar `.sdd/` | No |
+| `satlas next <slug> --run` | Ejecuta la siguiente acción | Parcial |
+| `satlas explain [<código>]` | Qué significa un diagnóstico y cómo se cierra | No |
 | `satlas review <slug>` | Estado de la revisión de código (crea `review.md` si falta) | Parcial |
 | `satlas amend <slug> --reason "<motivo>" --by "<nombre>"` | Firma una revisión de una spec ya aprobada | No |
 | `satlas drift [--prune]` | Anclas de las specs vivas contra el código real | No |
@@ -670,7 +673,7 @@ integrations:
 | `ATLAS-*` | Workspace | config inválida, cambio sin `meta.yaml`, plan sin firma vigente |
 | `PACK-*` | Cumplimiento | control de pack incumplido |
 
-Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en **Problems**; en CLI, con `--json` puedes consumirlos desde cualquier CI.
+`satlas explain <código>` cuenta qué significa cada uno, por qué lo vigila el flujo y cómo se cierra; sin argumento lista las familias. Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en **Problems**; en CLI, con `--json` puedes consumirlos desde cualquier CI.
 
 ---
 

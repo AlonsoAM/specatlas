@@ -1,5 +1,6 @@
 export * from './version.js'
 export * from './diagnostics.js'
+export * from './explain.js'
 export * from './model.js'
 export * from './fsx.js'
 export * from './config.js'
