@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="es" data-theme="oscuro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Panel principal — Resumen · SpecAtlas</title>
+<style>
+:root{
+  --font: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --win-w: 1440px;
+}
+html[data-theme="oscuro"]{
+  --bg:#0b0d12; --stage:#0f1219; --window:#141821; --sidebar:#10141c; --panel:#161b26; --elev:#1c2230;
+  --border:#272e3d; --border-soft:#1f2634; --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789;
+  --track:#252c3b; --grid:rgba(255,255,255,.035);
+  --blue:#5b9bff; --green:#46c46a; --orange:#e0a33a; --red:#f0616a; --purple:#a97bf5; --yellow:#d9b23c; --gray:#8b95a7;
+  --shadow: 0 24px 60px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.35);
+  --glow: 0 0 0 1px rgba(91,155,255,.14);
+}
+html[data-theme="claro"]{
+  --bg:#eef1f6; --stage:#f3f5f9; --window:#ffffff; --sidebar:#f2f4f8; --panel:#ffffff; --elev:#f7f8fb;
+  --border:#d9dee8; --border-soft:#e6e9f0; --ink:#1b2130; --muted:#5a6577; --faint:#8b94a6;
+  --track:#e4e8f0; --grid:rgba(20,30,60,.04);
+  --blue:#2f6fe0; --green:#1e9e4b; --orange:#b57812; --red:#cf3b45; --purple:#7c4fd1; --yellow:#9a7a12; --gray:#697386;
+  --shadow: 0 20px 44px rgba(28,38,64,.16), 0 1px 3px rgba(28,38,64,.12);
+  --glow: 0 0 0 1px rgba(47,111,224,.12);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 500px at 20% -10%, color-mix(in srgb, var(--blue) 9%, transparent), transparent),
+    repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 44px),
+    var(--stage);
+  color:var(--ink);
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,p{margin:0}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+.mono{font-family:var(--mono);font-size:.86em}
+.muted{color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* ── Banner y barra del mockup ─────────────────────────────────────────── */
+.mockup-banner{
+  position:sticky;top:0;z-index:50;
+  background:repeating-linear-gradient(135deg, #1a1e29 0 12px, #151924 12px 24px);
+  color:#ffd977;border-bottom:1px solid #3a3320;
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  padding:7px 14px;text-transform:uppercase;
+}
+.mockup-bar{
+  position:sticky;top:29px;z-index:49;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:10px 14px;background:color-mix(in srgb, var(--window) 92%, transparent);
+  border-bottom:1px solid var(--border);backdrop-filter:blur(8px);
+}
+.mb-title{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:auto}
+.mb-group{display:flex;align-items:center;gap:6px}
+.mb-label{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{
+  min-height:30px;padding:0 11px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:12px;
+}
+.seg button[aria-pressed="true"]{background:color-mix(in srgb, var(--blue) 22%, transparent);color:var(--ink)}
+.screens{display:flex;gap:4px;flex-wrap:wrap}
+.screens a{
+  padding:5px 9px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted);background:var(--panel)
+}
+.screens a[aria-current="page"]{border-color:var(--blue);color:var(--ink);background:color-mix(in srgb, var(--blue) 18%, transparent)}
+
+/* ── Escenario / ventana ───────────────────────────────────────────────── */
+.stage{display:flex;justify-content:center;padding:26px 18px 60px}
+.window{
+  width:min(var(--win-w), 100%);min-width:340px;background:var(--window);border:1px solid var(--border);
+  border-radius:14px;box-shadow:var(--shadow);overflow:hidden;container-type:inline-size;
+}
+.titlebar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--elev);border-bottom:1px solid var(--border-soft)}
+.traffic{display:flex;gap:6px}
+.traffic i{width:11px;height:11px;border-radius:50%;background:var(--track);display:block}
+.traffic i:first-child{background:color-mix(in srgb, var(--red) 70%, var(--track))}
+.traffic i:nth-child(2){background:color-mix(in srgb, var(--yellow) 70%, var(--track))}
+.traffic i:nth-child(3){background:color-mix(in srgb, var(--green) 70%, var(--track))}
+.titlebar .tb-title{font-size:12px;color:var(--muted);margin:0 auto;font-family:var(--mono)}
+.titlebar .tb-badge{font-size:11px;color:var(--faint)}
+.workbench{display:flex;min-height:640px}
+.activitybar{width:46px;background:var(--sidebar);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0}
+.activitybar .ab{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:var(--faint);font-size:16px}
+.activitybar .ab.active{background:color-mix(in srgb, var(--blue) 20%, transparent);color:var(--ink);box-shadow:var(--glow)}
+.sidebar{width:250px;background:var(--sidebar);border-right:1px solid var(--border-soft);padding:10px 8px;font-size:12.5px}
+.tree-group{margin:0 0 12px}
+.tree-group h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);padding:0 8px 6px;font-weight:600}
+.tree-item{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;color:var(--muted);cursor:default}
+.tree-item:hover{background:color-mix(in srgb, var(--blue) 10%, transparent)}
+.tree-item.sel{background:color-mix(in srgb, var(--blue) 18%, transparent);color:var(--ink)}
+.tree-item .ti{width:15px;text-align:center;color:var(--faint)}
+.tree-item .td{margin-left:auto;color:var(--faint);font-size:11px}
+.tree-item .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot.draft{background:var(--gray)}.dot.spec{background:var(--blue)}.dot.mock{background:var(--purple)}
+.dot.appr{background:var(--yellow)}.dot.ok{background:var(--green)}.dot.block{background:var(--red)}
+.editor{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--window)}
+.editor-tabs{display:flex;gap:2px;background:var(--elev);border-bottom:1px solid var(--border-soft);padding:6px 8px 0}
+.editor-tabs .et{display:flex;align-items:center;gap:7px;padding:7px 12px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;font-size:12px;color:var(--muted);background:transparent}
+.editor-tabs .et.active{background:var(--window);border-color:var(--border-soft);color:var(--ink)}
+
+/* ── Panel principal ───────────────────────────────────────────────────── */
+.panel{flex:1;min-width:0;display:flex;flex-direction:column}
+.panel-head{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:16px 18px 12px;border-bottom:1px solid var(--border-soft)}
+.ph-left{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.brand-mark{color:var(--blue);flex:0 0 auto}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.panel-head h1{font-size:21px;line-height:1.2}
+.panel-head .subtitle{color:var(--muted);font-size:12.5px;margin-top:3px}
+.ph-right{margin-left:auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.panel-tabs{display:flex;gap:4px;padding:8px 14px 0;border-bottom:1px solid var(--border-soft);overflow-x:auto}
+.panel-tabs a{
+  padding:9px 14px;border:1px solid transparent;border-bottom:0;border-radius:9px 9px 0 0;color:var(--muted);
+  font-size:13px;white-space:nowrap;min-height:44px;display:flex;align-items:center;
+}
+.panel-tabs a[aria-current="page"]{background:var(--panel);border-color:var(--border-soft);color:var(--ink);font-weight:600}
+.panel-body{padding:16px 18px 22px;display:flex;flex-direction:column;gap:16px;background:var(--panel)}
+.statusbar{display:flex;gap:14px;align-items:center;padding:6px 14px;border-top:1px solid var(--border-soft);background:var(--elev);color:var(--faint);font-size:11.5px}
+.statusbar .sb-item{display:flex;gap:6px;align-items:center}
+.statusbar .sb-right{margin-left:auto;display:flex;gap:14px}
+
+/* ── Componentes ───────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 13px;border-radius:8px;
+  border:1px solid var(--border);background:var(--elev);color:var(--ink);cursor:pointer;font-size:12.5px;
+}
+.btn:hover{border-color:color-mix(in srgb, var(--blue) 45%, var(--border))}
+.btn.primary{background:color-mix(in srgb, var(--blue) 88%, #000);border-color:transparent;color:#fff}
+html[data-theme="claro"] .btn.primary{background:var(--blue);color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:32px;padding:0 10px;font-size:12px}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;
+  background:color-mix(in srgb, var(--tone, var(--gray)) 16%, transparent);
+  color:color-mix(in srgb, var(--tone, var(--gray)) 82%, var(--ink));
+  border:1px solid color-mix(in srgb, var(--tone, var(--gray)) 30%, transparent);
+}
+.pill.solid{background:color-mix(in srgb, var(--tone, var(--gray)) 88%, #000);color:#fff;border-color:transparent}
+.banner{
+  display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius);
+  border:1px solid color-mix(in srgb, var(--tone, var(--gray)) 38%, var(--border));
+  background:color-mix(in srgb, var(--tone, var(--gray)) 10%, transparent);
+}
+.banner .b-icon{font-size:16px;line-height:1.2}
+.banner strong{display:block}
+.banner .b-text{color:var(--muted);font-size:12.5px}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.kpi{border:1px solid var(--border-soft);border-radius:var(--radius);background:var(--elev);padding:11px 12px;min-width:0}
+.kpi .k-top{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px}
+.kpi .k-val{font-size:22px;font-weight:700;margin-top:5px;letter-spacing:-.01em}
+.kpi .k-hint{color:var(--faint);font-size:11px;margin-top:2px}
+.section{border:1px solid var(--border-soft);border-radius:var(--radius);background:var(--window)}
+.section-head{display:flex;align-items:baseline;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border-soft)}
+.section-head h2{font-size:14.5px}
+.section-head .sub{color:var(--faint);font-size:12px}
+.section-body{padding:12px 14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.change-list{display:flex;flex-direction:column;gap:10px}
+.change-card{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:11px 12px;display:flex;flex-direction:column;gap:8px}
+.change-card header{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.change-card h4{font-size:13.5px}
+.change-card .cc-next{color:var(--muted);font-size:12.5px}
+.change-card .cc-next .mono{color:var(--ink)}
+.change-card footer{display:flex;gap:8px;flex-wrap:wrap}
+.progress{height:7px;border-radius:999px;background:var(--track);overflow:hidden}
+.progress > span{display:block;height:100%;background:var(--tone, var(--blue));border-radius:999px}
+.progress-label{display:flex;justify-content:space-between;gap:10px;color:var(--faint);font-size:11.5px}
+.donut{
+  --p:50; --tone:var(--blue);
+  width:128px;height:128px;border-radius:50%;position:relative;flex:0 0 auto;
+  background:conic-gradient(var(--tone) calc(var(--p) * 1%), var(--track) 0);
+  display:grid;place-items:center;
+}
+.donut::before{
+  content:"";position:absolute;inset:11px;border-radius:50%;
+  background:radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--tone) 24%, var(--window)), var(--window) 72%);
+}
+.donut .d-center{position:relative;text-align:center}
+.donut .d-val{font-size:24px;font-weight:700;line-height:1.1}
+.donut .d-sub{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.donut-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.legend{display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-item i{width:9px;height:9px;border-radius:50%;background:var(--tone, var(--gray));display:inline-block}
+.legend-item b{color:var(--ink)}
+.attention-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.attention-card{display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb, var(--tone, var(--gray)) 34%, var(--border-soft));border-radius:var(--radius-sm);padding:10px 12px;background:color-mix(in srgb, var(--tone, var(--gray)) 7%, var(--elev))}
+.attention-card .a-icon{font-size:15px}
+.attention-card b{display:block}
+.attention-card .a-label{color:color-mix(in srgb, var(--tone, var(--gray)) 80%, var(--ink));font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.attention-card .a-detail{color:var(--muted);font-size:12px;margin-top:2px}
+.fix-list{display:flex;flex-direction:column;gap:8px}
+.fix-item{display:flex;align-items:center;gap:10px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:9px 11px}
+.fix-item .f-date{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+.fix-item .f-slug{font-weight:600}
+.fix-item .f-meta{margin-left:auto;display:flex;gap:6px;align-items:center}
+.empty{padding:22px 14px;text-align:center;color:var(--muted)}
+.empty .e-icon{font-size:26px;display:block;margin-bottom:8px;color:var(--faint)}
+.skeleton{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:12px}
+.sk-line{height:11px;border-radius:6px;background:linear-gradient(90deg, var(--track) 25%, color-mix(in srgb, var(--track) 55%, var(--muted)) 50%, var(--track) 75%);background-size:200% 100%;animation:sk 1.4s infinite}
+.sk-line + .sk-line{margin-top:8px}
+.sk-line.w40{width:40%}.sk-line.w70{width:70%}.sk-line.w90{width:90%}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.foot-note{color:var(--faint);font-size:11.5px;display:flex;gap:14px;flex-wrap:wrap}
+.callout-line{color:var(--muted);font-size:12.5px;margin-top:8px}
+.live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ── Estados ───────────────────────────────────────────────────────────── */
+body[data-state="default"] .st-loading,body[data-state="default"] .st-empty,body[data-state="default"] .st-error{display:none}
+body[data-state="loading"] .st-default,body[data-state="loading"] .st-empty,body[data-state="loading"] .st-error{display:none}
+body[data-state="empty"] .st-default,body[data-state="empty"] .st-loading,body[data-state="empty"] .st-error{display:none}
+body[data-state="error"] .st-default,body[data-state="error"] .st-loading,body[data-state="error"] .st-empty{display:none}
+
+/* ── Responsive real (según el ancho de la ventana) ────────────────────── */
+@container (max-width: 1080px){
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid-2{grid-template-columns:1fr}
+}
+@container (max-width: 820px){
+  .sidebar{display:none}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .panel-head h1{font-size:19px}
+}
+@container (max-width: 460px){
+  .kpis{grid-template-columns:1fr}
+  .panel-body{padding:12px 12px 18px}
+  .panel-head{padding:12px 12px 10px}
+  .ph-right{margin-left:0;width:100%}
+  .ph-right .btn{flex:1;justify-content:center}
+  .donut{width:104px;height:104px}
+  .attention-grid{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:1fr}
+}
+
+/* ── Filtros ───────────────────────────────────────────────────────────── */
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border-soft);background:var(--elev)}
+.filters input[type="search"],.filters select{
+  min-height:34px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:var(--window);color:var(--ink);font:inherit;font-size:12.5px;min-width:130px
+}
+.filters input[type="search"]{min-width:220px}
+.fcount{color:var(--faint);font-size:12px;margin-left:auto}
+.fclear{min-height:34px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;font-size:12.5px}
+mark.hit{background:color-mix(in srgb, var(--yellow) 45%, transparent);color:var(--ink);border-radius:3px;padding:0 2px}
+
+/* ── Flujo (fases en vertical, sin scroll horizontal) ─────────────────── */
+.flow{display:flex;flex-direction:column;gap:10px}
+.lane{display:grid;grid-template-columns:190px 1fr;gap:12px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:10px 12px}
+.lane-rail{display:flex;align-items:center;gap:8px;padding-right:12px;border-right:1px solid var(--border-soft)}
+.lane-rail .lane-dot{width:9px;height:9px;border-radius:50%;background:var(--tone, var(--gray));flex:0 0 auto}
+.lane-rail .lane-name{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.lane-rail .lane-count{margin-left:auto;font-size:11.5px;color:var(--ink);background:color-mix(in srgb, var(--tone, var(--gray)) 20%, transparent);border-radius:999px;padding:2px 8px}
+.lane-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px}
+.lane.empty{opacity:.7}
+.lane.empty .lane-body{display:block;color:var(--faint);font-size:12.5px;align-self:center}
+.ticket{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--window);padding:10px;display:flex;flex-direction:column;gap:7px}
+.ticket h4{font-size:13px}
+.ticket .t-next{color:var(--muted);font-size:11.5px}
+.ticket .t-next .mono{color:var(--ink)}
+.banner.warn{padding:7px 9px;border-radius:7px;font-size:11.5px;color:color-mix(in srgb, var(--orange) 85%, var(--ink));border:1px solid color-mix(in srgb, var(--orange) 40%, var(--border));background:color-mix(in srgb, var(--orange) 12%, transparent)}
+@container (max-width: 460px){
+  .lane{grid-template-columns:1fr;gap:8px}
+  .lane-rail{border-right:0;border-bottom:1px solid var(--border-soft);padding:0 0 8px}
+  .lane-body{grid-template-columns:1fr}
+}
+
+/* ── Trazabilidad (matriz) ─────────────────────────────────────────────── */
+.matrix-wrap{overflow-x:auto}
+table.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+table.matrix th{text-align:left;padding:9px 10px;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-soft);white-space:nowrap}
+table.matrix td{padding:8px 10px;border-bottom:1px solid var(--border-soft);vertical-align:middle}
+tr.row-group td{background:var(--elev)}
+.group-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.group-title{font-weight:600}
+.group-spacer{flex:1}
+.group-coverage{display:flex;align-items:center;gap:8px;min-width:170px}
+.gc-track{flex:1;height:6px;border-radius:999px;background:var(--track);overflow:hidden;display:block}
+.gc-fill{display:block;height:100%;background:var(--tone, var(--blue));border-radius:999px}
+.gc-label{color:var(--muted);font-size:11.5px;white-space:nowrap}
+tr.row-gap td:first-child{border-left:3px solid var(--red)}
+tr.row-gap .scenario-title{color:var(--ink)}
+td.scenario-title{color:var(--muted)}
+.evidence-cell{white-space:nowrap}
+.legend-bar{display:flex;flex-wrap:wrap;gap:14px;padding:10px 2px 0;color:var(--faint);font-size:11.5px}
+.coverage-grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,1fr);gap:20px;align-items:center}
+.coverage-side h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.coverage-side .bar-row{grid-template-columns:minmax(70px,110px) 1fr auto}
+@container (max-width: 820px){.coverage-grid{grid-template-columns:1fr}}
+
+/* ── Métricas ──────────────────────────────────────────────────────────── */
+.bars{display:flex;align-items:flex-end;gap:14px;min-height:110px;padding-top:6px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-width:0}
+.bar-col .v{font-size:12px;font-weight:600}
+.bar-col .bar{width:100%;max-width:44px;border-radius:6px 6px 2px 2px;background:color-mix(in srgb, var(--tone, var(--blue)) 80%, transparent)}
+.bar-col .k{font-size:11px;color:var(--faint)}
+.bar-list{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:minmax(90px,150px) 1fr auto;gap:10px;align-items:center;font-size:12.5px}
+.bar-row .track{height:8px;border-radius:999px;background:var(--track);overflow:hidden}
+.bar-row .fill{display:block;height:100%;background:var(--tone, var(--blue));border-radius:999px}
+.bar-row .n{color:var(--muted);font-size:12px;min-width:22px;text-align:right}
+.mini-progress{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.mp-label{font-size:11.5px;color:var(--faint)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+table th{text-align:left;padding:9px 10px;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-soft);white-space:nowrap}
+table td{padding:8px 10px;border-bottom:1px solid var(--border-soft)}
+
+/* ── Documentos ────────────────────────────────────────────────────────── */
+.doc-layout{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start}
+.doc-list{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);overflow:hidden}
+.doc-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--border-soft);color:var(--muted);cursor:pointer;min-height:44px}
+.doc-item:last-child{border-bottom:0}
+.doc-item:hover{background:color-mix(in srgb, var(--blue) 8%, transparent)}
+.doc-item.sel{background:color-mix(in srgb, var(--blue) 16%, transparent);color:var(--ink)}
+.doc-item .d-name{font-weight:600}
+.doc-item .d-sub{font-size:11px;color:var(--faint)}
+.doc-badge{margin-left:auto;font-size:11px}
+.doc-view{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--window);min-height:380px}
+.doc-view-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-soft);background:var(--elev)}
+.doc-view-head h3{font-size:13.5px}
+.doc-view-body{padding:16px 18px;max-width:760px}
+.md h2{font-size:17px;margin:0 0 10px}
+.md h3{font-size:14px;margin:18px 0 8px}
+.md p{margin:0 0 10px;color:var(--muted)}
+.md ul{margin:0 0 10px 18px;padding:0;color:var(--muted)}
+.md li{margin-bottom:6px}
+.md .when{color:var(--muted)}
+.md .when b{color:var(--ink)}
+.md code{font-family:var(--mono);font-size:12px;background:var(--elev);border:1px solid var(--border-soft);border-radius:5px;padding:1px 5px}
+.seg-inline{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg-inline button{min-height:32px;padding:0 12px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:12px}
+.seg-inline button[aria-pressed="true"]{background:color-mix(in srgb, var(--blue) 20%, transparent);color:var(--ink)}
+.mock-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.thumb{border:1px solid var(--border-soft);border-radius:var(--radius-sm);overflow:hidden;background:var(--elev)}
+.thumb-frame{height:120px;background:
+  linear-gradient(180deg, color-mix(in srgb, var(--blue) 8%, transparent), transparent),
+  repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 18px),
+  var(--window);
+  border-bottom:1px solid var(--border-soft);padding:9px;display:flex;flex-direction:column;gap:6px}
+.thumb-frame .tf-bar{height:8px;border-radius:4px;background:var(--track);width:60%}
+.thumb-frame .tf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1}
+.thumb-frame .tf-cell{border-radius:4px;background:color-mix(in srgb, var(--blue) 14%, var(--elev));border:1px solid var(--border-soft)}
+.thumb .t-meta{padding:9px 10px}
+.thumb .t-meta b{display:block;font-size:12.5px}
+.thumb .t-meta span{font-size:11px;color:var(--faint)}
+
+/* ── Acciones ──────────────────────────────────────────────────────────── */
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.action-card{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:12px;display:flex;flex-direction:column;gap:8px}
+.action-card header{display:flex;align-items:center;gap:9px}
+.action-card h4{font-size:13.5px}
+.action-card p{color:var(--muted);font-size:12.5px}
+.action-card footer{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+.dialog{border:1px solid var(--border);border-radius:var(--radius);background:var(--window);box-shadow:var(--shadow);padding:16px;max-width:460px}
+.dialog h4{font-size:14px;margin-bottom:6px}
+.dialog .d-body{color:var(--muted);font-size:12.5px;display:flex;flex-direction:column;gap:10px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+.field input{min-height:38px;border:1px solid var(--border);border-radius:8px;background:var(--elev);color:var(--ink);padding:0 11px;font:inherit}
+.dialog footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.toast{display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb, var(--tone, var(--blue)) 40%, var(--border));border-radius:var(--radius-sm);background:color-mix(in srgb, var(--tone, var(--blue)) 10%, var(--elev));padding:10px 12px;font-size:12.5px}
+.note{border-left:3px solid var(--tone, var(--blue));padding:2px 0 2px 10px;color:var(--muted);font-size:12.5px}
+.term{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#0b0e15}
+.term-bar{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#121722;border-bottom:1px solid #1e2635;color:#8b96a8;font-size:11px;font-family:var(--mono)}
+.term-bar .t-live{margin-left:auto;color:#46c46a}
+.term-body{margin:0;padding:11px 12px;font-family:var(--mono);font-size:12px;line-height:1.6;color:#d7e0ee;white-space:pre-wrap}
+.term-body .t-cmd{color:#8fc1ff}
+.term-body .t-flag{color:#e0a33a}
+.term-body .t-dim{color:#7c8798}
+.term-body .t-cursor{display:inline-block;width:8px;height:14px;background:#8fc1ff;vertical-align:-2px;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ── Acciones: flujo secuencial por carril ─────────────────────────────── */
+.flow-actions{display:flex;flex-direction:column;gap:14px}
+.starter{border:1px solid color-mix(in srgb,var(--blue) 35%,var(--border-soft));border-radius:var(--radius-sm);background:color-mix(in srgb,var(--blue) 6%,var(--elev));padding:12px 14px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.starter h4{font-size:13.5px}
+.starter p{color:var(--muted);font-size:12.5px}
+.starter .s-lanes{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.stepper{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:36px 1fr;gap:12px;position:relative;padding-bottom:12px}
+.step::before{content:"";position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--border-soft)}
+.step:last-child{padding-bottom:0}
+.step:last-child::before{display:none}
+.step.done::before{background:color-mix(in srgb,var(--green) 55%,var(--border-soft))}
+.step-num{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--elev);border:1px solid var(--border);font-size:12.5px;color:var(--muted);z-index:1}
+.step.done .step-num{background:color-mix(in srgb,var(--green) 20%,transparent);border-color:color-mix(in srgb,var(--green) 45%,var(--border));color:var(--ink)}
+.step.now .step-num{background:color-mix(in srgb,var(--blue) 88%,#000);border-color:transparent;color:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--blue) 20%,transparent)}
+.step.skipped .step-num{opacity:.5}
+.step-body{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.step.now .step-body{border-color:color-mix(in srgb,var(--blue) 45%,var(--border));background:color-mix(in srgb,var(--blue) 7%,var(--elev))}
+.step-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.step-head h4{font-size:13px}
+.step-head .spacer{flex:1}
+.step-body p{color:var(--muted);font-size:12.5px}
+.step-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.step-note{border-left:3px solid var(--tone, var(--gray));padding:2px 0 2px 9px;color:var(--faint);font-size:11.5px}
+.actor{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted)}
+.actor.agent{border-color:color-mix(in srgb,var(--purple) 45%,var(--border));color:color-mix(in srgb,var(--purple) 80%,var(--ink));background:color-mix(in srgb,var(--purple) 12%,transparent)}
+.actor.human{border-color:color-mix(in srgb,var(--yellow) 45%,var(--border));color:color-mix(in srgb,var(--yellow) 85%,var(--ink));background:color-mix(in srgb,var(--yellow) 12%,transparent)}
+.actor.local{border-color:color-mix(in srgb,var(--blue) 40%,var(--border));color:color-mix(in srgb,var(--blue) 80%,var(--ink));background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.lane-legend{display:flex;flex-wrap:wrap;gap:12px;color:var(--faint);font-size:11.5px}
+.lane-title{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border:1px dashed color-mix(in srgb,var(--blue) 40%,var(--border));border-radius:var(--radius-sm);background:color-mix(in srgb,var(--blue) 6%,transparent);padding:8px 12px;margin-bottom:12px}
+.lane-title b{font-size:12.5px}
+.lane-title .lt-meta{color:var(--faint);font-size:11.5px}
+
+/* ── Galería de estados ────────────────────────────────────────────────── */
+.gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.frame{border:1px solid var(--border-soft);border-radius:var(--radius);background:var(--elev);overflow:hidden}
+.frame.hl{border-color:var(--blue);box-shadow:var(--glow)}
+.frame-head{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border-soft);font-size:12px;color:var(--muted)}
+.frame-head b{color:var(--ink)}
+.frame-body{padding:14px;min-height:170px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.frame-mini{border:1px solid var(--border-soft);border-radius:8px;background:var(--window);overflow:hidden}
+.frame-mini .fm-bar{display:flex;gap:5px;align-items:center;padding:6px 9px;border-bottom:1px solid var(--border-soft);background:var(--elev);font-size:10.5px;color:var(--faint)}
+.frame-mini .fm-body{padding:11px}
+@media (prefers-reduced-motion: no-preference){.frame.hl{transition:border-color .2s ease}}
+</style>
+</head>
+<body data-state="default" data-width="1440">
+<div class="mockup-banner" role="note">Mockup · no funcional · v1 · 2026-09-20 · SpecAtlas — panel principal (sección Resumen)</div>
+
+<header class="mockup-bar">
+  <span class="mb-title">panel-resumen.html · ventana única del panel · las secciones se cambian aquí mismo</span>
+  <div class="screens" aria-label="Pantallas del mockup">
+    <a href="panel-resumen.html" aria-current="page">Resumen</a>
+    <a href="panel-flujo.html">Flujo</a>
+    <a href="panel-trazabilidad.html">Trazabilidad</a>
+    <a href="panel-metricas.html">Métricas</a>
+    <a href="panel-documentos.html">Documentos</a>
+    <a href="panel-acciones.html">Acciones</a>
+    <a href="panel-estados.html">Estados</a>
+  </div>
+  <div class="mb-group">
+    <span class="mb-label">Estado</span>
+    <div class="seg" role="group" aria-label="Estado del mockup">
+      <button type="button" data-set-state="default" aria-pressed="true">con datos</button>
+      <button type="button" data-set-state="loading" aria-pressed="false">cargando</button>
+      <button type="button" data-set-state="empty" aria-pressed="false">vacío</button>
+      <button type="button" data-set-state="error" aria-pressed="false">error</button>
+    </div>
+  </div>
+  <div class="mb-group">
+    <span class="mb-label">Tema</span>
+    <div class="seg" role="group" aria-label="Tema">
+      <button type="button" data-set-theme="oscuro" aria-pressed="true">oscuro</button>
+      <button type="button" data-set-theme="claro" aria-pressed="false">claro</button>
+    </div>
+  </div>
+  <div class="mb-group">
+    <span class="mb-label">Ancho</span>
+    <div class="seg" role="group" aria-label="Ancho de la ventana">
+      <button type="button" data-set-width="390" aria-pressed="false">390</button>
+      <button type="button" data-set-width="768" aria-pressed="false">768</button>
+      <button type="button" data-set-width="1440" aria-pressed="true">1440</button>
+    </div>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="traffic" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="tb-title">SpecAtlas — SDD-OpenCode</span>
+      <span class="tb-badge">panel principal</span>
+    </div>
+    <div class="workbench">
+      <nav class="activitybar" aria-label="Barra de actividad">
+        <span class="ab active" title="SpecAtlas" aria-current="true">◈</span>
+        <span class="ab" title="Buscar">⌕</span>
+        <span class="ab" title="Control de cambios">⑂</span>
+        <span class="ab" title="Extensiones">▦</span>
+      </nav>
+      <aside class="sidebar" aria-label="Vista lateral">
+        <div class="tree-group">
+          <h3>Specs vivas (7)</h3>
+          <div class="tree-item sel"><span class="ti">▤</span>editor<span class="td">10 req · 51 esc</span></div>
+          <div class="tree-item"><span class="ti">▤</span>ci<span class="td">5 req</span></div>
+          <div class="tree-item"><span class="ti">▤</span>esquema<span class="td">5 req</span></div>
+          <div class="tree-item"><span class="ti">▤</span>fases<span class="td">5 req</span></div>
+          <div class="tree-item"><span class="ti">▤</span>fixes<span class="td">5 req</span></div>
+          <div class="tree-item"><span class="ti">▤</span>integraciones<span class="td">5 req</span></div>
+          <div class="tree-item"><span class="ti">▤</span>mcp<span class="td">6 req</span></div>
+        </div>
+        <div class="tree-group">
+          <h3>Cambios (6)</h3>
+          <div class="tree-item sel"><span class="dot mock"></span>panel-principal<span class="td">esperando mockups</span></div>
+          <div class="tree-item"><span class="dot ok"></span>doctor-fix<span class="td">construyendo</span></div>
+          <div class="tree-item"><span class="dot appr"></span>impact-explain<span class="td">aprobado</span></div>
+          <div class="tree-item"><span class="dot spec"></span>readme-en<span class="td">spec en borrador</span></div>
+          <div class="tree-item"><span class="dot draft"></span>calidad<span class="td">borrador</span></div>
+          <div class="tree-item"><span class="dot draft"></span>v1<span class="td">borrador</span></div>
+        </div>
+        <div class="tree-group">
+          <h3>Fixes (4)</h3>
+          <div class="tree-item"><span class="ti">🔧</span>resolutor-workflow<span class="td">pass</span></div>
+          <div class="tree-item"><span class="ti">🔧</span>fixes-heredados<span class="td">pass</span></div>
+        </div>
+        <div class="tree-group">
+          <h3>Acciones</h3>
+          <div class="tree-item sel"><span class="ti">▣</span>Panel principal<span class="td">único</span></div>
+          <div class="tree-item"><span class="ti">＋</span>Nuevo cambio</div>
+          <div class="tree-item"><span class="ti">✓</span>Validar</div>
+          <div class="tree-item"><span class="ti">⚙</span>Compilar adaptadores</div>
+        </div>
+      </aside>
+      <section class="editor" aria-label="Panel principal">
+        <div class="editor-tabs">
+          <span class="et active"><span aria-hidden="true">◈</span>Panel principal<span class="muted">— SpecAtlas</span></span>
+        </div>
+        <div class="panel">
+          <header class="panel-head">
+            <div class="ph-left">
+              <svg class="brand-mark" width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" opacity=".5"></path>
+                <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"></path>
+                <circle cx="7.2" cy="14.8" r="1.5" fill="currentColor" stroke="none"></circle>
+                <circle cx="16.6" cy="7.3" r="1.5" fill="currentColor" stroke="none"></circle>
+                <circle cx="12.4" cy="13.1" r="1.2" fill="currentColor" stroke="none" opacity=".75"></circle>
+              </svg>
+              <div>
+                <p class="eyebrow">SpecAtlas · panel principal</p>
+                <h1>Resumen del proyecto</h1>
+                <p class="subtitle">proyecto SDD-OpenCode · 6 cambios activos · 7 specs vivas · evidencia 9/75 · 2 avisos · 0 errores</p>
+              </div>
+            </div>
+            <div class="ph-right">
+              <button type="button" class="btn primary">◈ Siguiente: generar mockups</button>
+              <button type="button" class="btn">Validar</button>
+              <button type="button" class="btn ghost" aria-label="Más acciones">⋯</button>
+            </div>
+          </header>
+          <nav class="panel-tabs" aria-label="Secciones del panel principal">
+            <a href="panel-resumen.html" aria-current="page">Resumen</a>
+            <a href="panel-flujo.html">Flujo</a>
+            <a href="panel-trazabilidad.html">Trazabilidad</a>
+            <a href="panel-metricas.html">Métricas</a>
+            <a href="panel-documentos.html">Documentos</a>
+            <a href="panel-acciones.html">Acciones</a>
+          </nav>
+          <div class="panel-body">
+
+            <div class="st-default">
+              <div class="banner" style="--tone:var(--orange)">
+                <span class="b-icon" aria-hidden="true">△</span>
+                <div>
+                  <strong>2 puntos requieren atención</strong>
+                  <span class="b-text">panel-principal espera mockups · readme-en lleva 21 días sin cerrar · 2 cambios sin evidencia</span>
+                </div>
+              </div>
+
+              <div class="kpis" style="margin-top:16px">
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">◫</span>Cambios activos</div><div class="k-val">6</div><div class="k-hint">10 archivados</div></div>
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">☑</span>Tareas</div><div class="k-val">17/26</div><div class="k-hint">65% completado</div></div>
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">✓</span>Evidencia</div><div class="k-val">9/75</div><div class="k-hint">escenarios en pass</div></div>
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">✕</span>Errores</div><div class="k-val" style="color:var(--green)">0</div><div class="k-hint">bloqueantes</div></div>
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">△</span>Avisos</div><div class="k-val" style="color:var(--orange)">2</div><div class="k-hint">revisables</div></div>
+                <div class="kpi"><div class="k-top"><span aria-hidden="true">◷</span>Edad media</div><div class="k-val">9d</div><div class="k-hint">más antiguo: readme-en (21d)</div></div>
+              </div>
+
+              <section class="section" style="margin-top:16px">
+                <div class="section-head"><h2>Cambios activos y siguiente acción</h2><span class="sub">un clic para retomar donde quedó</span></div>
+                <div class="section-body">
+                  <div class="change-list">
+                    <article class="change-card">
+                      <header>
+                        <h4>panel-principal</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--blue)">◆ standard</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ editor</span>
+                          <span class="pill" style="--tone:var(--purple)">◈ esperando mockups</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">/satlas-mockup panel-principal</span> — generar los mockups (contrato visual) antes de aprobar</p>
+                      <div class="progress" style="--tone:var(--purple)"><span style="width:2%"></span></div>
+                      <div class="progress-label"><span>0/0 tareas · sin planificar</span><span>evidencia 0/51</span></div>
+                      <footer>
+                        <button type="button" class="btn sm primary">◈ Generar mockups (opencode)</button>
+                        <button type="button" class="btn sm">Abrir cambio</button>
+                      </footer>
+                    </article>
+
+                    <article class="change-card">
+                      <header>
+                        <h4>doctor-fix</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--blue)">◆ standard</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ esquema</span>
+                          <span class="pill" style="--tone:var(--blue)">◫ construyendo</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">/satlas.build doctor-fix</span> — construir en olas (12/18 tareas)</p>
+                      <div class="progress" style="--tone:var(--blue)"><span style="width:67%"></span></div>
+                      <div class="progress-label"><span>12/18 tareas</span><span>evidencia 6/6</span></div>
+                      <footer>
+                        <button type="button" class="btn sm primary">Construir (opencode)</button>
+                        <button type="button" class="btn sm">Verificar</button>
+                      </footer>
+                    </article>
+
+                    <article class="change-card">
+                      <header>
+                        <h4>impact-explain</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--blue)">◆ standard</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ integraciones</span>
+                          <span class="pill" style="--tone:var(--yellow)">● aprobado</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">/satlas.plan impact-explain</span> — crear el plan técnico y las tareas</p>
+                      <div class="progress" style="--tone:var(--yellow)"><span style="width:63%"></span></div>
+                      <div class="progress-label"><span>5/8 tareas</span><span>evidencia 3/5</span></div>
+                      <footer>
+                        <button type="button" class="btn sm primary">Planificar (opencode)</button>
+                        <button type="button" class="btn sm">Presentar</button>
+                      </footer>
+                    </article>
+
+                    <article class="change-card">
+                      <header>
+                        <h4>readme-en</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--blue)">◆ standard</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ docs</span>
+                          <span class="pill" style="--tone:var(--blue)">◫ spec en borrador</span>
+                          <span class="pill" style="--tone:var(--red)">✕ 1 hallazgo</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">satlas validate --change readme-en</span> — corregir el hallazgo de la especificación</p>
+                      <div class="progress" style="--tone:var(--blue)"><span style="width:10%"></span></div>
+                      <div class="progress-label"><span>0/4 tareas</span><span>evidencia 0/4</span></div>
+                      <footer>
+                        <button type="button" class="btn sm">Corregir hallazgos</button>
+                        <button type="button" class="btn sm ghost">Abrir spec</button>
+                      </footer>
+                    </article>
+
+                    <article class="change-card">
+                      <header>
+                        <h4>calidad</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--blue)">◆ standard</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ calidad</span>
+                          <span class="pill" style="--tone:var(--gray)">◌ borrador</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">/satlas.specify calidad</span> — escribir la especificación funcional</p>
+                      <div class="progress" style="--tone:var(--gray)"><span style="width:0%"></span></div>
+                      <div class="progress-label"><span>0/3 tareas</span><span>evidencia 0/3</span></div>
+                      <footer><button type="button" class="btn sm">Especificar (opencode)</button></footer>
+                    </article>
+
+                    <article class="change-card">
+                      <header>
+                        <h4>v1</h4>
+                        <span class="chips">
+                          <span class="pill" style="--tone:var(--purple)">◆ full</span>
+                          <span class="pill" style="--tone:var(--gray)">⌂ esquema</span>
+                          <span class="pill" style="--tone:var(--gray)">◌ borrador</span>
+                        </span>
+                      </header>
+                      <p class="cc-next">Siguiente: <span class="mono">/satlas.specify v1</span> — congelar esquemas y contrato del CLI</p>
+                      <div class="progress" style="--tone:var(--gray)"><span style="width:0%"></span></div>
+                      <div class="progress-label"><span>0/6 tareas</span><span>evidencia 0/6</span></div>
+                      <footer><button type="button" class="btn sm">Especificar (opencode)</button></footer>
+                    </article>
+                  </div>
+                </div>
+              </section>
+
+              <div class="grid-2" style="margin-top:16px">
+                <section class="section">
+                  <div class="section-head"><h2>Necesita atención</h2><span class="sub">ordenado por prioridad</span></div>
+                  <div class="section-body">
+                    <div class="attention-grid">
+                      <div class="attention-card" style="--tone:var(--orange)">
+                        <span class="a-icon" aria-hidden="true">◷</span>
+                        <div><b>readme-en</b><span class="a-label">Antigüedad</span><div class="a-detail">21 días desde su creación</div></div>
+                      </div>
+                      <div class="attention-card" style="--tone:var(--yellow)">
+                        <span class="a-icon" aria-hidden="true">⋯</span>
+                        <div><b>panel-principal</b><span class="a-label">Sin evidencia</span><div class="a-detail">51 escenarios esperando resultado</div></div>
+                      </div>
+                      <div class="attention-card" style="--tone:var(--yellow)">
+                        <span class="a-icon" aria-hidden="true">⋯</span>
+                        <div><b>calidad</b><span class="a-label">Sin evidencia</span><div class="a-detail">3 escenarios sin cerrar</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+                <section class="section">
+                  <div class="section-head"><h2>Fixes vivos</h2><span class="sub">correcciones que quedaron registradas</span></div>
+                  <div class="section-body">
+                    <div class="fix-list">
+                      <div class="fix-item">
+                        <span class="f-date">2026-09-20</span>
+                        <span class="f-slug">resolutor-workflow</span>
+                        <span class="pill" style="--tone:var(--gray)">⌂ editor</span>
+                        <span class="f-meta"><span class="pill" style="--tone:var(--green)">✓ pass</span></span>
+                      </div>
+                      <div class="fix-item">
+                        <span class="f-date">2026-09-20</span>
+                        <span class="f-slug">fixes-heredados</span>
+                        <span class="pill" style="--tone:var(--gray)">⌂ fixes</span>
+                        <span class="f-meta"><span class="pill" style="--tone:var(--green)">✓ pass</span></span>
+                      </div>
+                    </div>
+                    <p class="callout-line">La historia completa vive en <a href="panel-documentos.html">Histórico</a>; los fixes no se pliegan a las specs vivas.</p>
+                  </div>
+                </section>
+              </div>
+
+              <div class="foot-note" style="margin-top:14px">
+                <span>◈ todo local y determinista: nada sale de tu máquina</span>
+                <span>◷ actualizado hace un momento · sección y filtros conservados</span>
+              </div>
+            </div>
+
+            <div class="st-loading">
+              <div class="banner" style="--tone:var(--blue)"><span class="b-icon" aria-hidden="true">◍</span><div><strong>Cargando el panel…</strong><span class="b-text">leyendo el estado del proyecto</span></div></div>
+              <div class="kpis" style="margin-top:16px">
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+                <div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div></div>
+              </div>
+              <div class="skeleton" style="margin-top:16px"><div class="sk-line w40"></div><div class="sk-line w90"></div><div class="sk-line w70"></div><div class="sk-line w90"></div></div>
+            </div>
+
+            <div class="st-empty">
+              <div class="empty">
+                <span class="e-icon" aria-hidden="true">◍</span>
+                <strong>Sin cambios activos</strong>
+                <p>Todo el trabajo está archivado (10 cambios cerrados). Crea uno para empezar.</p>
+                <p style="margin-top:12px"><button type="button" class="btn primary">＋ Nuevo cambio</button></p>
+              </div>
+            </div>
+
+            <div class="st-error">
+              <div class="banner" style="--tone:var(--red)">
+                <span class="b-icon" aria-hidden="true">✕</span>
+                <div>
+                  <strong>No se pudo leer el estado del proyecto</strong>
+                  <span class="b-text">El archivo del registro no se pudo interpretar (línea 14). Se conserva la última información válida.</span>
+                  <p style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button type="button" class="btn sm">Reintentar</button>
+                    <button type="button" class="btn sm ghost">Ver diagnóstico</button>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <footer class="statusbar">
+            <span class="sb-item">◈ SpecAtlas</span>
+            <span class="sb-item">6 cambios activos</span>
+            <span class="sb-item">evidencia 9/75</span>
+            <span class="sb-right"><span class="sb-item">sin telemetría</span><span class="sb-item">LSP ✓</span></span>
+          </footer>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+<p class="live" id="live" role="status" aria-live="polite"></p>
+
+<script>
+(function () {
+  var body = document.body;
+  var stateButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-state]'));
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-theme]'));
+  var widthButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-width]'));
+  var live = document.getElementById('live');
+  function press(buttons, value) {
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-set-state') === value || b.getAttribute('data-set-theme') === value || b.getAttribute('data-set-width') === value)); });
+  }
+  function setState(name) {
+    body.setAttribute('data-state', name);
+    press(stateButtons, name);
+    if (live) live.textContent = 'Estado del mockup: ' + name;
+  }
+  function setTheme(name) {
+    document.documentElement.setAttribute('data-theme', name);
+    press(themeButtons, name);
+  }
+  function setWidth(value) {
+    body.setAttribute('data-width', value);
+    document.querySelector('.window').style.setProperty('--win-w', value + 'px');
+    press(widthButtons, value);
+  }
+  stateButtons.forEach(function (b) { b.addEventListener('click', function () { setState(b.getAttribute('data-set-state')); }); });
+  themeButtons.forEach(function (b) { b.addEventListener('click', function () { setTheme(b.getAttribute('data-set-theme')); }); });
+  widthButtons.forEach(function (b) { b.addEventListener('click', function () { setWidth(b.getAttribute('data-set-width')); }); });
+})();
+</script>
+</body>
+</html>

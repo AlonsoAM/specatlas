@@ -48,7 +48,10 @@ import {
   type ToolItem,
 } from './logic.js'
 import { formHtml, type FormField } from './forms.js'
-import { boardHtml, matrixHtml, metricsHtml } from './panels.js'
+import { PANEL_KEY, PANEL_TITLE, PANEL_VIEW_TYPE, buildPanelPage, isPanelSection, panelNotice, renderPanelHtml, type PanelResources } from './panel/panel.js'
+import { buildPanelModel } from './panel/model.js'
+import { agentCli } from '@specatlas/core'
+import { laneOf, resolveCommand, stepsForLane } from './actions.js'
 import { findLivePanel, refreshLivePanels, updateLivePanel, type LivePanelEntry, type LivePanelSurface } from './live.js'
 import { startLanguageClient } from './client.js'
 import type { LanguageClient } from 'vscode-languageclient/node'
@@ -402,6 +405,8 @@ function stateIcon(state: string): vscode.ThemeIcon {
   switch (state) {
     case 'ready':
       return new vscode.ThemeIcon('pass-filled', new vscode.ThemeColor('charts.green'))
+    case 'paused':
+      return new vscode.ThemeIcon('debug-pause', new vscode.ThemeColor('charts.yellow'))
     case 'spec_draft':
       return new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.orange'))
     case 'awaiting_approval':
@@ -559,8 +564,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const entry: LivePanelEntry<vscode.WebviewPanel> = { key: opts.key, target: panel, surface: surfaceOf(panel), build: opts.build }
     livePanels.add(entry)
     panel.onDidDispose(() => livePanels.delete(entry))
+    let wasVisible = panel.visible
     panel.onDidChangeViewState(() => {
-      if (panel.visible) void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+      if (panel.visible && !wasVisible) void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+      wasVisible = panel.visible
     })
     void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
     return panel
@@ -657,6 +664,25 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+
+  const openOpencode = async (instruction: string): Promise<void> => {
+    const root = workspaceRoot()
+    const cli = agentCli(provider.snapshotOf(0)?.agent)
+    try {
+      const terminal = vscode.window.createTerminal({ name: cli, cwd: root })
+      terminal.show(true)
+      terminal.sendText(`${cli} "${instruction.replace(/"/g, '\\"')}"`)
+    } catch (error) {
+      await vscode.env.clipboard.writeText(instruction)
+      void vscode.window.showWarningMessage(`SpecAtlas: no se pudo abrir el asistente (${(error as Error).message}); la instrucción quedó copiada al portapapeles.`)
+    }
+  }
+
+  const instructionForStep = (change: SnapshotChange, stepId: string): string | undefined => {
+    const step = stepsForLane(laneOf(change)).find((item) => item.id === stepId)
+    // La invocación depende del agente configurado en el proyecto, no del que suponga la extensión.
+    return step ? resolveCommand(step.command, change.slug, provider.snapshotOf(0)?.agent) : undefined
+  }
 
   const mockupGateBlocked = async (change: SnapshotChange): Promise<boolean> => {
     const root = workspaceRoot()
@@ -1287,9 +1313,13 @@ export function activate(context: vscode.ExtensionContext): void {
     const change = selectedChange(arg)
     if (!change) return
     const command = change.next
+    if (command.startsWith('/satlas')) {
+      await openOpencode(command)
+      return
+    }
     if (!command.startsWith('satlas ')) {
       await vscode.env.clipboard.writeText(command)
-      void vscode.window.showInformationMessage(`SpecAtlas: acción con agente copiada al portapapeles: ${command}`)
+      void vscode.window.showInformationMessage(`SpecAtlas: acción copiada al portapapeles: ${command}`)
       return
     }
     const sub = command.split(' ')[1] ?? ''
@@ -1312,53 +1342,88 @@ export function activate(context: vscode.ExtensionContext): void {
     }
   })
 
-  register('specatlas.matrix', async () => {
-    const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'matrix',
-      viewType: 'specatlas.matrix',
-      title: 'Matriz de trazabilidad',
-      viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: true, enableCommandUris: true },
-      build: async () => {
-        const model = await buildMatrix(root)
-        return { html: matrixHtml(model, panelNonce()) }
-      },
-    })
-  })
+  const wiredPanels = new WeakSet<vscode.WebviewPanel>()
 
-  register('specatlas.board', async () => {
-    const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'board',
-      viewType: 'specatlas.board',
-      title: 'Tablero',
-      viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: true, enableCommandUris: true },
-      build: async () => {
-        const snapshot = await buildSnapshot(root)
-        if (!snapshot) return undefined
-        return { title: `Tablero — ${snapshot.projectName}`, html: boardHtml(snapshot, panelNonce()) }
-      },
-    })
-  })
+  const handlePanelMessage = async (panel: vscode.WebviewPanel, message: { type?: string; value?: string; step?: string }): Promise<void> => {
+    if (message.type === 'run-step') {
+      const change = selectedChange(message.value)
+      if (!change || !message.step) return
+      const instruction = instructionForStep(change, message.step)
+      if (instruction) await openOpencode(instruction)
+      return
+    }
+    if (message.type === 'copy-command' && message.value) {
+      await vscode.env.clipboard.writeText(message.value)
+      void vscode.window.showInformationMessage(`SpecAtlas: copiado "${message.value}"`)
+      return
+    }
+    if (message.type === 'open-artifact') {
+      const change = selectedChange(message.value)
+      const file = change?.files.find((item) => item.kind === message.value)
+      if (change && file?.exists) await vscode.commands.executeCommand('specatlas.openPreview', file.path, change.slug, file.kind)
+      return
+    }
+    if (message.type === 'mockup-html' && message.value) {
+      const root = workspaceRoot()
+      const target = path.resolve(message.value)
+      if (!root || !target.toLowerCase().startsWith(path.resolve(root).toLowerCase())) return
+      const content = await readTextIfExists(target)
+      if (content === undefined) return
+      await panel.webview.postMessage({ type: 'mockup-html', value: message.value, data: Buffer.from(content, 'utf8').toString('base64') })
+    }
+  }
 
-  register('specatlas.metrics', async () => {
+  register('specatlas.panel', async (arg?: unknown) => {
     const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'metrics',
-      viewType: 'specatlas.metrics',
-      title: 'Métricas',
+    const section = isPanelSection(arg) ? arg : 'resumen'
+    const panel = openLivePanel({
+      key: PANEL_KEY,
+      viewType: PANEL_VIEW_TYPE,
+      title: PANEL_TITLE,
       viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: false, enableCommandUris: true },
-      build: async () => {
-        const metrics = await collectMetrics(root)
-        return { title: `Métricas — ${metrics.project}`, html: metricsHtml(metrics) }
+      options: {
+        enableScripts: true,
+        enableCommandUris: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [context.extensionUri, ...(root ? [vscode.Uri.file(root)] : [])],
+      },
+      build: async (panel) => {
+        if (!root) return { title: PANEL_TITLE, html: panelNotice('no-workspace', 'Abre una carpeta con SpecAtlas inicializado para ver el panel principal.') }
+        const model = await buildPanelModel(root)
+        if (!model) return { title: PANEL_TITLE, html: panelNotice('not-initialized', 'Inicializar crea .sdd/ y los comandos del agente; después el panel muestra el estado real.') }
+        const mermaidUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'mermaid.min.js')).toString()
+        const resources: PanelResources = {}
+        const change = model.change
+        if (change) {
+          const presentation = change.files.find((file) => file.kind === 'presentation' && file.exists)
+          if (presentation) {
+            const raw = await readTextIfExists(presentation.path)
+            if (raw !== undefined) resources.presentationBase64 = Buffer.from(raw, 'utf8').toString('base64')
+          }
+          const mockupFile = change.files.find((file) => file.kind === 'mockup' && file.exists)
+          if (mockupFile && mockupFile.screens && mockupFile.screens.length > 0) {
+            resources.mockups = []
+            for (const [index, screen] of mockupFile.screens.entries()) {
+              const screenPath = pathForScreen(change, screen)
+              const entry: { file: string; title: string; path: string; base64?: string } = { file: screen.file, title: screen.title, path: screenPath }
+              if (index === 0) {
+                const rawScreen = await readTextIfExists(screenPath)
+                if (rawScreen !== undefined) entry.base64 = Buffer.from(rawScreen, 'utf8').toString('base64')
+              }
+              resources.mockups.push(entry)
+            }
+          }
+        }
+        return { title: `${PANEL_TITLE} — ${model.snapshot.projectName}`, html: renderPanelHtml(model, section, panelNonce(), { mermaidUri, cspSource: panel.webview.cspSource, resources }) }
       },
     })
+    if (!wiredPanels.has(panel)) {
+      wiredPanels.add(panel)
+      panel.webview.onDidReceiveMessage((message: { type?: string; value?: string; step?: string }) => {
+        void handlePanelMessage(panel, message)
+      })
+    }
+    void panel.webview.postMessage({ type: 'show-section', value: section })
   })
 
   void refresh()

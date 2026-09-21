@@ -12,5 +12,5 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   external: ['vscode'],
-  noExternal: ['@specatlas/core', '@specatlas/adapters', '@specatlas/lsp', 'vscode-languageclient', 'vscode-languageserver', 'vscode-languageserver-textdocument'],
+  noExternal: ['@specatlas/core', '@specatlas/adapters', '@specatlas/lsp', '@specatlas/render', 'vscode-languageclient', 'vscode-languageserver', 'vscode-languageserver-textdocument'],
 })

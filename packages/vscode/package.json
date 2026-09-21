@@ -2,16 +2,22 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.48",
+  "version": "0.0.56",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other", "Visualization", "Testing"],
+  "categories": [
+    "Other",
+    "Visualization",
+    "Testing"
+  ],
   "main": "./dist/extension.cjs",
-  "activationEvents": ["workspaceContains:**/.sdd/config.yaml"],
+  "activationEvents": [
+    "workspaceContains:**/.sdd/config.yaml"
+  ],
   "icon": "media/icon.png",
   "repository": {
     "type": "git",
@@ -41,56 +47,204 @@
       ]
     },
     "commands": [
-      { "command": "specatlas.refresh", "title": "SpecAtlas: Refrescar", "icon": "$(refresh)" },
-      { "command": "specatlas.validate", "title": "SpecAtlas: Validar specs y deltas" },
-      { "command": "specatlas.trace", "title": "SpecAtlas: Verificar trazabilidad" },
-      { "command": "specatlas.waves", "title": "SpecAtlas: Calcular olas" },
-      { "command": "specatlas.analyze", "title": "SpecAtlas: Analizar un cambio" },
-      { "command": "specatlas.doctor", "title": "SpecAtlas: Diagnóstico del workspace" },
-      { "command": "specatlas.present", "title": "SpecAtlas: Generar propuesta para el stakeholder" },
-      { "command": "specatlas.mockup.open", "title": "SpecAtlas: Abrir mockups" },
-      { "command": "specatlas.approve", "title": "SpecAtlas: Aprobar (firmar) la spec" },
-      { "command": "specatlas.archive", "title": "SpecAtlas: Archivar el cambio" },
-      { "command": "specatlas.openPreview", "title": "SpecAtlas: Abrir vista previa" },
-      { "command": "specatlas.copyNext", "title": "SpecAtlas: Copiar la siguiente acción" },
-      { "command": "specatlas.init", "title": "SpecAtlas: Inicializar workspace", "icon": "$(rocket)" },
-      { "command": "specatlas.openAt", "title": "SpecAtlas: Abrir en la línea" },
-      { "command": "specatlas.matrix", "title": "SpecAtlas: Matriz de trazabilidad", "icon": "$(list-tree)" },
-      { "command": "specatlas.board", "title": "SpecAtlas: Tablero de cambios", "icon": "$(project)" },
-      { "command": "specatlas.metrics", "title": "SpecAtlas: Métricas locales", "icon": "$(graph)" },
-      { "command": "specatlas.adapters", "title": "SpecAtlas: Compilar adaptadores (comandos del agente)", "icon": "$(plug)" },
-      { "command": "specatlas.new", "title": "SpecAtlas: Nuevo cambio (fix · standard · full)", "icon": "$(add)" },
-      { "command": "specatlas.verify", "title": "SpecAtlas: Registrar evidencia de un escenario", "icon": "$(beaker)" },
-      { "command": "specatlas.packs", "title": "SpecAtlas: Evaluar packs de cumplimiento", "icon": "$(shield)" },
-      { "command": "specatlas.ci", "title": "SpecAtlas: CI (gate local)", "icon": "$(check-all)" },
-      { "command": "specatlas.mockups.decide", "title": "SpecAtlas: Decidir mockups del cambio (sí/no)", "icon": "$(device-mobile)" }
+      {
+        "command": "specatlas.refresh",
+        "title": "SpecAtlas: Refrescar",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "specatlas.validate",
+        "title": "SpecAtlas: Validar specs y deltas"
+      },
+      {
+        "command": "specatlas.trace",
+        "title": "SpecAtlas: Verificar trazabilidad"
+      },
+      {
+        "command": "specatlas.waves",
+        "title": "SpecAtlas: Calcular olas"
+      },
+      {
+        "command": "specatlas.analyze",
+        "title": "SpecAtlas: Analizar un cambio"
+      },
+      {
+        "command": "specatlas.doctor",
+        "title": "SpecAtlas: Diagnóstico del workspace"
+      },
+      {
+        "command": "specatlas.present",
+        "title": "SpecAtlas: Generar propuesta para el stakeholder"
+      },
+      {
+        "command": "specatlas.mockup.open",
+        "title": "SpecAtlas: Abrir mockups"
+      },
+      {
+        "command": "specatlas.approve",
+        "title": "SpecAtlas: Aprobar (firmar) la spec"
+      },
+      {
+        "command": "specatlas.archive",
+        "title": "SpecAtlas: Archivar el cambio"
+      },
+      {
+        "command": "specatlas.openPreview",
+        "title": "SpecAtlas: Abrir vista previa"
+      },
+      {
+        "command": "specatlas.copyNext",
+        "title": "SpecAtlas: Copiar la siguiente acción"
+      },
+      {
+        "command": "specatlas.init",
+        "title": "SpecAtlas: Inicializar workspace",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "specatlas.openAt",
+        "title": "SpecAtlas: Abrir en la línea"
+      },
+      {
+        "command": "specatlas.panel",
+        "title": "SpecAtlas: Panel principal",
+        "icon": "$(window)"
+      },
+      {
+        "command": "specatlas.adapters",
+        "title": "SpecAtlas: Compilar adaptadores (comandos del agente)",
+        "icon": "$(plug)"
+      },
+      {
+        "command": "specatlas.new",
+        "title": "SpecAtlas: Nuevo cambio (fix · standard · full)",
+        "icon": "$(add)"
+      },
+      {
+        "command": "specatlas.verify",
+        "title": "SpecAtlas: Registrar evidencia de un escenario",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "specatlas.packs",
+        "title": "SpecAtlas: Evaluar packs de cumplimiento",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "specatlas.ci",
+        "title": "SpecAtlas: CI (gate local)",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "specatlas.mockups.decide",
+        "title": "SpecAtlas: Decidir mockups del cambio (sí/no)",
+        "icon": "$(device-mobile)"
+      }
     ],
     "menus": {
       "view/title": [
-        { "command": "specatlas.refresh", "when": "view == specatlas.explorer", "group": "navigation" },
-        { "command": "specatlas.init", "when": "view == specatlas.explorer && !specatlas.initialized", "group": "navigation" }
+        {
+          "command": "specatlas.refresh",
+          "when": "view == specatlas.explorer",
+          "group": "navigation"
+        },
+        {
+          "command": "specatlas.init",
+          "when": "view == specatlas.explorer && !specatlas.initialized",
+          "group": "navigation"
+        }
       ],
       "view/item/context": [
-        { "command": "specatlas.runNext", "when": "view == specatlas.explorer && viewItem =~ /^action/", "group": "inline" },
-        { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/", "group": "inline" },
-        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/", "group": "inline" },
-        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/", "group": "1_ciclo@1" },
-        { "command": "specatlas.approve", "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/", "group": "1_ciclo@2" },
-        { "command": "specatlas.analyze", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@3" },
-        { "command": "specatlas.trace", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@4" },
-        { "command": "specatlas.waves", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@5" },
-        { "command": "specatlas.packs", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "1_ciclo@6" },
-        { "command": "specatlas.present", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@1" },
-        { "command": "specatlas.mockups.decide", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@1" },
-        { "command": "specatlas.mockup.open", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@2" },
-        { "command": "specatlas.copyNext", "when": "view == specatlas.explorer && viewItem =~ /^change/", "group": "2_salidas@3" },
-        { "command": "specatlas.archive", "when": "view == specatlas.explorer && viewItem =~ /change-(verified|ready)/", "group": "3_peligro@1" },
-        { "command": "specatlas.openPreview", "when": "view == specatlas.explorer && viewItem =~ /^file/", "group": "inline" },
-        { "command": "specatlas.verify", "when": "view == specatlas.explorer && viewItem =~ /file-(verify|fix)/", "group": "inline" }
+        {
+          "command": "specatlas.runNext",
+          "when": "view == specatlas.explorer && viewItem =~ /^action/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.approve",
+          "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.verify",
+          "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.verify",
+          "when": "view == specatlas.explorer && viewItem =~ /change-(building|built|verified)/",
+          "group": "1_ciclo@1"
+        },
+        {
+          "command": "specatlas.approve",
+          "when": "view == specatlas.explorer && viewItem =~ /change-awaiting_approval/",
+          "group": "1_ciclo@2"
+        },
+        {
+          "command": "specatlas.analyze",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "1_ciclo@3"
+        },
+        {
+          "command": "specatlas.trace",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "1_ciclo@4"
+        },
+        {
+          "command": "specatlas.waves",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "1_ciclo@5"
+        },
+        {
+          "command": "specatlas.packs",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "1_ciclo@6"
+        },
+        {
+          "command": "specatlas.present",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "2_salidas@1"
+        },
+        {
+          "command": "specatlas.mockups.decide",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "2_salidas@1"
+        },
+        {
+          "command": "specatlas.mockup.open",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "2_salidas@2"
+        },
+        {
+          "command": "specatlas.copyNext",
+          "when": "view == specatlas.explorer && viewItem =~ /^change/",
+          "group": "2_salidas@3"
+        },
+        {
+          "command": "specatlas.archive",
+          "when": "view == specatlas.explorer && viewItem =~ /change-(verified|ready)/",
+          "group": "3_peligro@1"
+        },
+        {
+          "command": "specatlas.openPreview",
+          "when": "view == specatlas.explorer && viewItem =~ /^file/",
+          "group": "inline"
+        },
+        {
+          "command": "specatlas.verify",
+          "when": "view == specatlas.explorer && viewItem =~ /file-(verify|fix)/",
+          "group": "inline"
+        }
       ],
       "commandPalette": [
-        { "command": "specatlas.openAt", "when": "false" },
-        { "command": "specatlas.runNext", "when": "false" }
+        {
+          "command": "specatlas.openAt",
+          "when": "false"
+        },
+        {
+          "command": "specatlas.runNext",
+          "when": "false"
+        }
       ]
     },
     "viewsWelcome": [
@@ -109,7 +263,10 @@
         },
         "specatlas.language": {
           "type": "string",
-          "enum": ["es", "en"],
+          "enum": [
+            "es",
+            "en"
+          ],
           "default": "es",
           "description": "Idioma de la interfaz de la extensión (los artefactos usan .sdd/config.yaml)."
         },
@@ -132,6 +289,7 @@
     "@specatlas/adapters": "workspace:*",
     "@specatlas/core": "workspace:*",
     "@specatlas/lsp": "workspace:*",
+    "@specatlas/render": "workspace:*",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {

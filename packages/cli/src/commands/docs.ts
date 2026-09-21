@@ -15,10 +15,14 @@ export async function runDocs(ctx: CliContext): Promise<CommandResult> {
 
   const result = await generateDocs({ root, slug, tipo })
   const errors = result.diagnostics.filter((d) => d.severity === 'error')
+  const warnings = result.diagnostics.filter((d) => d.severity === 'warning')
   const lines: string[] = [msg('docs.title', ctx.language), '']
   for (const file of result.files) {
     lines.push(`  ${file.created ? msg('docs.created', ctx.language) : msg('docs.updated', ctx.language)}: ${path.relative(ctx.cwd, file.path)}`)
+    if (file.htmlPath) lines.push(`    html: ${path.relative(ctx.cwd, file.htmlPath)}`)
+    if (file.pdfPath) lines.push(`    pdf:  ${path.relative(ctx.cwd, file.pdfPath)}`)
   }
+  for (const warning of warnings) lines.push(`  AVISO ${warning.code} — ${warning.message}`)
   for (const error of errors) lines.push(`  ERROR ${error.code} — ${error.message}`)
 
   return {
@@ -27,7 +31,13 @@ export async function runDocs(ctx: CliContext): Promise<CommandResult> {
     data: {
       slug: result.slug,
       tipo,
-      files: result.files.map((file) => ({ tipo: file.tipo, path: path.relative(ctx.cwd, file.path), created: file.created })),
+      files: result.files.map((file) => ({
+        tipo: file.tipo,
+        path: path.relative(ctx.cwd, file.path),
+        created: file.created,
+        html: file.htmlPath ? path.relative(ctx.cwd, file.htmlPath) : undefined,
+        pdf: file.pdfPath ? path.relative(ctx.cwd, file.pdfPath) : undefined,
+      })),
     },
     text: lines,
   }

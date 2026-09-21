@@ -30,3 +30,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-20 16:57:36 -05:00
     channel: editor
+  - artifact: changes/panel-principal/spec.md
+    artifact_hash: sha256:5f7626ce52eedbcd736df2a3696df10e10f0f836f7af884ca72ad1234f102846
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-20 22:41:11 -05:00
+    channel: editor

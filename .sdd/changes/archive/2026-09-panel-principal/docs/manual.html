@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de usuario — Un panel principal único para la extensión</title>
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<h1 id="manual-de-usuario-un-panel-principal-unico-para-la-extension">Manual de usuario — Un panel principal único para la extensión</h1>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Cambio:</b> <code>panel-principal</code></span><span class="meta-chip"><b>Dominio:</b> editor</span><span class="meta-chip"><b>Actualizado:</b> 2026-09-21</span></div><p>Este manual explica cómo se usa lo que el cambio entrega: qué verás, qué puedes hacer y qué ocurre en cada caso.</p></blockquote>
+<h2 id="1-que-es-y-que-resuelve">1. Qué es y qué resuelve</h2>
+<ul><li>Un <strong>panel principal único</strong> con secciones internas: Resumen, Flujo, Trazabilidad, Métricas y Documentos.</li><li>Las <strong>acciones del ciclo</strong> (crear, validar, diagnosticar, compilar adaptadores, verificar, aprobar, archivar, mockups) se ofrecen desde el panel según el estado del proyecto y del cambio activo, con las mismas reglas y auditoría que ya existen.</li><li>Los <strong>documentos del cambio y sus mockups</strong> se leen dentro del panel, sin ventanas adicionales.</li><li>El panel <strong>se mantiene al día</strong> solo (refleja lo hecho desde la terminal o el asistente) y conserva la sección y los filtros en uso.</li><li><strong>Desaparecen las ventanas independientes</strong> de matriz, tablero y métricas: su información pasa al panel principal.</li></ul>
+<h3 id="por-que-se-hizo">Por qué se hizo</h3>
+<p>Hoy la herramienta reparte su información en ventanas separadas (matriz de trazabilidad, tablero y métricas) más las vistas de documentos y mockups. Quien trabaja en un cambio debe abrir una ventana por tema, alternar entre ellas y pierde el hilo de lo que está haciendo.</p>
+<p>Como responsable de un cambio, quiero un único panel principal que reúna el estado, el flujo, la trazabilidad, las métricas, los documentos y las acciones, para trabajar sin dispersarme y tener un solo lugar donde mirar.</p>
+<h2 id="2-antes-de-empezar">2. Antes de empezar</h2>
+<ul><li><strong>Dependencia nueva</strong>: <code>pdf-lib</code> en <code>@specatlas/render</code> (pura JavaScript, sin servicios externos).</li><li><strong>Supuestos</strong>: la extensión sigue siendo la única superficie del editor; el índice del LSP expone lo que necesitan las secciones; <code>opencode</code> está disponible en el PATH del proyecto (si no, se usa el respaldo de copiar).</li><li><strong>Talla y confianza</strong>: el cambio es <strong>grande</strong> (5 bloques, 23 tareas); confianza <strong>alta</strong> en las secciones que reutilizan código existente y <strong>media</strong> en el PDF local (layout propio) y en el rediseño de la presentación (juicio visual del usuario sobre el contrato aprobado).</li></ul>
+<h2 id="3-primeros-pasos">3. Primeros pasos</h2>
+<p>Recorrido corto, en orden, para ver la funcionalidad completa por primera vez.</p>
+<ol><li><strong>Abrir el panel principal</strong> — El equipo abre la herramienta desde su punto de entrada. Se abre una única ventana con la sección de resumen activa y el estado del proyecto.</li><li><strong>Proyecto con cambios activos</strong> — Se abre el resumen y hay cambios activos. Se muestran los indicadores del proyecto y cada cambio con su estado, su carril, su avance y su siguiente acción.</li><li><strong>Cambios en distintas fases</strong> — Se abre el flujo y hay cambios activos. Cada uno aparece en la fase que le corresponde con su avance y su siguiente acción.</li><li><strong>Todo verificado</strong> — Todos los escenarios tienen tarea y evidencia favorable. La sección lo indica de forma expresa.</li><li><strong>Proyecto con actividad</strong> — Se abre la sección de métricas y hay actividad. Se muestran la evidencia, los cierres por mes, la antigüedad del trabajo en curso, la distribución por carril y el trabajo por fase.</li><li><strong>Abrir un documento del cambio</strong> — El equipo elige un documento existente del cambio. Su contenido se muestra en el panel.</li><li><strong>Acción válida</strong> — El equipo ejecuta desde el panel una acción válida para el estado. La acción se ejecuta y su resultado se refleja en el panel.</li><li><strong>Cambio hecho fuera del panel</strong> — Los artefactos cambian desde la terminal o el asistente. El panel lo refleja sin intervención del equipo.</li></ol>
+<h2 id="4-las-pantallas-una-por-una">4. Las pantallas, una por una</h2>
+<h3 id="panel-principal-resumen-y-siguiente-accion">Panel principal — Resumen y siguiente acción</h3>
+<p>Archivo del mockup: <code>panel-resumen.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Abrir el panel principal</li><li>Cambiar de sección</li><li>El panel ya estaba abierto</li><li>Proyecto con cambios activos</li><li>Proyecto al día</li><li>Puntos que requieren atención</li><li>Proyecto sin cambios activos</li><li>Proyecto sin historial</li></ul>
+<h3 id="panel-principal-flujo-de-cambios-por-fase">Panel principal — Flujo de cambios por fase</h3>
+<p>Archivo del mockup: <code>panel-flujo.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Cambios en distintas fases</li><li>Cambio bloqueado</li><li>Filtros del flujo</li><li>Proyecto sin cambios activos</li></ul>
+<h3 id="panel-principal-trazabilidad-requisito-evidencia">Panel principal — Trazabilidad requisito → evidencia</h3>
+<p>Archivo del mockup: <code>panel-trazabilidad.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Requisito con huecos</li><li>Todo verificado</li><li>Sin requisitos</li><li>Filtros de la trazabilidad</li><li>Abrir un identificador</li></ul>
+<h3 id="panel-principal-metricas-del-proceso">Panel principal — Métricas del proceso</h3>
+<p>Archivo del mockup: <code>panel-metricas.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Proyecto con actividad</li><li>Puntos de atención</li><li>Proyecto sin actividad</li></ul>
+<h3 id="panel-principal-documentos-y-mockups-del-cambio">Panel principal — Documentos y mockups del cambio</h3>
+<p>Archivo del mockup: <code>panel-documentos.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Abrir un documento del cambio</li><li>Documento ausente</li><li>Mockups del cambio</li><li>Cambio sin mockups</li><li>Mockups desactualizados</li><li>Documento ilegible</li></ul>
+<h3 id="panel-principal-acciones-del-ciclo">Panel principal — Acciones del ciclo</h3>
+<p>Archivo del mockup: <code>panel-acciones.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Acción válida</li><li>Acción no válida</li><li>Acción humana sin nombre</li><li>Acción que falla</li><li>Acción con asistente</li><li>El asistente no se puede abrir</li><li>El flujo completo, en orden y por carril</li><li>Crear un cambio desde el panel</li><li>Ejecutar un paso ya pasado u omitido</li></ul>
+<h3 id="panel-principal-estados-vacios-y-panel-vivo">Panel principal — Estados, vacíos y panel vivo</h3>
+<p>Archivo del mockup: <code>panel-estados.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Proyecto sin inicializar</li><li>Sin proyecto abierto</li><li>Cambio hecho fuera del panel</li><li>Contexto conservado</li><li>Sin cambios</li><li>Actualización fallida</li></ul>
+<h3 id="presentacion-para-aprobar-propuesta-especificacion-y-mockups">Presentación para aprobar — propuesta, especificación y mockups</h3>
+<p>Archivo del mockup: <code>presentacion.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Presentación completa</li><li>Cambio sin mockups</li><li>Cambio sin propuesta</li><li>Imprimir o guardar como PDF</li><li>Firma obsoleta</li><li>Mockup declarado que falta</li></ul>
+<h3 id="documentacion-texto-fuente-html-y-pdf">Documentación — texto fuente, HTML y PDF</h3>
+<p>Archivo del mockup: <code>docs-formatos.html</code> · Estados: default, loading, empty, error</p>
+<p><strong>Qué encuentras aquí</strong></p>
+<ul><li>Los dos documentos en todos los formatos</li><li>Un solo documento</li><li>Un formato no se puede generar</li><li>Regenerar la documentación</li><li>Documentación sin evidencia</li></ul>
+<h2 id="5-como-se-usa-tarea-por-tarea">5. Cómo se usa, tarea por tarea</h2>
+<h3 id="un-unico-panel-principal-reune-el-trabajo">Un único panel principal reúne el trabajo</h3>
+<p>El equipo necesita un solo punto de entrada en el editor: hoy el estado, el flujo de los cambios, la trazabilidad y las métricas viven en ventanas separadas, hay que abrir una para cada tema y el trabajo queda disperso. Un panel principal único, con secciones internas, reúne la información y las acciones en un mismo lugar.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>El equipo abre la herramienta desde su punto de entrada</td><td>Se abre una única ventana con la sección de resumen activa y el estado del proyecto</td></tr><tr><td>El equipo elige otra sección del panel</td><td>Su contenido reemplaza al anterior en la misma ventana, sin abrir otra</td></tr><tr><td>Se pide abrir el panel o una de sus secciones con el panel ya abierto</td><td>Se reutiliza la ventana existente y la sección pedida queda activa</td></tr></tbody></table></div>
+<h3 id="resumen-salud-del-proyecto-y-siguiente-accion">Resumen: salud del proyecto y siguiente acción</h3>
+<p>El equipo necesita, al abrir la herramienta, saber de un vistazo cómo está el proyecto y qué hacer ahora, sin interpretar datos por su cuenta.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Se abre el resumen y hay cambios activos</td><td>Se muestran los indicadores del proyecto y cada cambio con su estado, su carril, su avance y su siguiente acción</td></tr><tr><td>Hay bloqueos, hallazgos o evidencia pendiente</td><td>El resumen los destaca con su motivo y la acción que los atiende</td></tr></tbody></table></div>
+<h3 id="seccion-flujo-el-avance-de-los-cambios-por-fase">Sección Flujo: el avance de los cambios por fase</h3>
+<p>El equipo necesita seguir el avance de cada cambio por las fases del ciclo desde el panel principal, sin abrir el tablero aparte.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Se abre el flujo y hay cambios activos</td><td>Cada uno aparece en la fase que le corresponde con su avance y su siguiente acción</td></tr><tr><td>El equipo filtra por texto, carril o dominio</td><td>Solo quedan visibles los cambios que cumplen el filtro y los conteos por fase se ajustan, sin alterar los datos</td></tr></tbody></table></div>
+<h3 id="seccion-trazabilidad-requisito-escenario-tarea-y-evidencia">Sección Trazabilidad: requisito, escenario, tarea y evidencia</h3>
+<p>El equipo necesita comprobar la trazabilidad completa desde el panel principal, con los huecos primero, sin abrir la matriz aparte.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Todos los escenarios tienen tarea y evidencia favorable</td><td>La sección lo indica de forma expresa</td></tr><tr><td>El equipo filtra por texto, estado, dominio, cambio o procedencia</td><td>Solo quedan visibles los requisitos que cumplen el filtro y el conteo lo refleja</td></tr><tr><td>El equipo elige un identificador de requisito o de escenario</td><td>Se abre su artefacto en la línea correspondiente, sin abrir ventanas adicionales del panel</td></tr></tbody></table></div>
+<h3 id="seccion-metricas-la-salud-del-proceso">Sección Métricas: la salud del proceso</h3>
+<p>El equipo necesita las métricas del proceso (evidencia, cierres por mes, antigüedad del trabajo, distribución por carril, trabajo en curso y puntos de atención) dentro del panel principal.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Se abre la sección de métricas y hay actividad</td><td>Se muestran la evidencia, los cierres por mes, la antigüedad del trabajo en curso, la distribución por carril y el trabajo por fase</td></tr><tr><td>Hay bloqueos, trabajo antiguo o evidencia pendiente</td><td>Se listan con su motivo</td></tr></tbody></table></div>
+<h3 id="documentos-y-mockups-dentro-del-panel">Documentos y mockups dentro del panel</h3>
+<p>El equipo necesita leer los documentos del cambio y ver sus mockups dentro del panel, sin abrir ventanas adicionales ni perder el contexto.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>El equipo elige un documento existente del cambio</td><td>Su contenido se muestra en el panel</td></tr><tr><td>El cambio declara mockups existentes</td><td>Se ven en el panel, pantalla a pantalla</td></tr></tbody></table></div>
+<h3 id="acciones-del-ciclo-desde-el-panel">Acciones del ciclo desde el panel</h3>
+<p>El equipo necesita ejecutar desde el panel las acciones del ciclo, con las mismas reglas y registros que ya rigen la herramienta.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>El equipo ejecuta desde el panel una acción válida para el estado</td><td>La acción se ejecuta y su resultado se refleja en el panel</td></tr><tr><td>El equipo pide una acción que requiere un asistente</td><td>Se abre el asistente en una terminal del proyecto con la instrucción de esa acción ya dirigida</td></tr><tr><td>El equipo abre la sección de acciones</td><td>Ve los pasos del ciclo en orden, agrupados por carril, con el paso actual marcado y el actor de cada paso</td></tr><tr><td>El equipo crea un cambio desde el panel</td><td>El panel pide carril, título y dominio, y el cambio queda en el primer paso del flujo de su carril</td></tr></tbody></table></div>
+<h3 id="el-panel-se-mantiene-al-dia-sin-perder-el-contexto">El panel se mantiene al día sin perder el contexto</h3>
+<p>El equipo necesita que el panel refleje los cambios hechos desde la terminal o el asistente sin recargarlo a mano y sin perder dónde estaba.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Los artefactos cambian desde la terminal o el asistente</td><td>El panel lo refleja sin intervención del equipo</td></tr><tr><td>El panel se actualiza</td><td>La sección activa y los filtros en uso se conservan</td></tr></tbody></table></div>
+<h3 id="la-presentacion-para-aprobar">La presentación para aprobar</h3>
+<p>El equipo necesita una página de presentación que reúna lo que se va a aprobar —la propuesta, la especificación y los mockups— con un diseño legible y navegable, porque la presentación actual no invita a leer ni a firmar y la aprobación es un acto humano.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Se presenta un cambio que tiene propuesta, especificación y mockups</td><td>La página los reúne en el orden esperado, con una guía de secciones navegable y el bloque de firma visible</td></tr><tr><td>El equipo imprime la presentación o la guarda como PDF</td><td>El contenido sale completo, con los mockups visibles y el bloque de firma en una página propia</td></tr></tbody></table></div>
+<h3 id="la-documentacion-en-tres-formatos">La documentación en tres formatos</h3>
+<p>El equipo necesita que los documentos técnico y manual salgan además del texto fuente en HTML y PDF, para entregarlos a quien no trabaja en el repositorio sin depender de herramientas externas.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>El equipo documenta un cambio pidiendo los dos documentos</td><td>Quedan el técnico y el manual en texto fuente, HTML y PDF, con el mismo contenido</td></tr><tr><td>El equipo pide solo uno de los dos documentos</td><td>Se generan sus formatos y el otro documento no se toca</td></tr><tr><td>Se vuelve a documentar un cambio ya documentado</td><td>Todos sus formatos se actualizan sin duplicar secciones ni perder lo escrito a mano</td></tr></tbody></table></div>
+<h3 id="la-revision-y-el-analisis-entran-en-el-flujo">La revisión y el análisis entran en el flujo</h3>
+<p>El equipo necesita que el flujo no salte de la verificación al archivo: la revisión de código y el análisis del cambio deben ser pasos visibles del ciclo, con su acción en el panel y su artefacto en el cambio, aunque no bloqueen el archivado en el carril estándar.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>El cambio está verificado</td><td>El flujo muestra Revisar como paso vigente con su acción y, cuando la revisión queda registrada, el paso aparece hecho</td></tr><tr><td>El cambio está verificado</td><td>El flujo ofrece Analizar con su acción y, cuando el informe existe, el paso aparece hecho</td></tr><tr><td>Un cambio del carril completo llega verificado</td><td>El flujo muestra Revisar, Analizar, Documentar y los contratos antes de archivar, en ese orden</td></tr></tbody></table></div>
+<h2 id="6-que-ves-cuando-todavia-no-hay-nada">6. Qué ves cuando todavía no hay nada</h2>
+<div class="table-wrap"><table><thead><tr><th>Situación</th><th>Qué hace la herramienta</th></tr></thead><tbody><tr><td><strong>Proyecto sin inicializar</strong> — El proyecto no está inicializado</td><td>El panel lo indica y ofrece la acción de inicializar, sin mostrar secciones con datos inexistentes</td></tr><tr><td><strong>Sin proyecto abierto</strong> — No hay una carpeta de proyecto abierta</td><td>El panel lo indica y no ofrece acciones que requieran proyecto</td></tr><tr><td><strong>Proyecto al día</strong> — No hay bloqueos, hallazgos ni evidencia pendiente</td><td>El resumen lo indica de forma expresa</td></tr><tr><td><strong>Proyecto sin cambios activos</strong> — No hay cambios activos</td><td>El resumen lo indica y ofrece crear uno</td></tr><tr><td><strong>Proyecto sin historial</strong> — El proyecto no tiene cambios archivados</td><td>El resumen lo indica sin presentar datos de archivo</td></tr><tr><td><strong>Proyecto sin cambios activos</strong> — No hay cambios activos</td><td>El flujo lo indica y no muestra fases con datos inexistentes</td></tr><tr><td><strong>Requisito con huecos</strong> — Hay escenarios sin tarea o sin evidencia</td><td>Aparecen primero y se distinguen de los verificados</td></tr><tr><td><strong>Sin requisitos</strong> — El proyecto no tiene requisitos</td><td>La sección lo indica y señala cómo empezar</td></tr><tr><td><strong>Proyecto sin actividad</strong> — No hay cambios ni archivos</td><td>La sección lo indica sin presentar indicadores inexistentes</td></tr><tr><td><strong>Documento ausente</strong> — El equipo elige un documento que aún no existe</td><td>Se indica que no existe y cuál es la acción que lo produce</td></tr><tr><td><strong>Cambio sin mockups</strong> — El cambio no declara mockups</td><td>Se indica y no se muestra contenido de ejemplo</td></tr><tr><td><strong>Acción humana sin nombre</strong> — Una acción humana se pide sin indicar quién la ejecuta</td><td>No se ejecuta y se pide el nombre</td></tr><tr><td><strong>Sin cambios</strong> — Nada cambia en el proyecto</td><td>El panel permanece igual</td></tr><tr><td><strong>Cambio sin mockups</strong> — El cambio no declara mockups</td><td>La presentación lo indica y no deja la sección vacía</td></tr><tr><td><strong>Cambio sin propuesta</strong> — El cambio no tiene propuesta escrita</td><td>La presentación lo indica y sigue mostrando la especificación y los mockups</td></tr><tr><td><strong>Mockup declarado que falta</strong> — Un mockup declarado no existe al generar la presentación</td><td>Se avisa del faltante y la presentación sigue siendo válida</td></tr><tr><td><strong>Documentación sin evidencia</strong> — El cambio aún no tiene evidencia registrada</td><td>Los formatos se generan igualmente y señalan lo que queda pendiente, sin inventarlo</td></tr><tr><td><strong>Archivado sin revisión en el carril estándar</strong> — Un cambio del carril estándar llega al archivado sin revisión ni análisis</td><td>El archivado no se bloquea por ello y el panel los muestra como pasos recomendados u opcionales</td></tr></tbody></table></div>
+<p>Un estado vacío no es un error: la herramienta indica qué falta y qué acción lo produce.</p>
+<h2 id="7-problemas-frecuentes-y-que-hacer">7. Problemas frecuentes y qué hacer</h2>
+<div class="table-wrap"><table><thead><tr><th>Situación</th><th>Qué hace la herramienta</th></tr></thead><tbody><tr><td><strong>Cambio bloqueado</strong> — Un cambio tiene un bloqueo</td><td>Aparece con el motivo del bloqueo</td></tr><tr><td><strong>Mockups desactualizados</strong> — Los mockups cambiaron respecto de la especificación</td><td>Se avisa que están desactualizados</td></tr><tr><td><strong>Documento ilegible</strong> — Un documento no se puede leer</td><td>Se informa el motivo y no se muestra contenido parcial</td></tr><tr><td><strong>Acción no válida</strong> — El equipo pide una acción que no aplica al estado</td><td>El panel explica por qué no aplica y no la ejecuta</td></tr><tr><td><strong>Acción que falla</strong> — Una acción falla</td><td>El panel informa el motivo y el proyecto queda sin cambios a medias</td></tr><tr><td><strong>El asistente no se puede abrir</strong> — El asistente no se puede abrir</td><td>La instrucción queda disponible para copiarla y se informa el motivo</td></tr><tr><td><strong>Ejecutar un paso ya pasado u omitido</strong> — El equipo quiere ejecutar un paso que ya pasó o que quedó omitido</td><td>Encuentra su acción en el propio paso y puede ejecutarla, o ve el motivo por el que no aplica</td></tr><tr><td><strong>Actualización fallida</strong> — Una actualización no puede completarse</td><td>Se informa el motivo y se conserva la última información válida</td></tr><tr><td><strong>Firma obsoleta</strong> — La especificación cambió después de firmarse</td><td>La presentación lo indica y no muestra la firma como vigente</td></tr><tr><td><strong>Un formato no se puede generar</strong> — El PDF no se puede generar</td><td>Se avisa con el motivo y quedan disponibles el texto fuente y el HTML</td></tr></tbody></table></div>
+<p>En todos estos casos la herramienta explica el motivo y no deja el trabajo a medias: corrige lo que indica y vuelve a intentarlo.</p>
+<h2 id="8-reglas-que-conviene-conocer">8. Reglas que conviene conocer</h2>
+<ul><li><code>BR-EDITOR-001</code> — El panel principal es el único punto de entrada de la herramienta en el editor y reúne, en secciones internas, el resumen, el flujo de los cambios, la trazabilidad, las métricas, los documentos y las acciones; cambiar de sección no abre ventanas nuevas.</li><li><code>BR-EDITOR-002</code> — El panel principal es único: si ya está abierto, pedirlo de nuevo lo reutiliza y activa la sección pedida; nunca se duplica.</li><li><code>BR-EDITOR-003</code> — Las ventanas independientes de matriz, tablero y métricas dejan de existir; su información se consulta en el panel principal.</li><li><code>BR-EDITOR-004</code> — El resumen muestra los indicadores del proyecto (cambios activos, avance de tareas, evidencia y hallazgos) y, por cada cambio activo, su estado, su carril, su avance y su siguiente acción.</li><li><code>BR-EDITOR-005</code> — El resumen solo muestra lo registrado; lo que no existe se indica como ausente, sin inventarlo.</li><li><code>BR-EDITOR-006</code> — Cuando hay puntos que requieren atención (bloqueos, hallazgos o evidencia pendiente), el resumen los destaca con su motivo y la acción sugerida.</li><li><code>BR-EDITOR-007</code> — El flujo muestra las fases del ciclo con los cambios que están en cada una, con su carril, su dominio, su avance de tareas y evidencia y, si lo tienen, su bloqueo.</li><li><code>BR-EDITOR-008</code> — Los filtros del flujo (texto, carril y dominio) acotan lo visible sin alterar los datos ni recargar el panel; el conteo por fase refleja lo filtrado.</li><li><code>BR-EDITOR-009</code> — La trazabilidad muestra cada requisito con sus escenarios, las tareas que los cubren, la evidencia de cada escenario y su procedencia (cambios y fixes), con los huecos primero.</li><li><code>BR-EDITOR-010</code> — Los filtros (texto, estado, dominio, cambio y procedencia) acotan lo visible sin alterar los datos; el conteo refleja lo filtrado.</li><li><code>BR-EDITOR-011</code> — Cada identificador abre su artefacto en la línea exacta dentro del editor.</li><li><code>BR-EDITOR-012</code> — Las métricas se calculan localmente; el panel no envía datos fuera del equipo.</li><li><code>BR-EDITOR-013</code> — Las métricas mostradas son las mismas que ya ofrece la herramienta; el panel no inventa indicadores.</li><li><code>BR-EDITOR-014</code> — El panel ofrece los documentos del cambio (propuesta, especificación, aclaraciones, plan, tareas, verificación, documentación, presentación y fix, cuando existan) y los muestra en su propia sección; los documentos ausentes se indican como tales.</li><li><code>BR-EDITOR-015</code> — Los mockups del cambio se ven dentro del panel, pantalla a pantalla; si el cambio no los declara se indica, y si están desactualizados se avisa.</li><li><code>BR-EDITOR-016</code> — Un documento que no se puede leer se informa con su motivo, sin mostrar contenido incompleto.</li><li><code>BR-EDITOR-017</code> — El panel ofrece las acciones válidas para el estado del proyecto y del cambio activo; las que no aplican no se ofrecen y, si se piden, se explica por qué no aplican.</li><li><code>BR-EDITOR-018</code> — Las acciones humanas (aprobar y archivar) conservan sus reglas: piden quién las ejecuta y quedan auditadas con nombre y fecha.</li><li><code>BR-EDITOR-019</code> — Una acción que falla informa el motivo y no deja el trabajo a medias.</li><li><code>BR-EDITOR-020</code> — Las acciones que requieren un asistente abren el asistente en una terminal del proyecto con la instrucción de la acción ya dirigida; la acción no se ejecuta por sí sola.</li><li><code>BR-EDITOR-021</code> — Si el asistente no se puede abrir, la instrucción queda disponible para copiarla y se informa el motivo.</li><li><code>BR-EDITOR-022</code> — Las acciones se presentan en el orden del ciclo y agrupadas por carril (express, estándar y completo), con el paso actual marcado y el actor de cada paso (asistente, persona o local), de modo que el flujo completo de un cambio se pueda recorrer desde el panel.</li><li><code>BR-EDITOR-023</code> — Crear un cambio desde el panel pide carril, título y dominio, y lo deja en el primer paso del flujo de su carril.</li><li><code>BR-EDITOR-030</code> — Cada paso del flujo ofrece su acción en el propio paso (o explica por qué no aplica); ninguna acción queda escondida detrás de un botón genérico.</li><li><code>BR-EDITOR-021</code> — El panel se actualiza solo cuando cambian los artefactos del proyecto; la sección activa y los filtros en uso se conservan.</li><li><code>BR-EDITOR-022</code> — Sin cambios en el proyecto, el panel no se altera.</li><li><code>BR-EDITOR-023</code> — Una actualización que falla se informa y no deja el panel en un estado incompleto.</li><li><code>BR-EDITOR-024</code> — La presentación reúne, en este orden, la identidad del cambio (nombre, carril, dominio, versión, fecha y huella), el resumen de negocio, la especificación con sus requisitos y escenarios, los mockups y el bloque de firma; con una guía de secciones navegable y sin recursos externos.</li><li><code>BR-EDITOR-025</code> — La presentación se puede imprimir o guardar como PDF con el contenido completo, sin cortes que oculten información y con el bloque de firma en una página propia.</li><li><code>BR-EDITOR-026</code> — La presentación refleja el estado real de la firma: vigente, pendiente u obsoleta cuando la especificación cambió después de firmarse.</li><li><code>BR-EDITOR-027</code> — Cada documento se produce en su texto fuente y en HTML y PDF con el mismo contenido; el PDF se genera localmente, sin servicios externos.</li><li><code>BR-EDITOR-028</code> — Si un formato no se puede generar, se avisa con el motivo y los demás quedan disponibles.</li><li><code>BR-EDITOR-029</code> — Regenerar la documentación actualiza todos sus formatos sin duplicar secciones ni perder lo escrito a mano.</li><li><code>BR-EDITOR-031</code> — El flujo del carril estándar y del completo incluye Revisar (con asistente) y Analizar (local) entre verificar y archivar; cada paso muestra su actor y su acción.</li><li><code>BR-EDITOR-032</code> — La revisión y el análisis se marcan hechos cuando su artefacto existe en el cambio; si no existen, el panel los ofrece como pasos recomendados u opcionales antes de archivar, sin impedir el archivado del carril estándar.</li></ul>
+<h2 id="9-glosario">9. Glosario</h2>
+<ul><li><strong>Panel principal</strong> _(Panel único)_: La única ventana de trabajo de la herramienta en el editor; reúne el resumen, el flujo, la trazabilidad, las métricas, los documentos y las acciones</li><li><strong>Sección</strong> _(Pestaña)_: Cada una de las partes internas del panel principal (Resumen, Flujo, Trazabilidad, Métricas y Documentos)</li><li><strong>Artefacto del cambio</strong> _(Documento)_: Documento del ciclo de un cambio (propuesta, especificación, aclaraciones, plan, tareas, verificación, documentación y presentación)</li><li><strong>Mockup</strong> _(Prototipo visual)_: Contrato visual de la propuesta de un cambio; ilustra la interfaz sin ser funcional</li></ul>
+<h2 id="10-como-se-comprobo">10. Cómo se comprobó</h2>
+<p>Se comprobaron 56 de 56 escenario(s) (52 ejecutable, 4 semiautomático). El detalle, con comandos y resultados, está en la documentación técnica.</p>
+<div class="table-wrap"><table><thead><tr><th>Requisito</th><th>Escenarios</th><th>Con evidencia favorable</th></tr></thead><tbody><tr><td>Un único panel principal reúne el trabajo</td><td>5</td><td>5</td></tr><tr><td>Resumen: salud del proyecto y siguiente acción</td><td>5</td><td>5</td></tr><tr><td>Sección Flujo: el avance de los cambios por fase</td><td>4</td><td>4</td></tr><tr><td>Sección Trazabilidad: requisito, escenario, tarea y evidencia</td><td>5</td><td>5</td></tr><tr><td>Sección Métricas: la salud del proceso</td><td>3</td><td>3</td></tr><tr><td>Documentos y mockups dentro del panel</td><td>6</td><td>6</td></tr><tr><td>Acciones del ciclo desde el panel</td><td>9</td><td>9</td></tr><tr><td>El panel se mantiene al día sin perder el contexto</td><td>4</td><td>4</td></tr><tr><td>La presentación para aprobar</td><td>6</td><td>6</td></tr><tr><td>La documentación en tres formatos</td><td>5</td><td>5</td></tr><tr><td>La revisión y el análisis entran en el flujo</td><td>4</td><td>4</td></tr></tbody></table></div>
+<h2 id="notas">Notas</h2>
+<p>(Escribe aquí lo que quieras conservar entre regeneraciones.)</p>
+</article>
+</body>
+</html>

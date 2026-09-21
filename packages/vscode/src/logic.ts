@@ -1,5 +1,7 @@
 import path from 'node:path'
 import {
+  primaryTarget,
+  type AgentTarget,
   checkTrace,
   computeInputsHash,
   deriveState,
@@ -127,6 +129,7 @@ export interface SnapshotSpec {
 }
 
 export const STATE_PRIORITY: Record<string, number> = {
+  paused: 0,
   awaiting_mockups: 0,
   awaiting_approval: 1,
   spec_draft: 2,
@@ -151,6 +154,7 @@ export interface Snapshot {
   root: string
   projectName: string
   language: Language
+  agent: AgentTarget
   specs: SnapshotSpec[]
   changes: SnapshotChange[]
   fixes: SnapshotFix[]
@@ -287,6 +291,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
     root,
     projectName: config.project.name,
     language: config.project.language,
+    agent: primaryTarget(config),
     specs: workspace.specs.map((spec) => ({
       domain: spec.domain,
       ...(spec.spec.title !== undefined ? { title: spec.spec.title } : {}),
@@ -584,12 +589,10 @@ export function toolGroups(initialized: boolean): ToolGroup[] {
   return [
     {
       id: 'panels',
-      label: 'Paneles',
+      label: 'Panel principal',
       icon: 'window',
       items: [
-        { id: 'matrix', label: 'Matriz de trazabilidad', description: 'requisito → escenario → tarea → evidencia', icon: 'list-tree', command: 'specatlas.matrix' },
-        { id: 'board', label: 'Tablero de cambios', description: 'flujo por fase', icon: 'project', command: 'specatlas.board' },
-        { id: 'metrics', label: 'Métricas locales', description: 'sin telemetría', icon: 'graph', command: 'specatlas.metrics' },
+        { id: 'panel', label: 'Abrir el panel principal', description: 'resumen · flujo · trazabilidad · métricas · documentos · acciones', icon: 'window', command: 'specatlas.panel' },
       ],
     },
     {

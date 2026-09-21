@@ -2,9 +2,13 @@ import { promises as fs } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { archiveChange, collectMetrics, createChange, initWorkspace, signApproval } from '@specatlas/core'
+import { archiveChange, createChange, initWorkspace, signApproval } from '@specatlas/core'
 import { buildMatrix, buildSnapshot, escapeHtml, groupTasksByBlock, previewHtml, sortChanges, toFlat, toolGroups, type SnapshotChange } from '../src/logic'
-import { boardHtml, matrixHtml, metricsHtml } from '../src/panels'
+import { buildPanelModel } from '../src/panel/model'
+import { flujoSection } from '../src/panel/sections/flujo'
+import { trazabilidadSection } from '../src/panel/sections/trazabilidad'
+import { metricasSection } from '../src/panel/sections/metricas'
+import { renderPanelHtml } from '../src/panel/panel'
 
 const DELTA = `# Delta — Restablecer contraseña
 
@@ -194,7 +198,7 @@ describe('orden y estructura del sidebar', () => {
 })
 
 describe('matriz, tablero y métricas', () => {
-  it('buildMatrix detecta huecos de tarea y evidencia', async () => {
+  it('[REQ-EDITOR-004-S1][REQ-EDITOR-004-S3] buildMatrix detecta huecos de tarea y evidencia', async () => {
     const root = await makeWorkspace(true)
     const matrix = await buildMatrix(root)
     expect(matrix.requirements).toHaveLength(1)
@@ -205,59 +209,65 @@ describe('matriz, tablero y métricas', () => {
     const uncovered = await buildMatrix(root)
     expect(uncovered.pendingEvidence).toEqual([])
 
-    const html = matrixHtml(matrix)
-    expect(html).toContain('Cobertura requisito → evidencia')
+    const model = (await buildPanelModel(root))!
+    const html = trazabilidadSection(model).html
+    expect(html).toContain('Matriz')
     expect(html).toContain('command:specatlas.openAt')
     expect(html).toContain('kpi')
     expect(html).toContain('donut')
 
-    const missing = matrixHtml({ requirements: [], uncoveredScenarios: ['REQ-X-001-S1'], pendingEvidence: ['REQ-X-001-S1'], requirementsWithoutTasks: ['REQ-X-001'] })
+    const missing = trazabilidadSection({
+      ...model,
+      matrix: { requirements: [], uncoveredScenarios: ['REQ-X-001-S1'], pendingEvidence: ['REQ-X-001-S1'], requirementsWithoutTasks: ['REQ-X-001'] },
+    }).html
     expect(missing).toContain('Sin requisitos todavía')
   })
 
-  it('boardHtml agrupa por estado con progreso', async () => {
+  it('[REQ-EDITOR-003-S1][REQ-EDITOR-003-S2] la sección de flujo agrupa por fase con progreso', async () => {
     const root = await makeWorkspace(true)
-    const snapshot = await buildSnapshot(root)
-    const html = boardHtml(snapshot!)
+    const model = (await buildPanelModel(root))!
+    const html = flujoSection(model).html
     expect(html).toContain('Listo para archivar')
+    expect(html).toContain('Esperando mockups')
     expect(html).toContain('reset-password')
-    expect(html).toContain('col-head')
+    expect(html).toContain('lane-rail')
     expect(html).toContain('progress')
-    expect(html).toContain('fill="color-mix(in srgb, var(--atlas-ink) 6%, transparent)"')
-    expect(html).toContain('stroke="color-mix(in srgb, var(--atlas-ink) 16%, transparent)"')
-    expect(html).toContain('class="donut-chart"')
-    expect(html).toContain('url(#atlas-donut-')
+    const metrics = metricasSection(model).html
+    expect(metrics).toContain('class="donut-chart"')
+    expect(metrics).toContain('url(#atlas-donut-')
   })
 
-  it('la matriz y el tablero traen filtros listos para usar', async () => {
+  it('[REQ-EDITOR-003-S3][REQ-EDITOR-004-S4] las secciones del panel traen filtros listos para usar', async () => {
     const root = await makeWorkspace(true)
-    const matrix = await buildMatrix(root)
+    const model = await buildPanelModel(root)
+    expect(model).toBeDefined()
+    const matrix = model!.matrix
     const requirement = matrix.requirements[0]!
     expect(requirement.domain).toBe('auth')
     expect(requirement.changes).toContain('reset-password')
 
-    const matrixPage = matrixHtml(matrix, 'nonce1')
-    expect(matrixPage).toContain('id="mq"')
-    expect(matrixPage).toContain('data-group="REQ-AUTH-001"')
-    expect(matrixPage).toMatch(/data-gap="[01]"/)
-    expect(matrixPage).toContain('data-changes="reset-password"')
-    expect(matrixPage).toContain('nonce="nonce1"')
-    expect(matrixPage).toContain('Content-Security-Policy')
-    expect(matrixPage).toContain('data-domain="auth"')
+    const traza = trazabilidadSection(model!)
+    expect(traza.html).toContain('id="mq"')
+    expect(traza.html).toContain('data-group="REQ-AUTH-001"')
+    expect(traza.html).toMatch(/data-gap="[01]"/)
+    expect(traza.html).toContain('data-changes="reset-password"')
+    expect(traza.html).toContain('data-domain="auth"')
 
-    const snapshot = await buildSnapshot(root)
-    const boardPage = boardHtml(snapshot!, 'nonce2')
-    expect(boardPage).toContain('id="bq"')
-    expect(boardPage).toContain('data-count="')
-    expect(boardPage).toContain('data-lane="standard"')
-    expect(boardPage).toContain('nonce="nonce2"')
+    const flujo = flujoSection(model!)
+    expect(flujo.html).toContain('id="fq"')
+    expect(flujo.html).toContain('data-count="')
+    expect(flujo.html).toContain('data-lane="standard"')
+
+    const page = renderPanelHtml(model!, 'flujo', 'nonce2')
+    expect(page).toContain('nonce="nonce2"')
+    expect(page).toContain('Content-Security-Policy')
+    expect(page).toContain('data-section-panel="flujo"')
   })
 
-  it('metricsHtml resume totales, WIP y evidencia', async () => {
+  it('[REQ-EDITOR-005-S1][REQ-EDITOR-005-S2] la sección de métricas resume totales, WIP y evidencia', async () => {
     const root = await makeWorkspace(true)
-    const metrics = await collectMetrics(root)
-    const html = metricsHtml(metrics)
-    expect(html).toContain('Salud del proceso — vscode-demo')
+    const model = await buildPanelModel(root)
+    const html = metricasSection(model!).html
     expect(html).toContain('WIP por estado')
     expect(html).toContain('Evidencia por método')
     expect(html).toContain('manual')
@@ -294,10 +304,10 @@ describe('presentación y diagnósticos', () => {
 })
 
 describe('paneles y acciones del sidebar', () => {
-  it('separa los paneles de las acciones', () => {
+  it('[REQ-EDITOR-001-S1] ofrece el panel principal único y las acciones', () => {
     const groups = toolGroups(true)
-    expect(groups.map((group) => group.label)).toEqual(['Paneles', 'Acciones'])
-    expect(groups[0]!.items.map((item) => item.command)).toEqual(['specatlas.matrix', 'specatlas.board', 'specatlas.metrics'])
+    expect(groups.map((group) => group.label)).toEqual(['Panel principal', 'Acciones'])
+    expect(groups[0]!.items.map((item) => item.command)).toEqual(['specatlas.panel'])
     expect(groups[1]!.items.map((item) => item.command)).toEqual(['specatlas.new', 'specatlas.validate', 'specatlas.ci', 'specatlas.doctor', 'specatlas.adapters'])
     for (const group of groups) {
       expect(group.icon.length, `${group.id} con icono`).toBeGreaterThan(0)
@@ -492,7 +502,7 @@ by: Prueba
     expect(requirement.changes).toContain('reset-password')
     expect(requirement.fixes).toContain('arreglo')
 
-    const html = matrixHtml(matrix)
+    const html = trazabilidadSection((await buildPanelModel(root))!).html
     expect(html).toContain('modificado por reset-password')
     expect(html).toContain('corregido por arreglo')
     expect(html).toContain('data-has-fixes="1"')
@@ -516,6 +526,6 @@ by: Prueba
     const requirement = matrix.requirements.find((r) => r.id === 'REQ-OTRO-001')!
     expect(requirement.changes).toBeUndefined()
     expect(requirement.fixes).toBeUndefined()
-    expect(matrixHtml(matrix)).toContain('sin procedencia registrada')
+    expect(trazabilidadSection((await buildPanelModel(root))!).html).toContain('sin procedencia registrada')
   })
 })

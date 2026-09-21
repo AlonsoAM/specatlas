@@ -12,11 +12,19 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20"
   },
-  "keywords": ["markdown", "highlight", "mermaid", "renderer", "specs"],
+  "keywords": [
+    "markdown",
+    "highlight",
+    "mermaid",
+    "renderer",
+    "specs"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/AlonsoAM/specatlas.git",
@@ -30,6 +38,7 @@
     "build": "tsup src/index.ts --format esm --dts --clean"
   },
   "dependencies": {
-    "highlight.js": "^11.10.0"
+    "highlight.js": "^11.10.0",
+    "pdf-lib": "^1.17.1"
   }
 }

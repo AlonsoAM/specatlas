@@ -71,14 +71,21 @@ function locateBlocks(content: string): BlockLocation[] {
   return blocks
 }
 
+/** Entrecomilla el valor cuando el texto libre rompería el YAML del bloque (dos puntos, almohadillas, comillas…). */
+function yamlScalar(value: string): string {
+  const needsQuotes = /(:\s)|(\s#)|^[\s>|*&!%@`'"[{-]|[:#]$|\s$/.test(value) || value.trim() !== value || value.length === 0
+  if (!needsQuotes) return value
+  return `"${value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+}
+
 function buildEvidenceYaml(evidence: Evidence): string {
   const lines = [`method: ${evidence.method}`]
-  if (evidence.command) lines.push(`command: ${evidence.command}`)
+  if (evidence.command) lines.push(`command: ${yamlScalar(evidence.command)}`)
   lines.push(`result: ${evidence.result}`)
   if (evidence.outputHash) lines.push(`output_hash: ${evidence.outputHash}`)
   lines.push(`date: ${evidence.date}`)
-  lines.push(`by: ${evidence.by}`)
-  if (evidence.notes) lines.push(`notes: ${evidence.notes}`)
+  lines.push(`by: ${yamlScalar(evidence.by)}`)
+  if (evidence.notes) lines.push(`notes: ${yamlScalar(evidence.notes)}`)
   return lines.join('\n')
 }
 

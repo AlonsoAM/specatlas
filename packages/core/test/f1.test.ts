@@ -89,6 +89,24 @@ describe('verify --record (evidencia)', () => {
     expect(content2).toContain('repetido')
   })
 
+  it('una nota con dos puntos no rompe el YAML del bloque de evidencia', async () => {
+    const { root, slug, changeDir } = await makeWorkspace()
+    await recordEvidence({
+      root,
+      slug,
+      scenario: 'REQ-AUTH-001-S1',
+      command: 'node --version',
+      by: 'Ana',
+      allowedPrefixes: ['node'],
+      notes: 'Caso probado: el panel no incrusta el visor',
+    })
+    const change = await loadChange(root, slug)
+    expect(change.verify?.diagnostics.filter((finding) => finding.severity === 'error')).toEqual([])
+    expect(change.verify?.evidence[0]?.notes).toBe('Caso probado: el panel no incrusta el visor')
+    const content = await fs.readFile(path.join(changeDir, 'verify.md'), 'utf8')
+    expect(content).toContain('notes: "Caso probado: el panel no incrusta el visor"')
+  })
+
   it('rechaza comandos no declarados en el perfil', async () => {
     const { root, slug } = await makeWorkspace()
     const result = await recordEvidence({ root, slug, scenario: 'REQ-AUTH-001-S1', command: 'npm test', by: 'Ana', allowedPrefixes: ['pytest'] })

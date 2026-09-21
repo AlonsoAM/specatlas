@@ -34,7 +34,7 @@ describe('renderMarkdown', () => {
     expect(html).toContain('task-item')
     expect(html).toContain('☑')
     expect(html).toContain('task-meta')
-    expect(html).toContain('meta-chip')
+    expect(html).toContain('task-flag')
     expect(html).toContain('Cubre: REQ-X-001-S1')
     expect(html).toContain('<th>A</th>')
     expect(html).toContain('<td>2</td>')

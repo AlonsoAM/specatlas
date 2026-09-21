@@ -167,11 +167,25 @@ hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
 ul, ol { padding-left: 1.4em; }
 li { margin: .25em 0; }
 ul.checklist { list-style: none; padding-left: .2em; }
-ul.checklist > li.task-item { margin: .55em 0; padding: .45em .6em .5em; border: 1px solid color-mix(in srgb, var(--atlas-line) 70%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 55%, transparent); }
-ul.checklist > li.task-item.done { opacity: .72; }
-.task-box { font-size: 14px; margin-right: 4px; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
 .task-title { font-weight: 600; }
-.task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 5px 0 1px 20px; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
 .meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
 .meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
 .meta-chip b { color: var(--atlas-ink); font-weight: 600; }
@@ -270,6 +284,29 @@ function renderToc(entries: TocEntry[], title: string): string {
   return `<nav class="atlas-toc"><h2>${escapeHtml(title)}</h2><ul>${items}</ul></nav>\n`
 }
 
+function evidenceCard(source: string): string {
+  const fields = new Map<string, string>()
+  for (const line of source.split('\n')) {
+    const match = /^([A-Za-z_]+):\s*(.*)$/.exec(line.trim())
+    if (match) fields.set((match[1] ?? '').toLowerCase(), (match[2] ?? '').trim())
+  }
+  const methodLabels: Record<string, string> = { executable: 'ejecutable', automatic: 'automático', semi: 'semi', manual: 'manual' }
+  const method = fields.get('method') ?? 'manual'
+  const result = fields.get('result') ?? 'pendiente'
+  const command = fields.get('command')
+  const hash = fields.get('output_hash')
+  const date = fields.get('date')
+  const by = fields.get('by')
+  const notes = fields.get('notes')
+  const tone = result === 'pass' ? '' : result === 'fail' ? ' bad' : ' warn'
+  return `<div class="evidence-card${tone}">
+  <div class="ec-head"><span class="ec-result">${escapeHtml(result)}</span><span class="ec-method">${escapeHtml(methodLabels[method] ?? method)}</span>${date ? `<span class="ec-date">${escapeHtml(date)}</span>` : ''}</div>
+  ${command ? `<div class="ec-command"><code>${escapeHtml(command)}</code></div>` : ''}
+  ${by || hash ? `<div class="ec-meta">${by ? `por <b>${escapeHtml(by)}</b>` : ''}${by && hash ? ' · ' : ''}${hash ? `salida <code>${escapeHtml(hash)}</code>` : ''}</div>` : ''}
+  ${notes ? `<p class="ec-notes">${inlineMarkdown(notes)}</p>` : ''}
+</div>`
+}
+
 export function renderMarkdown(markdown: string, opts: RenderOptions = {}): string {
   const highlight = opts.highlight !== false
   const mermaidMode = opts.mermaid ?? 'code'
@@ -286,6 +323,13 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
 
   while (i < lines.length) {
     const line = lines[i] ?? ''
+
+    if (/^\s*<!--/.test(line)) {
+      while (i < lines.length && !/-->/.test(lines[i] ?? '')) i += 1
+      i += 1
+      continue
+    }
+
 
     if (/^```/.test(line)) {
       flush()
@@ -316,6 +360,8 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
             `<div class="mermaid-block callout"><pre class="mermaid">${escapeHtml(source)}</pre><p><small>Diagrama mermaid — visible con la vista previa de Markdown del editor.</small></p></div>`,
           )
         }
+      } else if (lang === 'evidence') {
+        out.push(evidenceCard(source))
       } else {
         out.push(highlightCode(source, lang === '' ? undefined : lang, highlight))
       }
@@ -441,7 +487,7 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
         const title = segments.shift() ?? ''
         const meta =
           segments.length > 0
-            ? `<div class="task-meta">${segments.map((segment) => `<span class="meta-chip">${inlineMarkdown(segment)}</span>`).join('')}</div>`
+            ? `<div class="task-meta">${segments.map((segment) => `<span class="task-flag">${inlineMarkdown(segment)}</span>`).join('')}</div>`
             : ''
         items.push(
           `<li class="task-item${done ? ' done' : ''}"><span class="task-box">${done ? '☑' : '☐'}</span> <span class="task-title">${inlineMarkdown(title)}</span>${meta}</li>`,
@@ -492,7 +538,7 @@ export function renderMarkdown(markdown: string, opts: RenderOptions = {}): stri
   return html
 }
 
-const DIAGRAM_TOOLS_SCRIPT = `
+export const DIAGRAM_TOOLS_SCRIPT = `
 (function () {
   var attempts = 0;
   function wire() {
@@ -668,3 +714,7 @@ ${mermaidScript}</body>
 </html>
 `
 }
+
+export { renderPdf, markdownToBlocks, sanitizePdfText } from './pdf.js'
+export type { PdfOptions, PdfResult } from './pdf.js'
+

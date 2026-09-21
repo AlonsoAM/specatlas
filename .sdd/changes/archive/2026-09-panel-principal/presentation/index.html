@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta de cambio — Un panel principal único para la extensión</title>
+<style>:root { color-scheme: light; --bg:#f4f6fa; --card:#ffffff; --elev:#f7f9fc; --line:#dde3ec; --line-soft:#e8ecf3; --ink:#161c2b; --muted:#5a6577; --faint:#8b94a6; --accent:#2f6fe0; --accent-soft:rgba(47,111,224,.10); --ok:#1e9e4b; --warn:#b57812; --bad:#cf3b45; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg:#0d1017; --card:#151a24; --elev:#1b2130; --line:#2a3243; --line-soft:#212938; --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789; --accent:#5b9bff; --accent-soft:rgba(91,155,255,.12); --ok:#46c46a; --warn:#e0a33a; --bad:#f0616a; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4,p { margin:0; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size:.88em; background:var(--elev); border:1px solid var(--line-soft); border-radius:5px; padding:1px 5px; }
+.page { max-width:1180px; margin:0 auto; padding:26px 20px 80px; display:grid; grid-template-columns:230px 1fr; gap:26px; }
+.toc { position:sticky; top:20px; align-self:start; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:14px; }
+.toc h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--faint); margin-bottom:10px; }
+.toc ol { margin:0; padding-left:18px; color:var(--muted); font-size:13px; display:flex; flex-direction:column; gap:7px; }
+.toc a { color:var(--muted); }
+.toc a:hover { color:var(--ink); }
+.toc .toc-actions { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+.doc { min-width:0; display:flex; flex-direction:column; gap:22px; }
+section.card { border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden; }
+.card-head { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; padding:16px 20px; border-bottom:1px solid var(--line-soft); }
+.card-head .num { font-family: ui-monospace, Consolas, monospace; font-size:12px; color:var(--faint); }
+.card-head h2 { font-size:19px; letter-spacing:-.01em; }
+.card-head .sub { color:var(--faint); font-size:12.5px; margin-left:auto; }
+.card-body { padding:18px 20px; }
+.cover { padding:26px 24px; }
+.cover .brand { display:flex; align-items:center; gap:12px; color:var(--accent); }
+.cover .kicker { font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.cover h1 { font-size:30px; line-height:1.15; letter-spacing:-.02em; margin:10px 0 6px; }
+.cover .lead { color:var(--muted); max-width:64ch; }
+.meta-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; border:1px solid var(--line); background:var(--elev); color:var(--muted); font-size:12px; }
+.chip b { color:var(--ink); font-weight:600; }
+.cover-foot { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+.sign-state { border:1px solid var(--warn); background:color-mix(in srgb, var(--warn) 10%, transparent); border-radius:8px; padding:12px 14px; }
+.sign-state.ok { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 10%, transparent); }
+.sign-state.stale { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 10%, transparent); }
+.sign-state .ss-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.sign-state b { display:block; font-size:14.5px; margin:3px 0; }
+.sign-state p { color:var(--muted); font-size:12.5px; }
+.hash-box { border:1px solid var(--line); background:var(--elev); border-radius:8px; padding:12px 14px; }
+.hash-box .hb-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); }
+.hash-box code { display:block; border:0; background:transparent; padding:0; margin-top:6px; word-break:break-all; }
+.callout { border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--elev); border-radius:8px; padding:12px 14px; color:var(--muted); font-size:13px; }
+.callout.warn { border-left-color:var(--warn); background:color-mix(in srgb, var(--warn) 9%, transparent); }
+.callout.bad { border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 9%, transparent); }
+.callout.ok { border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 9%, transparent); }
+.req { border-top:1px solid var(--line-soft); padding-top:14px; margin-top:14px; }
+.req:first-of-type { border-top:0; margin-top:0; padding-top:0; }
+.req h3 { font-size:15px; }
+.req .req-id { font-family: ui-monospace, Consolas, monospace; font-size:12.5px; color:var(--accent); }
+.req p { color:var(--muted); font-size:13.5px; margin-top:6px; }
+.req ul { margin:8px 0 0 18px; padding:0; color:var(--muted); font-size:13.5px; }
+.scn { border-left:3px solid var(--accent); background:var(--elev); border-radius:6px; padding:9px 12px; margin-top:10px; }
+.scn b { font-size:13px; }
+.scn .steps { margin-top:5px; color:var(--muted); font-size:13px; }
+.scn .steps span { display:block; }
+.scn .steps b { color:var(--ink); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { border:1px solid var(--line-soft); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--elev); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.pill { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+.pill.pass { color:var(--ok); border-color:var(--ok); }
+.pill.fail { color:var(--bad); border-color:var(--bad); }
+.pill.pending, .pill.skipped { color:var(--warn); border-color:var(--warn); }
+.mockups { display:grid; gap:18px; }
+.mockup { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+.mockup header { padding:10px 14px; border-bottom:1px solid var(--line-soft); font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.mockup header .btn { min-height:28px; padding:0 10px; font-size:12px; }
+.mockup-body { padding:12px 14px; display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12.5px; }
+.mockup-file { font-family: ui-monospace, Consolas, monospace; }
+.mockup iframe { width:100%; height:560px; border:0; background:white; display:block; }
+.mockup.phone iframe { max-width:420px; margin:0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:12px; }
+.grid-shots img { width:100%; border:1px solid var(--line); border-radius:10px; }
+.signature { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.sign-line { border:1px dashed var(--accent); border-radius:8px; padding:16px; background:var(--accent-soft); }
+.sign-line .sl-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:0 0 6px; margin-bottom:18px; color:var(--muted); font-size:12.5px; }
+.sign-line .sl-row:last-child { border-bottom:0; margin-bottom:0; padding-top:14px; }
+.sign-help { color:var(--muted); font-size:12.5px; }
+.btn { display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 14px; border-radius:8px; border:1px solid var(--line); background:var(--elev); color:var(--ink); cursor:pointer; font:inherit; font-size:12.5px; text-decoration:none; }
+.btn.primary { background:var(--accent); border-color:transparent; color:#fff; }
+.footer { color:var(--faint); font-size:11.5px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px; }
+@media (max-width: 1000px) { .page { grid-template-columns:1fr; padding:18px 14px 60px; } .toc { position:static; order:-1; } .cover-foot, .signature { grid-template-columns:1fr; } .cover h1 { font-size:24px; } }
+@media print {
+  @page { size:A4; margin:16mm; }
+  :root { --bg:#fff; --card:#fff; --elev:#fafafa; --line:#ccc; --line-soft:#e2e2e2; --ink:#111; --muted:#444; --faint:#666; --accent:#111; --accent-soft:#f3f3f3; }
+  body { background:#fff; font-size:12px; }
+  .page { display:block; max-width:none; padding:0; }
+  .toc, .btn { display:none !important; }
+  section.card { break-inside:avoid; border-color:#ccc; }
+  .cover { break-after:page; }
+  #mockups { break-before:page; }
+  #firma { break-before:page; }
+  .sign-line { background:#fff; }
+}</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc" aria-label="Contenido">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#identidad">Identidad del cambio</a></li>
+      <li><a href="#resumen">Resumen de negocio</a></li>
+      <li><a href="#especificacion">Especificación</a></li>
+      <li><a href="#criterios">Criterios de aceptación</a></li>
+      <li><a href="#mockups">Mockups</a></li>
+      <li><a href="#firma">Firma de aprobación</a></li>
+    </ol>
+    <div class="toc-actions">
+      <button type="button" class="btn primary" onclick="window.print()">⎙ Imprimir / Guardar PDF</button>
+      <span style="color:var(--faint);font-size:11.5px">Se imprime desde el propio navegador; sin servicios externos.</span>
+    </div>
+  </aside>
+
+  <main class="doc">
+    <section class="card cover" id="identidad">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" opacity=".5"></path>
+          <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"></path>
+          <circle cx="7.2" cy="14.8" r="1.5" fill="currentColor" stroke="none"></circle>
+          <circle cx="16.6" cy="7.3" r="1.5" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <div>
+          <p class="kicker">SpecAtlas · Propuesta de cambio</p>
+          <p style="color:var(--muted);font-size:12.5px">SpecAtlas</p>
+        </div>
+      </div>
+      <h1>Un panel principal único para la extensión</h1>
+      <p class="lead">Esta presentación reúne la propuesta, la especificación y el contrato visual del cambio <b>panel-principal</b> para su revisión y firma.</p>
+      <div class="meta-chips">
+        <span class="chip">cambio <b>panel-principal</b></span>
+        <span class="chip">carril <b>standard</b></span>
+        <span class="chip">dominio <b>editor</b></span>
+        <span class="chip">requisitos <b>11</b></span>
+        <span class="chip">escenarios <b>56</b></span>
+        <span class="chip">evidencia <b>56/56</b></span>
+        <span class="chip">mockups <b>9</b></span>
+        <span class="chip">Generado <b>2026-09-21 11:14:45 -05:00</b></span>
+      </div>
+      <div class="cover-foot">
+        <div class="sign-state ok"><span class="ss-label">Firma de aprobación</span><b>Aprobada por Alonso Anchante el 2026-09-20 22:41:11 -05:00. Cualquier cambio posterior invalida la firma.</b></div>
+        <div class="hash-box">
+          <span class="hb-label">Huella</span>
+          <code>sha256:5f7626ce52eedbcd736df2a3696df10e10f0f836f7af884ca72ad1234f102846</code>
+          <p style="color:var(--muted);font-size:12px;margin-top:8px">La firma se registra con la huella de la especificación y la fecha.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="resumen">
+      <div class="card-head"><span class="num">01</span><h2>Resumen de negocio</h2></div>
+      <div class="card-body"><h1 id="propuesta-un-panel-principal-unico-para-la-extension">Propuesta — Un panel principal único para la extensión</h1>
+<h2 id="por-que">Por qué</h2>
+<p>Hoy la herramienta reparte su información en ventanas separadas (matriz de trazabilidad, tablero y métricas) más las vistas de documentos y mockups. Quien trabaja en un cambio debe abrir una ventana por tema, alternar entre ellas y pierde el hilo de lo que está haciendo.</p>
+<p>Como responsable de un cambio, quiero un único panel principal que reúna el estado, el flujo, la trazabilidad, las métricas, los documentos y las acciones, para trabajar sin dispersarme y tener un solo lugar donde mirar.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<ul><li>Un <strong>panel principal único</strong> con secciones internas: Resumen, Flujo, Trazabilidad, Métricas y Documentos.</li><li>Las <strong>acciones del ciclo</strong> (crear, validar, diagnosticar, compilar adaptadores, verificar, aprobar, archivar, mockups) se ofrecen desde el panel según el estado del proyecto y del cambio activo, con las mismas reglas y auditoría que ya existen.</li><li>Los <strong>documentos del cambio y sus mockups</strong> se leen dentro del panel, sin ventanas adicionales.</li><li>El panel <strong>se mantiene al día</strong> solo (refleja lo hecho desde la terminal o el asistente) y conserva la sección y los filtros en uso.</li><li><strong>Desaparecen las ventanas independientes</strong> de matriz, tablero y métricas: su información pasa al panel principal.</li></ul>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>No cambia el motor de la herramienta ni los comandos de terminal: la información, los cálculos y las reglas son los mismos.</li><li>No se rediseña la vista lateral (el árbol) ni sus grupos.</li><li>No se añaden indicadores nuevos ni se modifican los cálculos existentes.</li><li>No se cambia el comportamiento de las acciones (aprobación, archivado, evidencia): solo su punto de acceso.</li><li>No se soportan otros editores distintos del actual.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Toda la información de la herramienta se consulta en una sola ventana: cero ventanas independientes de matriz, tablero o métricas.</li><li>Cada sección del panel queda a un clic, y cambiar de sección no abre ventanas nuevas.</li><li>Los cambios hechos fuera del panel se ven sin recargar y sin perder la sección ni los filtros.</li><li>Las acciones conservan su auditoría (nombre y fecha) y sus bloqueos por estado.</li><li>La trazabilidad y las métricas del panel muestran los mismos datos que la terminal.</li></ul></div>
+    </section>
+
+    <section class="card" id="especificacion">
+      <div class="card-head"><span class="num">02</span><h2>Especificación</h2><span class="sub">11 requisito(s) · 56 escenario(s)</span></div>
+      <div class="card-body"><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-001</span> — Un único panel principal reúne el trabajo <span class="pill">agregado</span></h3>
+  <p>El equipo necesita un solo punto de entrada en el editor: hoy el estado, el flujo de los cambios, la trazabilidad y las métricas viven en ventanas separadas, hay que abrir una para cada tema y el trabajo queda disperso. Un panel principal único, con secciones internas, reúne la información y las acciones en un mismo lugar.</p>
+  <ul><li><code>BR-EDITOR-001</code> — El panel principal es el único punto de entrada de la herramienta en el editor y reúne, en secciones internas, el resumen, el flujo de los cambios, la trazabilidad, las métricas, los documentos y las acciones; cambiar de sección no abre ventanas nuevas.</li><li><code>BR-EDITOR-002</code> — El panel principal es único: si ya está abierto, pedirlo de nuevo lo reutiliza y activa la sección pedida; nunca se duplica.</li><li><code>BR-EDITOR-003</code> — Las ventanas independientes de matriz, tablero y métricas dejan de existir; su información se consulta en el panel principal.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-001-S1 — Abrir el panel principal</b><div class="steps"><span><b>CUANDO</b> el equipo abre la herramienta desde su punto de entrada</span><span><b>ENTONCES</b> se abre una única ventana con la sección de resumen activa y el estado del proyecto</span></div></div><div class="scn"><b>REQ-EDITOR-001-S2 — Cambiar de sección</b><div class="steps"><span><b>CUANDO</b> el equipo elige otra sección del panel</span><span><b>ENTONCES</b> su contenido reemplaza al anterior en la misma ventana, sin abrir otra</span></div></div><div class="scn"><b>REQ-EDITOR-001-S3 — El panel ya estaba abierto</b><div class="steps"><span><b>CUANDO</b> se pide abrir el panel o una de sus secciones con el panel ya abierto</span><span><b>ENTONCES</b> se reutiliza la ventana existente y la sección pedida queda activa</span></div></div><div class="scn"><b>REQ-EDITOR-001-S4 — Proyecto sin inicializar</b><div class="steps"><span><b>CUANDO</b> el proyecto no está inicializado</span><span><b>ENTONCES</b> el panel lo indica y ofrece la acción de inicializar, sin mostrar secciones con datos inexistentes</span></div></div><div class="scn"><b>REQ-EDITOR-001-S5 — Sin proyecto abierto</b><div class="steps"><span><b>CUANDO</b> no hay una carpeta de proyecto abierta</span><span><b>ENTONCES</b> el panel lo indica y no ofrece acciones que requieran proyecto</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-002</span> — Resumen: salud del proyecto y siguiente acción <span class="pill">agregado</span></h3>
+  <p>El equipo necesita, al abrir la herramienta, saber de un vistazo cómo está el proyecto y qué hacer ahora, sin interpretar datos por su cuenta.</p>
+  <ul><li><code>BR-EDITOR-004</code> — El resumen muestra los indicadores del proyecto (cambios activos, avance de tareas, evidencia y hallazgos) y, por cada cambio activo, su estado, su carril, su avance y su siguiente acción.</li><li><code>BR-EDITOR-005</code> — El resumen solo muestra lo registrado; lo que no existe se indica como ausente, sin inventarlo.</li><li><code>BR-EDITOR-006</code> — Cuando hay puntos que requieren atención (bloqueos, hallazgos o evidencia pendiente), el resumen los destaca con su motivo y la acción sugerida.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-002-S1 — Proyecto con cambios activos</b><div class="steps"><span><b>CUANDO</b> se abre el resumen y hay cambios activos</span><span><b>ENTONCES</b> se muestran los indicadores del proyecto y cada cambio con su estado, su carril, su avance y su siguiente acción</span></div></div><div class="scn"><b>REQ-EDITOR-002-S2 — Proyecto al día</b><div class="steps"><span><b>CUANDO</b> no hay bloqueos, hallazgos ni evidencia pendiente</span><span><b>ENTONCES</b> el resumen lo indica de forma expresa</span></div></div><div class="scn"><b>REQ-EDITOR-002-S3 — Puntos que requieren atención</b><div class="steps"><span><b>CUANDO</b> hay bloqueos, hallazgos o evidencia pendiente</span><span><b>ENTONCES</b> el resumen los destaca con su motivo y la acción que los atiende</span></div></div><div class="scn"><b>REQ-EDITOR-002-S4 — Proyecto sin cambios activos</b><div class="steps"><span><b>CUANDO</b> no hay cambios activos</span><span><b>ENTONCES</b> el resumen lo indica y ofrece crear uno</span></div></div><div class="scn"><b>REQ-EDITOR-002-S5 — Proyecto sin historial</b><div class="steps"><span><b>CUANDO</b> el proyecto no tiene cambios archivados</span><span><b>ENTONCES</b> el resumen lo indica sin presentar datos de archivo</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-003</span> — Sección Flujo: el avance de los cambios por fase <span class="pill">agregado</span></h3>
+  <p>El equipo necesita seguir el avance de cada cambio por las fases del ciclo desde el panel principal, sin abrir el tablero aparte.</p>
+  <ul><li><code>BR-EDITOR-007</code> — El flujo muestra las fases del ciclo con los cambios que están en cada una, con su carril, su dominio, su avance de tareas y evidencia y, si lo tienen, su bloqueo.</li><li><code>BR-EDITOR-008</code> — Los filtros del flujo (texto, carril y dominio) acotan lo visible sin alterar los datos ni recargar el panel; el conteo por fase refleja lo filtrado.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-003-S1 — Cambios en distintas fases</b><div class="steps"><span><b>CUANDO</b> se abre el flujo y hay cambios activos</span><span><b>ENTONCES</b> cada uno aparece en la fase que le corresponde con su avance y su siguiente acción</span></div></div><div class="scn"><b>REQ-EDITOR-003-S2 — Cambio bloqueado</b><div class="steps"><span><b>CUANDO</b> un cambio tiene un bloqueo</span><span><b>ENTONCES</b> aparece con el motivo del bloqueo</span></div></div><div class="scn"><b>REQ-EDITOR-003-S3 — Filtros del flujo</b><div class="steps"><span><b>CUANDO</b> el equipo filtra por texto, carril o dominio</span><span><b>ENTONCES</b> solo quedan visibles los cambios que cumplen el filtro y los conteos por fase se ajustan, sin alterar los datos</span></div></div><div class="scn"><b>REQ-EDITOR-003-S4 — Proyecto sin cambios activos</b><div class="steps"><span><b>CUANDO</b> no hay cambios activos</span><span><b>ENTONCES</b> el flujo lo indica y no muestra fases con datos inexistentes</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-004</span> — Sección Trazabilidad: requisito, escenario, tarea y evidencia <span class="pill">agregado</span></h3>
+  <p>El equipo necesita comprobar la trazabilidad completa desde el panel principal, con los huecos primero, sin abrir la matriz aparte.</p>
+  <ul><li><code>BR-EDITOR-009</code> — La trazabilidad muestra cada requisito con sus escenarios, las tareas que los cubren, la evidencia de cada escenario y su procedencia (cambios y fixes), con los huecos primero.</li><li><code>BR-EDITOR-010</code> — Los filtros (texto, estado, dominio, cambio y procedencia) acotan lo visible sin alterar los datos; el conteo refleja lo filtrado.</li><li><code>BR-EDITOR-011</code> — Cada identificador abre su artefacto en la línea exacta dentro del editor.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-004-S1 — Requisito con huecos</b><div class="steps"><span><b>CUANDO</b> hay escenarios sin tarea o sin evidencia</span><span><b>ENTONCES</b> aparecen primero y se distinguen de los verificados</span></div></div><div class="scn"><b>REQ-EDITOR-004-S2 — Todo verificado</b><div class="steps"><span><b>CUANDO</b> todos los escenarios tienen tarea y evidencia favorable</span><span><b>ENTONCES</b> la sección lo indica de forma expresa</span></div></div><div class="scn"><b>REQ-EDITOR-004-S3 — Sin requisitos</b><div class="steps"><span><b>CUANDO</b> el proyecto no tiene requisitos</span><span><b>ENTONCES</b> la sección lo indica y señala cómo empezar</span></div></div><div class="scn"><b>REQ-EDITOR-004-S4 — Filtros de la trazabilidad</b><div class="steps"><span><b>CUANDO</b> el equipo filtra por texto, estado, dominio, cambio o procedencia</span><span><b>ENTONCES</b> solo quedan visibles los requisitos que cumplen el filtro y el conteo lo refleja</span></div></div><div class="scn"><b>REQ-EDITOR-004-S5 — Abrir un identificador</b><div class="steps"><span><b>CUANDO</b> el equipo elige un identificador de requisito o de escenario</span><span><b>ENTONCES</b> se abre su artefacto en la línea correspondiente, sin abrir ventanas adicionales del panel</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-005</span> — Sección Métricas: la salud del proceso <span class="pill">agregado</span></h3>
+  <p>El equipo necesita las métricas del proceso (evidencia, cierres por mes, antigüedad del trabajo, distribución por carril, trabajo en curso y puntos de atención) dentro del panel principal.</p>
+  <ul><li><code>BR-EDITOR-012</code> — Las métricas se calculan localmente; el panel no envía datos fuera del equipo.</li><li><code>BR-EDITOR-013</code> — Las métricas mostradas son las mismas que ya ofrece la herramienta; el panel no inventa indicadores.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-005-S1 — Proyecto con actividad</b><div class="steps"><span><b>CUANDO</b> se abre la sección de métricas y hay actividad</span><span><b>ENTONCES</b> se muestran la evidencia, los cierres por mes, la antigüedad del trabajo en curso, la distribución por carril y el trabajo por fase</span></div></div><div class="scn"><b>REQ-EDITOR-005-S2 — Puntos de atención</b><div class="steps"><span><b>CUANDO</b> hay bloqueos, trabajo antiguo o evidencia pendiente</span><span><b>ENTONCES</b> se listan con su motivo</span></div></div><div class="scn"><b>REQ-EDITOR-005-S3 — Proyecto sin actividad</b><div class="steps"><span><b>CUANDO</b> no hay cambios ni archivos</span><span><b>ENTONCES</b> la sección lo indica sin presentar indicadores inexistentes</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-006</span> — Documentos y mockups dentro del panel <span class="pill">agregado</span></h3>
+  <p>El equipo necesita leer los documentos del cambio y ver sus mockups dentro del panel, sin abrir ventanas adicionales ni perder el contexto.</p>
+  <ul><li><code>BR-EDITOR-014</code> — El panel ofrece los documentos del cambio (propuesta, especificación, aclaraciones, plan, tareas, verificación, documentación, presentación y fix, cuando existan) y los muestra en su propia sección; los documentos ausentes se indican como tales.</li><li><code>BR-EDITOR-015</code> — Los mockups del cambio se ven dentro del panel, pantalla a pantalla; si el cambio no los declara se indica, y si están desactualizados se avisa.</li><li><code>BR-EDITOR-016</code> — Un documento que no se puede leer se informa con su motivo, sin mostrar contenido incompleto.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-006-S1 — Abrir un documento del cambio</b><div class="steps"><span><b>CUANDO</b> el equipo elige un documento existente del cambio</span><span><b>ENTONCES</b> su contenido se muestra en el panel</span></div></div><div class="scn"><b>REQ-EDITOR-006-S2 — Documento ausente</b><div class="steps"><span><b>CUANDO</b> el equipo elige un documento que aún no existe</span><span><b>ENTONCES</b> se indica que no existe y cuál es la acción que lo produce</span></div></div><div class="scn"><b>REQ-EDITOR-006-S3 — Mockups del cambio</b><div class="steps"><span><b>CUANDO</b> el cambio declara mockups existentes</span><span><b>ENTONCES</b> se ven en el panel, pantalla a pantalla</span></div></div><div class="scn"><b>REQ-EDITOR-006-S4 — Cambio sin mockups</b><div class="steps"><span><b>CUANDO</b> el cambio no declara mockups</span><span><b>ENTONCES</b> se indica y no se muestra contenido de ejemplo</span></div></div><div class="scn"><b>REQ-EDITOR-006-S5 — Mockups desactualizados</b><div class="steps"><span><b>CUANDO</b> los mockups cambiaron respecto de la especificación</span><span><b>ENTONCES</b> se avisa que están desactualizados</span></div></div><div class="scn"><b>REQ-EDITOR-006-S6 — Documento ilegible</b><div class="steps"><span><b>CUANDO</b> un documento no se puede leer</span><span><b>ENTONCES</b> se informa el motivo y no se muestra contenido parcial</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-007</span> — Acciones del ciclo desde el panel <span class="pill">agregado</span></h3>
+  <p>El equipo necesita ejecutar desde el panel las acciones del ciclo, con las mismas reglas y registros que ya rigen la herramienta.</p>
+  <ul><li><code>BR-EDITOR-017</code> — El panel ofrece las acciones válidas para el estado del proyecto y del cambio activo; las que no aplican no se ofrecen y, si se piden, se explica por qué no aplican.</li><li><code>BR-EDITOR-018</code> — Las acciones humanas (aprobar y archivar) conservan sus reglas: piden quién las ejecuta y quedan auditadas con nombre y fecha.</li><li><code>BR-EDITOR-019</code> — Una acción que falla informa el motivo y no deja el trabajo a medias.</li><li><code>BR-EDITOR-020</code> — Las acciones que requieren un asistente abren el asistente en una terminal del proyecto con la instrucción de la acción ya dirigida; la acción no se ejecuta por sí sola.</li><li><code>BR-EDITOR-021</code> — Si el asistente no se puede abrir, la instrucción queda disponible para copiarla y se informa el motivo.</li><li><code>BR-EDITOR-022</code> — Las acciones se presentan en el orden del ciclo y agrupadas por carril (express, estándar y completo), con el paso actual marcado y el actor de cada paso (asistente, persona o local), de modo que el flujo completo de un cambio se pueda recorrer desde el panel.</li><li><code>BR-EDITOR-023</code> — Crear un cambio desde el panel pide carril, título y dominio, y lo deja en el primer paso del flujo de su carril.</li><li><code>BR-EDITOR-030</code> — Cada paso del flujo ofrece su acción en el propio paso (o explica por qué no aplica); ninguna acción queda escondida detrás de un botón genérico.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-007-S1 — Acción válida</b><div class="steps"><span><b>CUANDO</b> el equipo ejecuta desde el panel una acción válida para el estado</span><span><b>ENTONCES</b> la acción se ejecuta y su resultado se refleja en el panel</span></div></div><div class="scn"><b>REQ-EDITOR-007-S2 — Acción no válida</b><div class="steps"><span><b>CUANDO</b> el equipo pide una acción que no aplica al estado</span><span><b>ENTONCES</b> el panel explica por qué no aplica y no la ejecuta</span></div></div><div class="scn"><b>REQ-EDITOR-007-S3 — Acción humana sin nombre</b><div class="steps"><span><b>CUANDO</b> una acción humana se pide sin indicar quién la ejecuta</span><span><b>ENTONCES</b> no se ejecuta y se pide el nombre</span></div></div><div class="scn"><b>REQ-EDITOR-007-S4 — Acción que falla</b><div class="steps"><span><b>CUANDO</b> una acción falla</span><span><b>ENTONCES</b> el panel informa el motivo y el proyecto queda sin cambios a medias</span></div></div><div class="scn"><b>REQ-EDITOR-007-S5 — Acción con asistente</b><div class="steps"><span><b>CUANDO</b> el equipo pide una acción que requiere un asistente</span><span><b>ENTONCES</b> se abre el asistente en una terminal del proyecto con la instrucción de esa acción ya dirigida</span></div></div><div class="scn"><b>REQ-EDITOR-007-S6 — El asistente no se puede abrir</b><div class="steps"><span><b>CUANDO</b> el asistente no se puede abrir</span><span><b>ENTONCES</b> la instrucción queda disponible para copiarla y se informa el motivo</span></div></div><div class="scn"><b>REQ-EDITOR-007-S7 — El flujo completo, en orden y por carril</b><div class="steps"><span><b>CUANDO</b> el equipo abre la sección de acciones</span><span><b>ENTONCES</b> ve los pasos del ciclo en orden, agrupados por carril, con el paso actual marcado y el actor de cada paso</span></div></div><div class="scn"><b>REQ-EDITOR-007-S8 — Crear un cambio desde el panel</b><div class="steps"><span><b>CUANDO</b> el equipo crea un cambio desde el panel</span><span><b>ENTONCES</b> el panel pide carril, título y dominio, y el cambio queda en el primer paso del flujo de su carril</span></div></div><div class="scn"><b>REQ-EDITOR-007-S9 — Ejecutar un paso ya pasado u omitido</b><div class="steps"><span><b>CUANDO</b> el equipo quiere ejecutar un paso que ya pasó o que quedó omitido</span><span><b>ENTONCES</b> encuentra su acción en el propio paso y puede ejecutarla, o ve el motivo por el que no aplica</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-008</span> — El panel se mantiene al día sin perder el contexto <span class="pill">agregado</span></h3>
+  <p>El equipo necesita que el panel refleje los cambios hechos desde la terminal o el asistente sin recargarlo a mano y sin perder dónde estaba.</p>
+  <ul><li><code>BR-EDITOR-021</code> — El panel se actualiza solo cuando cambian los artefactos del proyecto; la sección activa y los filtros en uso se conservan.</li><li><code>BR-EDITOR-022</code> — Sin cambios en el proyecto, el panel no se altera.</li><li><code>BR-EDITOR-023</code> — Una actualización que falla se informa y no deja el panel en un estado incompleto.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-008-S1 — Cambio hecho fuera del panel</b><div class="steps"><span><b>CUANDO</b> los artefactos cambian desde la terminal o el asistente</span><span><b>ENTONCES</b> el panel lo refleja sin intervención del equipo</span></div></div><div class="scn"><b>REQ-EDITOR-008-S2 — Contexto conservado</b><div class="steps"><span><b>CUANDO</b> el panel se actualiza</span><span><b>ENTONCES</b> la sección activa y los filtros en uso se conservan</span></div></div><div class="scn"><b>REQ-EDITOR-008-S3 — Sin cambios</b><div class="steps"><span><b>CUANDO</b> nada cambia en el proyecto</span><span><b>ENTONCES</b> el panel permanece igual</span></div></div><div class="scn"><b>REQ-EDITOR-008-S4 — Actualización fallida</b><div class="steps"><span><b>CUANDO</b> una actualización no puede completarse</span><span><b>ENTONCES</b> se informa el motivo y se conserva la última información válida</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-009</span> — La presentación para aprobar <span class="pill">agregado</span></h3>
+  <p>El equipo necesita una página de presentación que reúna lo que se va a aprobar —la propuesta, la especificación y los mockups— con un diseño legible y navegable, porque la presentación actual no invita a leer ni a firmar y la aprobación es un acto humano.</p>
+  <ul><li><code>BR-EDITOR-024</code> — La presentación reúne, en este orden, la identidad del cambio (nombre, carril, dominio, versión, fecha y huella), el resumen de negocio, la especificación con sus requisitos y escenarios, los mockups y el bloque de firma; con una guía de secciones navegable y sin recursos externos.</li><li><code>BR-EDITOR-025</code> — La presentación se puede imprimir o guardar como PDF con el contenido completo, sin cortes que oculten información y con el bloque de firma en una página propia.</li><li><code>BR-EDITOR-026</code> — La presentación refleja el estado real de la firma: vigente, pendiente u obsoleta cuando la especificación cambió después de firmarse.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-009-S1 — Presentación completa</b><div class="steps"><span><b>CUANDO</b> se presenta un cambio que tiene propuesta, especificación y mockups</span><span><b>ENTONCES</b> la página los reúne en el orden esperado, con una guía de secciones navegable y el bloque de firma visible</span></div></div><div class="scn"><b>REQ-EDITOR-009-S2 — Cambio sin mockups</b><div class="steps"><span><b>CUANDO</b> el cambio no declara mockups</span><span><b>ENTONCES</b> la presentación lo indica y no deja la sección vacía</span></div></div><div class="scn"><b>REQ-EDITOR-009-S3 — Cambio sin propuesta</b><div class="steps"><span><b>CUANDO</b> el cambio no tiene propuesta escrita</span><span><b>ENTONCES</b> la presentación lo indica y sigue mostrando la especificación y los mockups</span></div></div><div class="scn"><b>REQ-EDITOR-009-S4 — Imprimir o guardar como PDF</b><div class="steps"><span><b>CUANDO</b> el equipo imprime la presentación o la guarda como PDF</span><span><b>ENTONCES</b> el contenido sale completo, con los mockups visibles y el bloque de firma en una página propia</span></div></div><div class="scn"><b>REQ-EDITOR-009-S5 — Firma obsoleta</b><div class="steps"><span><b>CUANDO</b> la especificación cambió después de firmarse</span><span><b>ENTONCES</b> la presentación lo indica y no muestra la firma como vigente</span></div></div><div class="scn"><b>REQ-EDITOR-009-S6 — Mockup declarado que falta</b><div class="steps"><span><b>CUANDO</b> un mockup declarado no existe al generar la presentación</span><span><b>ENTONCES</b> se avisa del faltante y la presentación sigue siendo válida</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-010</span> — La documentación en tres formatos <span class="pill">agregado</span></h3>
+  <p>El equipo necesita que los documentos técnico y manual salgan además del texto fuente en HTML y PDF, para entregarlos a quien no trabaja en el repositorio sin depender de herramientas externas.</p>
+  <ul><li><code>BR-EDITOR-027</code> — Cada documento se produce en su texto fuente y en HTML y PDF con el mismo contenido; el PDF se genera localmente, sin servicios externos.</li><li><code>BR-EDITOR-028</code> — Si un formato no se puede generar, se avisa con el motivo y los demás quedan disponibles.</li><li><code>BR-EDITOR-029</code> — Regenerar la documentación actualiza todos sus formatos sin duplicar secciones ni perder lo escrito a mano.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-010-S1 — Los dos documentos en todos los formatos</b><div class="steps"><span><b>CUANDO</b> el equipo documenta un cambio pidiendo los dos documentos</span><span><b>ENTONCES</b> quedan el técnico y el manual en texto fuente, HTML y PDF, con el mismo contenido</span></div></div><div class="scn"><b>REQ-EDITOR-010-S2 — Un solo documento</b><div class="steps"><span><b>CUANDO</b> el equipo pide solo uno de los dos documentos</span><span><b>ENTONCES</b> se generan sus formatos y el otro documento no se toca</span></div></div><div class="scn"><b>REQ-EDITOR-010-S3 — Un formato no se puede generar</b><div class="steps"><span><b>CUANDO</b> el PDF no se puede generar</span><span><b>ENTONCES</b> se avisa con el motivo y quedan disponibles el texto fuente y el HTML</span></div></div><div class="scn"><b>REQ-EDITOR-010-S4 — Regenerar la documentación</b><div class="steps"><span><b>CUANDO</b> se vuelve a documentar un cambio ya documentado</span><span><b>ENTONCES</b> todos sus formatos se actualizan sin duplicar secciones ni perder lo escrito a mano</span></div></div><div class="scn"><b>REQ-EDITOR-010-S5 — Documentación sin evidencia</b><div class="steps"><span><b>CUANDO</b> el cambio aún no tiene evidencia registrada</span><span><b>ENTONCES</b> los formatos se generan igualmente y señalan lo que queda pendiente, sin inventarlo</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-EDITOR-011</span> — La revisión y el análisis entran en el flujo <span class="pill">agregado</span></h3>
+  <p>El equipo necesita que el flujo no salte de la verificación al archivo: la revisión de código y el análisis del cambio deben ser pasos visibles del ciclo, con su acción en el panel y su artefacto en el cambio, aunque no bloqueen el archivado en el carril estándar.</p>
+  <ul><li><code>BR-EDITOR-031</code> — El flujo del carril estándar y del completo incluye Revisar (con asistente) y Analizar (local) entre verificar y archivar; cada paso muestra su actor y su acción.</li><li><code>BR-EDITOR-032</code> — La revisión y el análisis se marcan hechos cuando su artefacto existe en el cambio; si no existen, el panel los ofrece como pasos recomendados u opcionales antes de archivar, sin impedir el archivado del carril estándar.</li></ul>
+  <div class="scn"><b>REQ-EDITOR-011-S1 — Revisión en el flujo</b><div class="steps"><span><b>CUANDO</b> el cambio está verificado</span><span><b>ENTONCES</b> el flujo muestra Revisar como paso vigente con su acción y, cuando la revisión queda registrada, el paso aparece hecho</span></div></div><div class="scn"><b>REQ-EDITOR-011-S2 — Análisis en el flujo</b><div class="steps"><span><b>CUANDO</b> el cambio está verificado</span><span><b>ENTONCES</b> el flujo ofrece Analizar con su acción y, cuando el informe existe, el paso aparece hecho</span></div></div><div class="scn"><b>REQ-EDITOR-011-S3 — Archivado sin revisión en el carril estándar</b><div class="steps"><span><b>CUANDO</b> un cambio del carril estándar llega al archivado sin revisión ni análisis</span><span><b>ENTONCES</b> el archivado no se bloquea por ello y el panel los muestra como pasos recomendados u opcionales</span></div></div><div class="scn"><b>REQ-EDITOR-011-S4 — Carril completo con revisión y análisis</b><div class="steps"><span><b>CUANDO</b> un cambio del carril completo llega verificado</span><span><b>ENTONCES</b> el flujo muestra Revisar, Analizar, Documentar y los contratos antes de archivar, en ese orden</span></div></div>
+</article></div>
+    </section>
+
+    <section class="card" id="criterios">
+      <div class="card-head"><span class="num">03</span><h2>Criterios de aceptación</h2><span class="sub">56/56 con evidencia pass</span></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-EDITOR-001-S1</code></td><td>Abrir el panel principal</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-001-S2</code></td><td>Cambiar de sección</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-001-S3</code></td><td>El panel ya estaba abierto</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-001-S4</code></td><td>Proyecto sin inicializar</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-001-S5</code></td><td>Sin proyecto abierto</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-002-S1</code></td><td>Proyecto con cambios activos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-002-S2</code></td><td>Proyecto al día</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-002-S3</code></td><td>Puntos que requieren atención</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-002-S4</code></td><td>Proyecto sin cambios activos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-002-S5</code></td><td>Proyecto sin historial</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-003-S1</code></td><td>Cambios en distintas fases</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-003-S2</code></td><td>Cambio bloqueado</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-003-S3</code></td><td>Filtros del flujo</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-003-S4</code></td><td>Proyecto sin cambios activos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-004-S1</code></td><td>Requisito con huecos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-004-S2</code></td><td>Todo verificado</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-004-S3</code></td><td>Sin requisitos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-004-S4</code></td><td>Filtros de la trazabilidad</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-004-S5</code></td><td>Abrir un identificador</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-005-S1</code></td><td>Proyecto con actividad</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-005-S2</code></td><td>Puntos de atención</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-005-S3</code></td><td>Proyecto sin actividad</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S1</code></td><td>Abrir un documento del cambio</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S2</code></td><td>Documento ausente</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S3</code></td><td>Mockups del cambio</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S4</code></td><td>Cambio sin mockups</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S5</code></td><td>Mockups desactualizados</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-006-S6</code></td><td>Documento ilegible</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S1</code></td><td>Acción válida</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S2</code></td><td>Acción no válida</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S3</code></td><td>Acción humana sin nombre</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S4</code></td><td>Acción que falla</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S5</code></td><td>Acción con asistente</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S6</code></td><td>El asistente no se puede abrir</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S7</code></td><td>El flujo completo, en orden y por carril</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S8</code></td><td>Crear un cambio desde el panel</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-007-S9</code></td><td>Ejecutar un paso ya pasado u omitido</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-008-S1</code></td><td>Cambio hecho fuera del panel</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-008-S2</code></td><td>Contexto conservado</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-008-S3</code></td><td>Sin cambios</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-008-S4</code></td><td>Actualización fallida</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S1</code></td><td>Presentación completa</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S2</code></td><td>Cambio sin mockups</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S3</code></td><td>Cambio sin propuesta</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S4</code></td><td>Imprimir o guardar como PDF</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S5</code></td><td>Firma obsoleta</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-009-S6</code></td><td>Mockup declarado que falta</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-010-S1</code></td><td>Los dos documentos en todos los formatos</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-010-S2</code></td><td>Un solo documento</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-010-S3</code></td><td>Un formato no se puede generar</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-010-S4</code></td><td>Regenerar la documentación</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-010-S5</code></td><td>Documentación sin evidencia</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-011-S1</code></td><td>Revisión en el flujo</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-011-S2</code></td><td>Análisis en el flujo</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-011-S3</code></td><td>Archivado sin revisión en el carril estándar</td><td><span class="pill pass">pass</span></td></tr><tr><td><code>REQ-EDITOR-011-S4</code></td><td>Carril completo con revisión y análisis</td><td><span class="pill pass">pass</span></td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="card" id="mockups">
+      <div class="card-head"><span class="num">04</span><h2>Mockups</h2><span class="sub">9 pantalla(s)</span></div>
+      <div class="card-body"><p class="sign-help" style="margin:0 0 12px">Cada pantalla se abre a tamaño completo en su propia pestaña. En un navegador, además, se previsualizan aquí mismo.</p><div class="mockups"><div class="mockup " data-mockup="mockups/panel-resumen.html" data-title="Panel principal — Resumen y siguiente acción"><header><span>Panel principal — Resumen y siguiente acción</span><a class="btn" href="mockups/panel-resumen.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-resumen.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-001-S1, REQ-EDITOR-001-S2, REQ-EDITOR-001-S3, REQ-EDITOR-002-S1, REQ-EDITOR-002-S2, REQ-EDITOR-002-S3, REQ-EDITOR-002-S4, REQ-EDITOR-002-S5</span></div></div><div class="mockup " data-mockup="mockups/panel-flujo.html" data-title="Panel principal — Flujo de cambios por fase"><header><span>Panel principal — Flujo de cambios por fase</span><a class="btn" href="mockups/panel-flujo.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-flujo.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-003-S1, REQ-EDITOR-003-S2, REQ-EDITOR-003-S3, REQ-EDITOR-003-S4</span></div></div><div class="mockup " data-mockup="mockups/panel-trazabilidad.html" data-title="Panel principal — Trazabilidad requisito → evidencia"><header><span>Panel principal — Trazabilidad requisito → evidencia</span><a class="btn" href="mockups/panel-trazabilidad.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-trazabilidad.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-004-S1, REQ-EDITOR-004-S2, REQ-EDITOR-004-S3, REQ-EDITOR-004-S4, REQ-EDITOR-004-S5</span></div></div><div class="mockup " data-mockup="mockups/panel-metricas.html" data-title="Panel principal — Métricas del proceso"><header><span>Panel principal — Métricas del proceso</span><a class="btn" href="mockups/panel-metricas.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-metricas.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-005-S1, REQ-EDITOR-005-S2, REQ-EDITOR-005-S3</span></div></div><div class="mockup " data-mockup="mockups/panel-documentos.html" data-title="Panel principal — Documentos y mockups del cambio"><header><span>Panel principal — Documentos y mockups del cambio</span><a class="btn" href="mockups/panel-documentos.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-documentos.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-006-S1, REQ-EDITOR-006-S2, REQ-EDITOR-006-S3, REQ-EDITOR-006-S4, REQ-EDITOR-006-S5, REQ-EDITOR-006-S6</span></div></div><div class="mockup " data-mockup="mockups/panel-acciones.html" data-title="Panel principal — Acciones del ciclo"><header><span>Panel principal — Acciones del ciclo</span><a class="btn" href="mockups/panel-acciones.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-acciones.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-007-S1, REQ-EDITOR-007-S2, REQ-EDITOR-007-S3, REQ-EDITOR-007-S4, REQ-EDITOR-007-S5, REQ-EDITOR-007-S6, REQ-EDITOR-007-S7, REQ-EDITOR-007-S8, REQ-EDITOR-007-S9</span></div></div><div class="mockup " data-mockup="mockups/panel-estados.html" data-title="Panel principal — Estados, vacíos y panel vivo"><header><span>Panel principal — Estados, vacíos y panel vivo</span><a class="btn" href="mockups/panel-estados.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/panel-estados.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-001-S4, REQ-EDITOR-001-S5, REQ-EDITOR-008-S1, REQ-EDITOR-008-S2, REQ-EDITOR-008-S3, REQ-EDITOR-008-S4</span></div></div><div class="mockup " data-mockup="mockups/presentacion.html" data-title="Presentación para aprobar — propuesta, especificación y mockups"><header><span>Presentación para aprobar — propuesta, especificación y mockups</span><a class="btn" href="mockups/presentacion.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/presentacion.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-009-S1, REQ-EDITOR-009-S2, REQ-EDITOR-009-S3, REQ-EDITOR-009-S4, REQ-EDITOR-009-S5, REQ-EDITOR-009-S6</span></div></div><div class="mockup " data-mockup="mockups/docs-formatos.html" data-title="Documentación — texto fuente, HTML y PDF"><header><span>Documentación — texto fuente, HTML y PDF</span><a class="btn" href="mockups/docs-formatos.html" target="_blank" rel="noopener">Abrir mockup</a></header><div class="mockup-body"><span class="mockup-file">mockups/docs-formatos.html</span><span class="mockup-scn">Ilustra: REQ-EDITOR-010-S1, REQ-EDITOR-010-S2, REQ-EDITOR-010-S3, REQ-EDITOR-010-S4, REQ-EDITOR-010-S5</span></div></div></div></div>
+    </section>
+
+    <section class="card" id="firma">
+      <div class="card-head"><span class="num">05</span><h2>Firma de aprobación</h2><span class="sub">acto humano · queda auditado</span></div>
+      <div class="card-body">
+        <div class="signature">
+          <div class="sign-line">
+            <div class="sl-row"><span>Nombre de quien aprueba</span><span style="font-family:ui-monospace,Consolas,monospace">____________________</span></div>
+            <div class="sl-row"><span>Fecha de la firma</span><span style="font-family:ui-monospace,Consolas,monospace">____ / ____ / ________</span></div>
+          </div>
+          <div>
+            <p class="sign-help">La firma se registra con la huella de la especificación y la fecha.</p>
+            <p class="sign-help" style="margin-top:8px"><code>satlas approve panel-principal --by &quot;&lt;nombre&gt;&quot; --channel presentation</code></p>
+            <p class="sign-help" style="margin-top:10px">La especificación cambió después de firmarse: la firma quedó obsoleta y hay que volver a aprobar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer"><span>SpecAtlas · SpecAtlas · 2026-09-21 11:14:45 -05:00</span><span>sha256:5f7626ce52eedbcd736df2a3696df10e10f0f836f7af884ca72ad1234f102846</span></div>
+  </main>
+</div>
+<script>
+(function () {
+  // Mejora progresiva: donde los scripts corren (navegador) el mockup se previsualiza en linea.
+  // Donde no corren (webview con CSP) la tarjeta con el enlace ya es suficiente y nada queda en blanco.
+  // Incrustada en otra pagina (el panel del editor la mete en un iframe) las rutas relativas
+  // no resuelven: se queda la tarjeta con el enlace y no se monta ningun marco en blanco.
+  try { if (window.top !== window.self) return; } catch (error) { return; }
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.mockup[data-mockup]'));
+  cards.forEach(function (card) {
+    var frame = document.createElement('iframe');
+    frame.setAttribute('src', card.getAttribute('data-mockup'));
+    frame.setAttribute('loading', 'lazy');
+    frame.setAttribute('title', card.getAttribute('data-title') || 'mockup');
+    var body = card.querySelector('.mockup-body');
+    if (body) body.style.display = 'none';
+    card.appendChild(frame);
+  });
+})();
+</script>
+</body>
+</html>

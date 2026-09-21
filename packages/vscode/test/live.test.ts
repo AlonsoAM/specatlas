@@ -13,7 +13,7 @@ function fakeSurface(visible = true): LivePanelSurface & { html: string[] } {
 }
 
 describe('paneles vivos', () => {
-  it('reconstruye un panel visible con el título y el html nuevos', async () => {
+  it('[REQ-EDITOR-008-S1] reconstruye un panel visible con el título y el html nuevos', async () => {
     const surface = fakeSurface()
     let builds = 0
     const entry: LivePanelEntry<string> = {
@@ -51,14 +51,14 @@ describe('paneles vivos', () => {
     expect(surface.html).toEqual([])
   })
 
-  it('conserva el contenido cuando el panel no tiene datos nuevos', async () => {
+  it('[REQ-EDITOR-008-S3] conserva el contenido cuando el panel no tiene datos nuevos', async () => {
     const surface = fakeSurface()
     const entry: LivePanelEntry = { key: 'preview', target: undefined, surface, build: async () => undefined }
     expect(await updateLivePanel(entry)).toBe(false)
     expect(surface.html).toEqual([])
   })
 
-  it('aísla el fallo de un panel y sigue con los demás', async () => {
+  it('[REQ-EDITOR-008-S4] aísla el fallo de un panel y sigue con los demás', async () => {
     const errors: string[] = []
     const first = fakeSurface()
     const second = fakeSurface()
@@ -75,7 +75,7 @@ describe('paneles vivos', () => {
     expect(errors[0]).toContain('boom')
   })
 
-  it('encuentra un panel por su clave para no duplicarlo', () => {
+  it('[REQ-EDITOR-001-S3] encuentra un panel por su clave para no duplicarlo', () => {
     const entry: LivePanelEntry = { key: 'matrix', target: undefined, surface: fakeSurface(), build: async () => undefined }
     expect(findLivePanel([entry], 'matrix')).toBe(entry)
     expect(findLivePanel([entry], 'board')).toBeUndefined()
