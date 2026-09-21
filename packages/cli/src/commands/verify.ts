@@ -1,5 +1,6 @@
 import path from 'node:path'
 import {
+  checkMockups,
   loadActiveProfile,
   recordEvidence,
   type EvidenceMethod,
@@ -10,7 +11,7 @@ import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js
 import { resolveProfilesDir } from '../paths.js'
 
 export async function runVerify(ctx: CliContext): Promise<CommandResult> {
-  const { root, workspace } = await requireWorkspace(ctx)
+  const { root, workspace, config } = await requireWorkspace(ctx)
   const slug = ctx.positionals[0]
   if (!slug) {
     return { exitCode: 2, diagnostics: [{ code: 'ATLAS-VERIFY-000', severity: 'error', message: 'Falta el slug: satlas verify <slug> [--scenario REQ-…-S1 --command "…"]' }] }
@@ -94,9 +95,25 @@ export async function runVerify(ctx: CliContext): Promise<CommandResult> {
     }
   }
 
+  // `gates.mockup.compare_in_verify`: la evidencia se registra igual, pero avisa si el
+  // contrato visual quedó obsoleto respecto de la especificación que se está verificando.
+  const mockupDiagnostics = []
+  if (config.gates.mockup.compare_in_verify && change.mockupManifestPath) {
+    const mockups = await checkMockups(root, slug, change)
+    if (mockups.stale) {
+      mockupDiagnostics.push({
+        code: 'ATLAS-VERIFY-002',
+        severity: 'warning' as const,
+        message: `Los mockups de "${slug}" están desactualizados respecto de la especificación que acabas de verificar`,
+        path: change.mockupManifestPath,
+        suggestion: `Regenera el contrato visual y vuelve a comprobarlo: satlas mockup ${slug} --check`,
+      })
+    }
+  }
+
   return {
     exitCode: record.exitCode === 0 ? 0 : 1,
-    diagnostics: record.diagnostics,
+    diagnostics: [...record.diagnostics, ...mockupDiagnostics],
     data: { evidence: record.evidence, path: path.relative(ctx.cwd, record.path), exitCode: record.exitCode },
     text: lines,
   }

@@ -1,0 +1,50 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-ESQUEMA-001
+    files:
+      - packages/cli/src/commands/doctor.ts
+      - packages/cli/src/commands/status.ts
+      - packages/cli/src/commands/validate.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/upgrade.test.ts
+      - packages/core/src/index.ts
+      - packages/core/src/migrations.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-ESQUEMA-002
+    files:
+      - packages/cli/src/commands/upgrade.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/upgrade.test.ts
+      - packages/core/src/index.ts
+      - packages/core/src/migrations.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-ESQUEMA-003
+    files:
+      - packages/cli/src/commands/upgrade.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/upgrade.test.ts
+      - packages/core/src/migrations.ts
+      - packages/core/test/migrations.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-ESQUEMA-004
+    files:
+      - packages/cli/src/commands/upgrade.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/upgrade.test.ts
+      - packages/core/src/migrations.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-ESQUEMA-005
+    files:
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/upgrade.test.ts
+      - packages/core/test/migrations.test.ts
+    updated: 2026-09-21
+    source: archive

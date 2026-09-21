@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es" data-theme="claro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · Documentación en tres formatos — panel-principal · SpecAtlas</title>
+<style>
+:root{
+  --font: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "Cascadia Code", Consolas, "Courier New", monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+html[data-theme="claro"]{
+  --bg:#f4f6fa; --page:#ffffff; --elev:#f7f9fc; --border:#dde3ec; --border-soft:#e8ecf3;
+  --ink:#161c2b; --muted:#5a6577; --faint:#8b94a6; --accent:#2f6fe0; --accent-soft:rgba(47,111,224,.10);
+  --green:#1e9e4b; --orange:#b57812; --red:#cf3b45; --purple:#7c4fd1; --yellow:#9a7a12;
+  --shadow: 0 18px 40px rgba(24,34,58,.10), 0 1px 2px rgba(24,34,58,.08);
+}
+html[data-theme="oscuro"]{
+  --bg:#0d1017; --page:#151a24; --elev:#1b2130; --border:#2a3243; --border-soft:#212938;
+  --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789; --accent:#5b9bff; --accent-soft:rgba(91,155,255,.12);
+  --green:#46c46a; --orange:#e0a33a; --red:#f0616a; --purple:#a97bf5; --yellow:#d9b23c;
+  --shadow: 0 20px 44px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,p{margin:0}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+.mono{font-family:var(--mono);font-size:.86em}
+.muted{color:var(--muted)}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+.mockup-banner{
+  position:sticky;top:0;z-index:60;background:repeating-linear-gradient(135deg,#1a1e29 0 12px,#151924 12px 24px);
+  color:#ffd977;border-bottom:1px solid #3a3320;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  padding:7px 16px;text-transform:uppercase;
+}
+.dev-bar{
+  position:sticky;top:29px;z-index:59;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:9px 16px;background:color-mix(in srgb,var(--page) 94%,transparent);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);
+}
+.dev-bar .db-title{font-family:var(--mono);font-size:12px;color:var(--muted);margin-right:auto}
+.dev-label{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:var(--page)}
+.seg button{min-height:30px;padding:0 12px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:12px}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--border);background:var(--elev);cursor:pointer;font-size:13px}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:32px;padding:0 11px;font-size:12.5px}
+
+.wrap{max-width:1120px;margin:0 auto;padding:24px 20px 70px;display:flex;flex-direction:column;gap:18px}
+.head{border:1px solid var(--border);border-radius:var(--radius);background:var(--page);box-shadow:var(--shadow);padding:18px 20px;display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.head h1{font-size:21px;letter-spacing:-.01em}
+.head .sub{color:var(--muted);font-size:13px;margin-top:3px}
+.head .chips{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;border:1px solid var(--border);background:var(--elev);color:var(--muted);font-size:12px}
+.chip b{color:var(--ink)}
+.pane{border:1px solid var(--border);border-radius:var(--radius);background:var(--page);box-shadow:var(--shadow);overflow:hidden}
+.pane-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border-soft)}
+.pane-head h2{font-size:15px}
+.pane-head .sub{color:var(--faint);font-size:12.5px}
+.pane-body{padding:18px}
+
+/* markdown */
+.md-src{margin:0;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre-wrap;color:var(--ink)}
+.md-src .mg{color:var(--purple)}
+.md-src .h{color:var(--accent)}
+.md-src .dim{color:var(--faint)}
+.md-note{margin-top:12px;color:var(--muted);font-size:12.5px}
+
+/* html view */
+.doc-page{border:1px solid var(--border-soft);border-radius:var(--radius-sm);overflow:hidden;background:var(--page)}
+.doc-hero{padding:22px;background:linear-gradient(180deg,var(--accent-soft),transparent)}
+.doc-hero .kicker{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.doc-hero h3{font-size:23px;letter-spacing:-.01em;margin:8px 0 6px}
+.doc-hero p{color:var(--muted);font-size:13px}
+.doc-grid{display:grid;grid-template-columns:200px 1fr;gap:18px;padding:20px}
+.doc-toc{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:12px;font-size:12.5px;color:var(--muted);align-self:start}
+.doc-toc b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.doc-toc ol{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:6px}
+.doc-content{min-width:0}
+.doc-content h4{font-size:15.5px;margin:18px 0 8px}
+.doc-content h4:first-child{margin-top:0}
+.doc-content p{color:var(--muted);font-size:13.5px}
+.doc-content ul{margin:8px 0 0 18px;padding:0;color:var(--muted);font-size:13.5px}
+.doc-content li{margin-bottom:6px}
+.callout{border-left:3px solid var(--tone,var(--accent));background:color-mix(in srgb,var(--tone,var(--accent)) 8%,transparent);border-radius:6px;padding:10px 12px;margin-top:12px;color:var(--muted);font-size:13px}
+.callout b{color:var(--ink)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.kv .kv-item{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:11px}
+.kv .k{color:var(--faint);font-size:11.5px}
+.kv .v{font-weight:700;font-size:17px}
+table.ev{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+table.ev th{text-align:left;padding:8px 10px;color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border-soft)}
+table.ev td{padding:8px 10px;border-bottom:1px solid var(--border-soft);color:var(--muted)}
+table.ev td:first-child{font-family:var(--mono);color:var(--ink)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11.5px;border:1px solid color-mix(in srgb,var(--tone,var(--gray,#8b94a6)) 35%,var(--border));background:color-mix(in srgb,var(--tone,var(--gray,#8b94a6)) 12%,transparent);color:color-mix(in srgb,var(--tone,var(--gray,#8b94a6)) 80%,var(--ink))}
+
+/* pdf preview */
+.pdf-stage{display:flex;justify-content:center;background:color-mix(in srgb,var(--ink) 6%,var(--bg));border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:22px}
+.sheet{width:min(760px,100%);aspect-ratio:210/297;background:#fff;color:#14181f;box-shadow:0 16px 40px rgba(15,20,35,.25);border-radius:3px;padding:34px 38px;display:flex;flex-direction:column;font-size:11.5px;line-height:1.5}
+.sheet .sheet-head{display:flex;justify-content:space-between;border-bottom:1px solid #d8dde6;padding-bottom:8px;color:#6b7484;font-size:10px}
+.sheet h3{font-size:19px;color:#14181f;margin:18px 0 6px}
+.sheet h4{font-size:13px;color:#14181f;margin:14px 0 5px}
+.sheet p{color:#4a5364;margin:0 0 8px}
+.sheet ul{margin:6px 0 8px 16px;padding:0;color:#4a5364}
+.sheet .sheet-foot{margin-top:auto;display:flex;justify-content:space-between;border-top:1px solid #d8dde6;padding-top:8px;color:#6b7484;font-size:10px}
+.sheet .hl{background:#eef3fd;border-left:3px solid #2f6fe0;padding:7px 10px;border-radius:4px;color:#31405a;margin:8px 0}
+.pdf-note{margin-top:12px;color:var(--muted);font-size:12.5px}
+
+/* variantes */
+.variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.variant{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:12px}
+.variant b{display:block;font-size:13px}
+.variant span{color:var(--muted);font-size:12.5px}
+.banner{display:flex;gap:10px;align-items:flex-start;border:1px solid color-mix(in srgb,var(--tone,var(--accent)) 40%,var(--border));background:color-mix(in srgb,var(--tone,var(--accent)) 9%,transparent);border-radius:var(--radius-sm);padding:11px 13px}
+.banner b{display:block}
+.banner span{color:var(--muted);font-size:12.5px}
+
+/* estados */
+body[data-state="default"] .st-loading,body[data-state="default"] .st-empty,body[data-state="default"] .st-error{display:none}
+body[data-state="loading"] .st-default,body[data-state="loading"] .st-empty,body[data-state="loading"] .st-error{display:none}
+body[data-state="empty"] .st-default,body[data-state="empty"] .st-loading,body[data-state="empty"] .st-error{display:none}
+body[data-state="error"] .st-default,body[data-state="error"] .st-loading,body[data-state="error"] .st-empty{display:none}
+.skeleton{border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--elev);padding:14px}
+.sk-line{height:12px;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--ink) 10%,transparent) 25%,color-mix(in srgb,var(--ink) 18%,transparent) 50%,color-mix(in srgb,var(--ink) 10%,transparent) 75%);background-size:200% 100%;animation:sk 1.4s infinite}
+.sk-line+.sk-line{margin-top:9px}
+.sk-line.w40{width:40%}.sk-line.w70{width:70%}.sk-line.w90{width:90%}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media (max-width: 900px){
+  .doc-grid{grid-template-columns:1fr}
+  .kv{grid-template-columns:1fr}
+  .head .chips{margin-left:0}
+  .sheet{aspect-ratio:auto;padding:22px}
+}
+@media print{
+  .mockup-banner,.dev-bar,.variants,.pane-head,.btn{display:none!important}
+  body{background:#fff}
+  .wrap{padding:0;max-width:none}
+  .pane,.head{box-shadow:none;border-color:#ccc}
+  .pdf-stage{background:#fff;border:0;padding:0}
+  .sheet{box-shadow:none;width:100%}
+}
+</style>
+</head>
+<body data-state="default">
+<div class="mockup-banner" role="note">Mockup · no funcional · v1 · 2026-09-20 · SpecAtlas — documentación en texto fuente, HTML y PDF (panel-principal)</div>
+
+<header class="dev-bar">
+  <span class="db-title">docs-formatos.html · salida de la acción «Documentar» · el mismo contenido en tres formatos</span>
+  <span class="dev-label">Formato</span>
+  <div class="seg" role="group" aria-label="Formato de la documentación">
+    <button type="button" data-set-format="md" aria-pressed="false">texto fuente</button>
+    <button type="button" data-set-format="html" aria-pressed="true">HTML</button>
+    <button type="button" data-set-format="pdf" aria-pressed="false">PDF</button>
+  </div>
+  <span class="dev-label">Estado</span>
+  <div class="seg" role="group" aria-label="Estado del mockup">
+    <button type="button" data-set-state="default" aria-pressed="true">completa</button>
+    <button type="button" data-set-state="loading" aria-pressed="false">cargando</button>
+    <button type="button" data-set-state="empty" aria-pressed="false">vacío</button>
+    <button type="button" data-set-state="error" aria-pressed="false">error</button>
+  </div>
+  <span class="dev-label">Tema</span>
+  <div class="seg" role="group" aria-label="Tema">
+    <button type="button" data-set-theme="claro" aria-pressed="true">claro</button>
+    <button type="button" data-set-theme="oscuro" aria-pressed="false">oscuro</button>
+  </div>
+  <button type="button" class="btn sm primary" id="print">⎙ Guardar PDF</button>
+  <a class="btn sm ghost" href="panel-documentos.html">Volver al panel</a>
+</header>
+
+<div class="wrap st-default">
+  <header class="head">
+    <div>
+      <h1>Documentación de panel-principal</h1>
+      <p class="sub">documento técnico y manual · mismo contenido en texto fuente, HTML y PDF · se genera localmente, sin servicios externos</p>
+    </div>
+    <div class="chips">
+      <span class="chip">carril <b>standard</b></span>
+      <span class="chip">documentos <b>2</b></span>
+      <span class="chip">formatos <b>3</b></span>
+      <span class="chip">generado <b>2026-09-20</b></span>
+    </div>
+  </header>
+
+  <section class="pane" data-format-panel="md" hidden>
+    <div class="pane-head"><h2>Texto fuente — docs/tecnica.md</h2><span class="sub">es la fuente de verdad · lo escrito a mano se conserva al regenerar</span></div>
+    <div class="pane-body">
+      <pre class="md-src"><span class="mg">&lt;!-- specatlas:begin — bloque gestionado --&gt;</span>
+<span class="h"># Documento técnico — panel-principal</span>
+
+<span class="dim">## Resumen</span>
+Cambio del carril standard (dominio editor) que unifica la experiencia
+de la herramienta en un panel principal con secciones internas.
+
+<span class="dim">## Requisitos cubiertos</span>
+- REQ-EDITOR-001 — Un único panel principal reúne el trabajo
+- REQ-EDITOR-007 — Acciones del ciclo desde el panel
+- REQ-EDITOR-009 — La presentación para aprobar
+
+<span class="dim">## Tareas y evidencia</span>
+| Tarea | Escenarios | Evidencia |
+|-------|-----------|-----------|
+| T-01  | REQ-EDITOR-001-S1..S3 | pass (executable) |
+| T-07  | REQ-EDITOR-007-S7..S8 | pass (executable) |
+
+<span class="dim">## Pendiente de evidencia</span>
+- REQ-EDITOR-009-S4 (impresión/PDF) — pendiente
+<span class="mg">&lt;!-- specatlas:end --&gt;</span>
+
+<span class="dim">## Notas del equipo (fuera del bloque gestionado)</span>
+Aquí el equipo escribe a mano; regenerar no toca esta parte.</pre>
+      <p class="md-note">El bloque gestionado se actualiza al regenerar; lo escrito fuera de él se conserva tal cual.</p>
+    </div>
+  </section>
+
+  <section class="pane" data-format-panel="html">
+    <div class="pane-head"><h2>HTML — docs/tecnica.html</h2><span class="sub">mismo contenido, listo para leer y compartir</span><span class="sub" style="margin-left:auto"><span class="pill" style="--tone:var(--green)">✓ generado</span></span></div>
+    <div class="pane-body">
+      <div class="doc-page">
+        <div class="doc-hero">
+          <p class="kicker">SpecAtlas · documentación técnica</p>
+          <h3>Un panel principal único para la extensión</h3>
+          <p>Cambio <span class="mono">panel-principal</span> · carril standard · dominio editor · 2026-09-20</p>
+        </div>
+        <div class="doc-grid">
+          <nav class="doc-toc" aria-label="Contenido del documento">
+            <b>Contenido</b>
+            <ol>
+              <li>Resumen</li>
+              <li>Requisitos cubiertos</li>
+              <li>Tareas y evidencia</li>
+              <li>Pendiente de evidencia</li>
+              <li>Notas del equipo</li>
+            </ol>
+          </nav>
+          <div class="doc-content">
+            <h4>Resumen</h4>
+            <p>El cambio unifica la experiencia de la herramienta en un panel principal único con secciones internas (Resumen, Flujo, Trazabilidad, Métricas, Documentos y Acciones) y suma la presentación para aprobar y la documentación en tres formatos.</p>
+            <div class="kv">
+              <div class="kv-item"><div class="k">Requisitos</div><div class="v">10</div></div>
+              <div class="kv-item"><div class="k">Escenarios</div><div class="v">51</div></div>
+              <div class="kv-item"><div class="k">Tareas</div><div class="v">0/0</div></div>
+            </div>
+            <h4>Requisitos cubiertos</h4>
+            <ul>
+              <li><b>REQ-EDITOR-001</b> — Un único panel principal reúne el trabajo</li>
+              <li><b>REQ-EDITOR-007</b> — Acciones del ciclo desde el panel</li>
+              <li><b>REQ-EDITOR-009</b> — La presentación para aprobar</li>
+            </ul>
+            <h4>Tareas y evidencia</h4>
+            <table class="ev">
+              <thead><tr><th>Tarea</th><th>Escenarios</th><th>Evidencia</th></tr></thead>
+              <tbody>
+                <tr><td>T-01</td><td>REQ-EDITOR-001-S1..S3</td><td><span class="pill" style="--tone:var(--green)">✓ pass · executable</span></td></tr>
+                <tr><td>T-07</td><td>REQ-EDITOR-007-S7..S8</td><td><span class="pill" style="--tone:var(--green)">✓ pass · executable</span></td></tr>
+              </tbody>
+            </table>
+            <h4>Pendiente de evidencia</h4>
+            <div class="callout" style="--tone:var(--orange)"><b>REQ-EDITOR-009-S4</b> — impresión o guardado como PDF: sin evidencia registrada todavía. Se documenta como pendiente, sin darlo por hecho.</div>
+            <h4>Notas del equipo</h4>
+            <p>Espacio libre para lo que el equipo quiera dejar escrito a mano; regenerar no lo toca.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane" data-format-panel="pdf" hidden>
+    <div class="pane-head"><h2>PDF — docs/tecnica.pdf</h2><span class="sub">mismo contenido, listo para entregar o imprimir</span><span class="sub" style="margin-left:auto"><span class="pill" style="--tone:var(--green)">✓ generado localmente</span></span></div>
+    <div class="pane-body">
+      <div class="pdf-stage">
+        <div class="sheet" aria-label="Vista previa de la página PDF">
+          <div class="sheet-head"><span>SpecAtlas · documento técnico</span><span>panel-principal · SDD-OpenCode</span></div>
+          <h3>Un panel principal único para la extensión</h3>
+          <p>Cambio panel-principal · carril standard · dominio editor · generado 2026-09-20</p>
+          <h4>Resumen</h4>
+          <p>El cambio unifica la experiencia de la herramienta en un panel principal único con secciones internas y suma la presentación para aprobar y la documentación en tres formatos.</p>
+          <h4>Requisitos cubiertos</h4>
+          <ul>
+            <li>REQ-EDITOR-001 — Un único panel principal reúne el trabajo</li>
+            <li>REQ-EDITOR-007 — Acciones del ciclo desde el panel</li>
+            <li>REQ-EDITOR-009 — La presentación para aprobar</li>
+          </ul>
+          <div class="hl">Pendiente de evidencia: REQ-EDITOR-009-S4 (impresión o guardado como PDF). Se documenta como pendiente, sin darlo por hecho.</div>
+          <div class="sheet-foot"><span>SDD-OpenCode · SpecAtlas</span><span>página 1 de 3</span></div>
+        </div>
+      </div>
+      <p class="pdf-note">El PDF se arma localmente desde el mismo contenido (con encabezado, pie y paginado). No se sube nada a servicios externos.</p>
+      <div class="banner" style="--tone:var(--blue);margin-top:12px">
+        <span aria-hidden="true">◈</span>
+        <div><b>Mismo contenido, tres formatos</b><span>el texto fuente es la fuente de verdad; HTML y PDF se generan de él y se actualizan al regenerar.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <div class="pane-head"><h2>Variantes y avisos</h2><span class="sub">lo que la documentación indica cuando algo falta o falla</span></div>
+    <div class="pane-body">
+      <div class="variants">
+        <div class="variant"><b>Un solo documento</b><span>Al documentar solo el técnico (o solo el manual), se generan sus formatos y el otro documento no se toca.</span></div>
+        <div class="variant"><b>PDF no disponible</b><span>Si el PDF no se puede generar, se avisa con el motivo y quedan el texto fuente y el HTML.</span></div>
+        <div class="variant"><b>Regenerar</b><span>Todos los formatos se actualizan sin duplicar secciones ni perder lo escrito a mano.</span></div>
+        <div class="variant"><b>Sin evidencia</b><span>Los formatos se generan igualmente y señalan lo pendiente, sin inventarlo.</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap st-loading" hidden>
+  <section class="pane"><div class="pane-body"><div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w90"></div><div class="sk-line w70"></div></div></div></section>
+  <section class="pane"><div class="pane-body"><div class="skeleton"><div class="sk-line w40"></div><div class="sk-line w70"></div><div class="sk-line w90"></div></div></div></section>
+</div>
+
+<div class="wrap st-empty" hidden>
+  <section class="pane"><div class="pane-body" style="text-align:center;padding:32px 20px">
+    <p style="font-size:28px" aria-hidden="true">▤</p>
+    <h2 style="font-size:18px">Este cambio aún no tiene documentación</h2>
+    <p class="muted">La documentación se genera desde las plantillas y la evidencia registrada del cambio.</p>
+    <p style="margin-top:14px"><button type="button" class="btn primary">Documentar (opencode)</button></p>
+  </div></section>
+</div>
+
+<div class="wrap st-error" hidden>
+  <section class="pane"><div class="pane-body">
+    <div class="banner" style="--tone:var(--red)">
+      <span aria-hidden="true">✕</span>
+      <div><b>No se pudo generar el PDF</b><span>no hay permiso de escritura en <span class="mono">docs/</span> (EPERM) · quedan disponibles el texto fuente y el HTML; no se escribió un PDF parcial</span>
+      <p style="margin-top:10px"><button type="button" class="btn sm">Reintentar</button></p></div>
+    </div>
+  </div></section>
+</div>
+
+<script>
+(function () {
+  var body = document.body;
+  var formatButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-format]'));
+  var formatPanels = Array.prototype.slice.call(document.querySelectorAll('[data-format-panel]'));
+  var stateButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-state]'));
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('[data-set-theme]'));
+  var live = document.createElement('p');
+  live.setAttribute('role', 'status');
+  live.setAttribute('aria-live', 'polite');
+  live.className = 'sr-only';
+  body.appendChild(live);
+  function press(buttons, attr, value) {
+    buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute(attr) === value)); });
+  }
+  formatButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-set-format');
+      formatPanels.forEach(function (panel) { panel.hidden = panel.getAttribute('data-format-panel') !== name; });
+      press(formatButtons, 'data-set-format', name);
+      live.textContent = 'Formato: ' + name;
+    });
+  });
+  stateButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-set-state');
+      body.setAttribute('data-state', name);
+      press(stateButtons, 'data-set-state', name);
+      live.textContent = 'Estado del mockup: ' + name;
+    });
+  });
+  themeButtons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var name = b.getAttribute('data-set-theme');
+      document.documentElement.setAttribute('data-theme', name);
+      press(themeButtons, 'data-set-theme', name);
+    });
+  });
+  var print = document.getElementById('print');
+  if (print) print.addEventListener('click', function () { window.print(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documento técnico — Rediseño del panel lateral y la extensión</title>
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<h1 id="documentacion-tecnica-rediseno-del-panel-lateral-y-la-extension">Documentación técnica — Rediseño del panel lateral y la extensión</h1>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Cambio:</b> <code>rediseno-editor</code></span><span class="meta-chip"><b>Dominio:</b> editor</span><span class="meta-chip"><b>Carril:</b> full</span><span class="meta-chip"><b>Tareas:</b> 7/7</span><span class="meta-chip"><b>Actualizado:</b> 2026-09-21</span></div></blockquote>
+<h2 id="1-resumen-del-cambio">1. Resumen del cambio</h2>
+<p>Este documento describe <strong>Rediseño del panel lateral y la extensión</strong> (cambio <code>rediseno-editor</code>), del dominio <strong>editor</strong> y carril <strong>full</strong>. Recoge el porqué, el estado anterior, el enfoque técnico, los diagramas, el mapa de archivos, la trazabilidad completa y la evidencia con la que se dio por terminado.</p>
+<div class="table-wrap"><table><thead><tr><th>Dato</th><th>Valor</th></tr></thead><tbody><tr><td>Requisitos del cambio</td><td>4 (3 nuevos, 1 modificados)</td></tr><tr><td>Escenarios especificados</td><td>20</td></tr><tr><td>Tareas</td><td>7 hechas de 7 · 2 bloque(s)</td></tr><tr><td>Evidencia</td><td>20 / 20 escenarios</td></tr><tr><td>Archivos tocados</td><td>10</td></tr><tr><td>Mockups</td><td>0 pantalla(s)</td></tr><tr><td>Carril y dominio</td><td>full · editor</td></tr></tbody></table></div>
+<h2 id="2-que-es-y-por-que">2. Qué es y por qué</h2>
+<p>Como desarrollador que trabaja con el flujo todos los días, quiero abrir el editor y ver de inmediato qué me toca hacer, para no perder tiempo recordando en qué fase quedó cada cambio ni recorriendo el árbol del proyecto.</p>
+<p>Hoy el panel lateral muestra el proyecto como un árbol: para llegar a la acción que toca hay que abrir el nodo del proyecto, luego el grupo de cambios, luego el cambio. La información más útil —qué sigue, qué está bloqueado, qué detiene el avance— queda a tres niveles de profundidad. Los hallazgos llegan como una lista plana donde un aviso menor pesa lo mismo que algo que detiene el trabajo. Y lo que el flujo aprendió a comprobar recientemente —si el código se movió por debajo de las specs vivas y si la revisión quedó cerrada— no se ve en ninguna parte del editor.</p>
+<h2 id="3-que-cambia-en-lenguaje-de-negocio">3. Qué cambia, en lenguaje de negocio</h2>
+<h3 id="req-editor-012-el-panel-lateral-abre-con-lo-que-toca-hacer-ahora">REQ-EDITOR-012 — El panel lateral abre con lo que toca hacer ahora</h3>
+<p>Al abrir el editor, el equipo necesita saber en un vistazo qué le toca hacer, sin recorrer el árbol del proyecto ni recordar en qué fase quedó cada cambio. La primera sección del panel lateral responde a esa única pregunta y deja la acción a un clic.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-012</code> — La primera sección del panel lateral muestra los cambios en curso, el más urgente desplegado, y su primer elemento es siempre la siguiente acción del cambio.</li><li><code>BR-EDITOR-013</code> — Cada siguiente acción declara quién la ejecuta —el asistente, una persona o la propia herramienta— y se lanza desde el mismo elemento.</li><li><code>BR-EDITOR-014</code> — Junto a la acción se muestran los bloqueos vigentes, los hallazgos que detienen el avance, el avance de tareas y evidencia, y el estado de la revisión y de los mockups cuando el cambio los declara.</li><li><code>BR-EDITOR-015</code> — Sin cambios en curso, la sección ofrece por dónde empezar: crear un cambio, adoptar un proyecto existente o abrir el panel principal.</li></ul>
+<p><strong>Escenarios</strong>: 5 · 3 de uso · 1 de estado vacío · 1 de error o aviso.</p>
+<h3 id="req-editor-013-una-seccion-de-salud-agrupa-lo-que-hay-que-resolver">REQ-EDITOR-013 — Una sección de salud agrupa lo que hay que resolver</h3>
+<p>Los hallazgos llegan hoy como una lista plana en la que todo pesa igual. El equipo necesita distinguir lo que detiene el trabajo de lo que solo avisa, y ver aparte cuándo el código se movió por debajo de las specs vivas.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-016</code> — La sección de salud agrupa los hallazgos en los que bloquean el avance y los que solo avisan, con el conteo de cada grupo.</li><li><code>BR-EDITOR-017</code> — La deriva entre las specs vivas y el código es un grupo propio, que indica el modo configurado y qué ancla dejó de existir.</li><li><code>BR-EDITOR-018</code> — Cada hallazgo abre el archivo y la línea donde ocurre, y permite consultar la explicación de su código.</li><li><code>BR-EDITOR-019</code> — Sin hallazgos ni deriva, la sección lo dice en una línea en vez de quedarse vacía.</li><li><code>BR-EDITOR-020</code> — El número de hallazgos que bloquean se anuncia en la propia sección, sin abrirla.</li></ul>
+<p><strong>Escenarios</strong>: 5 · 2 de uso · 2 de estado vacío · 1 de error o aviso.</p>
+<h3 id="req-editor-014-el-estado-del-trabajo-acompana-sin-estorbar">REQ-EDITOR-014 — El estado del trabajo acompaña sin estorbar</h3>
+<p>El equipo trabaja en el código, no en el panel. Necesita saber en qué punto está el cambio sin cambiar de ventana, y encontrar la puerta de entrada cuando el proyecto todavía no usa el flujo.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-021</code> — La barra de estado del editor muestra el cambio en foco y el paso que toca, y llevar al panel lateral desde ahí es un solo gesto.</li><li><code>BR-EDITOR-022</code> — Cuando el cambio está bloqueado, la barra de estado lo distingue visualmente.</li><li><code>BR-EDITOR-023</code> — Si el proyecto todavía no usa el flujo, el panel lateral explica qué es y ofrece inicializarlo o adoptar el proyecto existente.</li></ul>
+<p><strong>Escenarios</strong>: 4 · 1 de uso · 2 de estado vacío · 1 de error o aviso.</p>
+<h3 id="req-editor-001-un-unico-panel-principal-reune-el-trabajo">REQ-EDITOR-001 — Un único panel principal reúne el trabajo</h3>
+<p>El equipo necesita un solo punto de entrada en el editor: hoy el estado, el flujo de los cambios, la trazabilidad y las métricas viven en ventanas separadas, hay que abrir una para cada tema y el trabajo queda disperso. Un panel principal único, con secciones internas, reúne la información y las acciones en un mismo lugar. Entre esas secciones está la que relaciona las specs vivas con el código: dónde vive cada requisito, si alguna de esas referencias dejó de existir y en qué estado quedó la revisión del cambio.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-001</code> — El panel principal es el único punto de entrada de la herramienta en el editor y reúne, en secciones internas, el resumen, el flujo de los cambios, la trazabilidad, la relación con el código, las métricas, los documentos y las acciones; cambiar de sección no abre ventanas nuevas.</li><li><code>BR-EDITOR-002</code> — El panel principal es único: si ya está abierto, pedirlo de nuevo lo reutiliza y activa la sección pedida; nunca se duplica.</li><li><code>BR-EDITOR-003</code> — Las ventanas independientes de matriz, tablero y métricas dejan de existir; su información se consulta en el panel principal.</li><li><code>BR-EDITOR-024</code> — La sección que relaciona las specs con el código declara cuántas referencias se comprobaron, cuáles dejaron de existir y el estado de la revisión del cambio en curso.</li></ul>
+<p><strong>Escenarios</strong>: 6 · 4 de uso · 2 de estado vacío · 0 de error o aviso.</p>
+<h2 id="4-como-estaba-antes-as-is">4. Cómo estaba antes (AS-IS)</h2>
+<p>La extensión (<code>packages/vscode/</code>) contribuye hoy dos vistas en su contenedor de la barra de actividad: <code>specatlas.explorer</code> (árbol del workspace, <code>AtlasTreeProvider</code>) y <code>specatlas.tools</code> (lista de comandos, <code>ToolsProvider</code>). El árbol anida todo bajo un nodo con el nombre del proyecto, y dentro de él los grupos Specs vivas → Cambios → Fixes → Histórico: llegar a la siguiente acción exige tres aperturas.</p>
+<p><code>buildSnapshot</code> (<code>src/logic.ts</code>) ya calcula por cambio el estado derivado, el progreso, los bloqueos y los hallazgos, y el panel principal (<code>src/panel/</code>) los pinta en seis secciones. Lo que el núcleo aprendió a comprobar hace poco —<code>checkDrift</code> sobre las anclas de las specs vivas y el estado de <code>review.md</code>— no llega al snapshot y, por tanto, no se ve en el editor.</p>
+<p>La barra de estado existe pero muestra un recuento (<code>N cambios · N errores</code>) que no dice qué hacer.</p>
+<h2 id="5-enfoque-tecnico-y-decisiones">5. Enfoque técnico y decisiones</h2>
+<p>Separar <strong>modelo</strong> de <strong>presentación</strong>: cada vista nueva se construye en un módulo puro y testeable (<code>src/views/*.ts</code>) que recibe el <code>Snapshot</code> y devuelve nodos; <code>extension.ts</code> se limita a traducir esos nodos a <code>TreeItem</code>. Así la lógica de la interfaz se prueba con <code>vitest</code> sin arrancar VS Code, igual que ya se hace con el panel.</p>
+<p>Un único <code>ModelTreeProvider</code> genérico sirve a las dos vistas nuevas: el contrato del nodo (id, etiqueta, descripción, icono, tono, comando, hijos) es el mismo, y evita duplicar el proveedor.</p>
+<p>Alternativas descartadas:</p>
+<ul><li><strong>Un webview para la barra lateral</strong>: daría más libertad visual, pero pierde la integración nativa (menús contextuales, badges, teclado, temas) y encarece el mantenimiento.</li><li><strong>Reescribir <code>AtlasTreeProvider</code></strong>: el árbol del workspace funciona y tiene detalle rico (requisitos, tareas, mockups); se cambia solo su raíz.</li></ul>
+<h2 id="6-diagramas">6. Diagramas</h2>
+<div class="mermaid-block callout"><pre class="mermaid">flowchart LR
+  W[.sdd/] --&gt; S[buildSnapshot]
+  S --&gt; N[views/now]
+  S --&gt; H[views/health]
+  S --&gt; T[AtlasTreeProvider]
+  S --&gt; P[panel/sections/codigo]
+  N --&gt; V1[Vista Ahora]
+  H --&gt; V2[Vista Salud]
+  T --&gt; V3[Vista Workspace]
+  P --&gt; V4[Panel · sección Código]
+  N --&gt; B[Barra de estado]</pre><p><small>Diagrama mermaid — visible con la vista previa de Markdown del editor.</small></p></div>
+<h2 id="7-diseno-por-capas-y-componentes">7. Diseño por capas y componentes</h2>
+<div class="table-wrap"><table><thead><tr><th>Módulo</th><th>Responsabilidad</th></tr></thead><tbody><tr><td><code>src/logic.ts</code></td><td>Suma al snapshot la deriva de anclas (<code>checkDrift</code>) y el estado de la revisión por cambio</td></tr><tr><td><code>src/views/now.ts</code></td><td>Modelo de la vista «Ahora»: cambio en foco, acción, actor, bloqueos, progreso; texto de la barra de estado</td></tr><tr><td><code>src/views/health.ts</code></td><td>Modelo de la vista «Salud»: grupos por severidad, deriva, badge</td></tr><tr><td><code>src/extension.ts</code></td><td><code>ModelTreeProvider</code>, alta de vistas, barra de estado, comandos nuevos, raíz del árbol aplanada</td></tr><tr><td><code>src/panel/sections/codigo.ts</code></td><td>Sección «Código» del panel principal</td></tr><tr><td><code>package.json</code></td><td>Vistas, bienvenida, comandos y menús</td></tr></tbody></table></div>
+<h2 id="8-mapa-de-archivos">8. Mapa de archivos</h2>
+<p>Cada archivo, la tarea que lo tocó y el requisito al que responde.</p>
+<div class="table-wrap"><table><thead><tr><th>Archivo</th><th>Tareas</th><th>Requisitos que cubre</th></tr></thead><tbody><tr><td><code>packages/vscode/package.json</code></td><td>T1.4</td><td>REQ-EDITOR-014</td></tr><tr><td><code>packages/vscode/src/extension.ts</code></td><td>T1.3</td><td>REQ-EDITOR-013</td></tr><tr><td><code>packages/vscode/src/logic.ts</code></td><td>T2.2</td><td>REQ-EDITOR-001</td></tr><tr><td><code>packages/vscode/src/panel/panel.ts</code></td><td>T2.1</td><td>REQ-EDITOR-001</td></tr><tr><td><code>packages/vscode/src/panel/sections/codigo.ts</code></td><td>T2.1</td><td>REQ-EDITOR-001</td></tr><tr><td><code>packages/vscode/src/views/health.ts</code></td><td>T1.2</td><td>REQ-EDITOR-013</td></tr><tr><td><code>packages/vscode/src/views/now.ts</code></td><td>T1.1</td><td>REQ-EDITOR-012</td></tr><tr><td><code>packages/vscode/test/panel-scenarios.test.ts</code></td><td>T2.3</td><td>REQ-EDITOR-001</td></tr><tr><td><code>packages/vscode/test/panel.test.ts</code></td><td>T2.3</td><td>REQ-EDITOR-001</td></tr><tr><td><code>packages/vscode/test/views.test.ts</code></td><td>T1.1</td><td>REQ-EDITOR-012</td></tr></tbody></table></div>
+<h2 id="9-trazabilidad-requisito-escenario-tarea-evidencia">9. Trazabilidad requisito → escenario → tarea → evidencia</h2>
+<p>4 requisito(s) · 20 escenario(s) · 20 con tarea · 20 con evidencia favorable · <strong>0 hueco(s)</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Requisito</th><th>Escenario</th><th>Tareas</th><th>Evidencia</th></tr></thead><tbody><tr><td>REQ-EDITOR-012</td><td><code>REQ-EDITOR-012-S1</code> Un cambio en curso</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-012</td><td><code>REQ-EDITOR-012-S2</code> Varios cambios a la vez</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-012</td><td><code>REQ-EDITOR-012-S3</code> La acción la firma una persona</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-012</td><td><code>REQ-EDITOR-012-S4</code> El cambio está bloqueado</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-012</td><td><code>REQ-EDITOR-012-S5</code> Sin cambios en curso</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-013</td><td><code>REQ-EDITOR-013-S1</code> Hallazgos de distinto peso</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-013</td><td><code>REQ-EDITOR-013-S2</code> Abrir un hallazgo</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-013</td><td><code>REQ-EDITOR-013-S3</code> El código se movió</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-013</td><td><code>REQ-EDITOR-013-S4</code> Proyecto sano</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-013</td><td><code>REQ-EDITOR-013-S5</code> Explicar un código</td><td>T1.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-014</td><td><code>REQ-EDITOR-014-S1</code> Trabajo en curso</td><td>T1.4</td><td>pass</td></tr><tr><td>REQ-EDITOR-014</td><td><code>REQ-EDITOR-014-S2</code> Trabajo bloqueado</td><td>T1.4</td><td>pass</td></tr><tr><td>REQ-EDITOR-014</td><td><code>REQ-EDITOR-014-S3</code> Proyecto sin el flujo</td><td>T1.4</td><td>pass</td></tr><tr><td>REQ-EDITOR-014</td><td><code>REQ-EDITOR-014-S4</code> Sin cambios en curso</td><td>T1.4</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S1</code> Abrir el panel principal</td><td>T2.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S2</code> Cambiar de sección</td><td>T2.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S3</code> El panel ya estaba abierto</td><td>T2.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S4</code> Proyecto sin inicializar</td><td>T2.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S5</code> Sin proyecto abierto</td><td>T2.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-001</td><td><code>REQ-EDITOR-001-S6</code> La relación con el código</td><td>T2.1</td><td>pass</td></tr></tbody></table></div>
+<h2 id="10-pruebas-y-evidencia">10. Pruebas y evidencia</h2>
+<p>20 de 20 escenario(s) con evidencia favorable (20 ejecutable). Registrada por Alonso Anchante entre el 2026-09-21 y el 2026-09-21.</p>
+<div class="table-wrap"><table><thead><tr><th>Escenario</th><th>Qué se comprobó</th><th>Método</th><th>Resultado</th><th>Fecha</th></tr></thead><tbody><tr><td><code>REQ-EDITOR-012-S1</code></td><td>Un cambio en curso</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-012-S2</code></td><td>Varios cambios a la vez</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-012-S3</code></td><td>La acción la firma una persona</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-012-S4</code></td><td>El cambio está bloqueado</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-012-S5</code></td><td>Sin cambios en curso</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-013-S1</code></td><td>Hallazgos de distinto peso</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-013-S2</code></td><td>Abrir un hallazgo</td><td>executable</td><td>pass</td><td>2026-09-21 12:44</td></tr><tr><td><code>REQ-EDITOR-013-S3</code></td><td>El código se movió</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-013-S4</code></td><td>Proyecto sano</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-013-S5</code></td><td>Explicar un código</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-014-S1</code></td><td>Trabajo en curso</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-014-S2</code></td><td>Trabajo bloqueado</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-014-S3</code></td><td>Proyecto sin el flujo</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-014-S4</code></td><td>Sin cambios en curso</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-001-S1</code></td><td>Abrir el panel principal</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-001-S2</code></td><td>Cambiar de sección</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-001-S3</code></td><td>El panel ya estaba abierto</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-001-S4</code></td><td>Proyecto sin inicializar</td><td>executable</td><td>pass</td><td>2026-09-21 12:45</td></tr><tr><td><code>REQ-EDITOR-001-S5</code></td><td>Sin proyecto abierto</td><td>executable</td><td>pass</td><td>2026-09-21 12:46</td></tr><tr><td><code>REQ-EDITOR-001-S6</code></td><td>La relación con el código</td><td>executable</td><td>pass</td><td>2026-09-21 12:46</td></tr></tbody></table></div>
+<h3 id="10-1-como-se-reproduce-la-evidencia">10.1 Cómo se reproduce la evidencia</h3>
+<p>Comandos con los que se obtuvo la evidencia ejecutable:</p>
+<ul><li><code>npx vitest run packages/vscode/test/views.test.ts</code> — 9 escenario(s)</li><li><code>npx vitest run packages/vscode/test/panel.test.ts packages/vscode/test/panel-scenarios.test.ts</code> — 6 escenario(s)</li><li><code>npx vitest run packages/cli/test/dx-ola3.test.ts packages/vscode/test/views.test.ts</code> — 5 escenario(s)</li></ul>
+<h2 id="11-riesgos-y-mitigaciones">11. Riesgos y mitigaciones</h2>
+<div class="table-wrap"><table><thead><tr><th>Riesgo</th><th>Mitigación</th></tr></thead><tbody><tr><td><code>checkDrift</code> recorre el repositorio en cada refresco del snapshot</td><td>El listado de archivos se calcula una sola vez por llamada y solo cuando hay anclas declaradas</td></tr><tr><td>Un snapshot de una versión anterior no trae la deriva</td><td>Los modelos la tratan como opcional y asumen «sin anclas»</td></tr><tr><td>Demasiadas vistas compiten por el espacio</td><td>«Salud» y «Acciones» nacen plegadas; «Ahora» y «Workspace», abiertas</td></tr></tbody></table></div>
+<h2 id="12-como-se-revierte">12. Cómo se revierte</h2>
+<p>Revertir el commit del rediseño: las vistas nuevas y la sección del panel desaparecen, y el árbol vuelve a su raíz anterior. No hay cambios en los artefactos de <code>.sdd/</code>, así que no hay estado que migrar.</p>
+<h2 id="13-pendientes-y-deuda-conocida">13. Pendientes y deuda conocida</h2>
+<p>El informe de consistencia del cambio está en <code>analyze.md</code>: explica qué se comprobó antes de dar el cambio por cerrado.</p>
+<h2 id="notas">Notas</h2>
+<p>(Escribe aquí lo que quieras conservar entre regeneraciones.)</p>
+</article>
+</body>
+</html>

@@ -364,6 +364,40 @@ En carril `standard` el flujo es `spec → aprobar → plan → construir → ve
 
 ---
 
+### 4.10 Dónde vive cada requisito (anclas y deriva)
+
+Al archivar, cada requisito se queda con los archivos que declararon sus tareas. Eso vive en `.sdd/specs/<dominio>/anchors.yaml` — fuera de la spec, que es de negocio y no nombra tecnología:
+
+```yaml
+anchors:
+  - requirement: REQ-AUTH-001
+    files:
+      - src/auth/reset.ts
+      - src/auth/reset.ts#pedirReset
+```
+
+Con eso, la herramienta puede responder dos preguntas que antes no podía:
+
+```bash
+satlas impact src/auth/reset.ts   # ¿qué requisitos toca este archivo?
+satlas drift                      # ¿alguna ancla dejó de existir en el código?
+```
+
+`satlas drift` es el aviso de que el código se movió debajo de la especificación. Si solo cambió la ruta, `satlas drift --prune` limpia las anclas rotas; si cambió el comportamiento, lo que toca es especificar un cambio. En CI lo decide `ci.drift`: `advisory` avisa, `strict` bloquea.
+
+### 4.11 Cuando el trabajo se interrumpe
+
+El trabajo real se corta: negocio no responde, entra un incidente, cambia la prioridad. La pausa es un hecho del cambio y se registra:
+
+```bash
+satlas pause reset-password --reason "esperando definición de negocio" --by "Nombre Apellido"
+satlas resume reset-password
+```
+
+Mientras está pausado, el cambio aparece como **pausado** (con su motivo y quién lo pausó) y su siguiente acción es reanudarlo. Al reanudar, SpecAtlas recalcula el estado desde los artefactos y te dice el paso real: no hace falta recordar dónde quedaste.
+
+---
+
 ## 5. El carril express (`fix`)
 
 Para incidentes no hay ceremonia: un solo artefacto.
@@ -437,6 +471,8 @@ satlas adapters --check                            # falla si están desactualiz
 | Codex / genérico | `prompts/satlas-*.md` + `AGENTS.md` | chat o `/prompts:satlas-*` |
 
 Fases disponibles (una por comando): `adopt`, `specify`, `plan`, `build`, `verify`, `review`, `mockup`, `docs`, `archive`, `fix`.
+
+**No tienes que recordar la sintaxis de tu agente.** El primer target de `adapters.targets` es el agente del proyecto: `satlas next`, `satlas status`, los avisos y los botones del panel te dan la invocación en *su* formato, y los prompts compilados se refieren entre sí igual. Si inicializas con `satlas init --agents claude-code`, el proyecto queda configurado para Claude Code y lo que copias es `/satlas:specify mi-cambio`.
 
 **Higiene de contexto:** usa **una sesión por fase**. El kernel guarda todo el estado en `.sdd/`, así que cada sesión empieza limpia y lee solo lo que necesita — es más barato y mucho más preciso que arrastrar un chat enorme.
 
@@ -604,6 +640,15 @@ integrations:
 | `satlas profile detect|list|create` | Perfiles de stack | No |
 | `satlas adapters [--targets] [--check]` | Compila prompts a agentes | No |
 | `satlas hash <archivo>|--text` | sha256 para evidencia | No |
+| `satlas watch` | Recomprueba y dice el siguiente paso al cambiar `.sdd/` | No |
+| `satlas next <slug> --run` | Ejecuta la siguiente acción | Parcial |
+| `satlas explain [<código>]` | Qué significa un diagnóstico y cómo se cierra | No |
+| `satlas review <slug>` | Estado de la revisión de código (crea `review.md` si falta) | Parcial |
+| `satlas amend <slug> --reason "<motivo>" --by "<nombre>"` | Firma una revisión de una spec ya aprobada | No |
+| `satlas drift [--prune]` | Anclas de las specs vivas contra el código real | No |
+| `satlas impact <REQ-…\|archivo>` | Qué toca un requisito o un archivo | No |
+| `satlas pause <slug> --reason "<motivo>" --by "<nombre>"` | Pausa el cambio dejando constancia del motivo | No |
+| `satlas resume <slug>` | Reanuda y recalcula el paso desde los artefactos | No |
 | `satlas archive <slug>` | Pliega el delta y archiva (`--dry-run`, `--yes`) | No |
 | `satlas doctor` | Salud del workspace y drift | No |
 | `satlas help` | Ayuda completa | No |
@@ -618,7 +663,7 @@ integrations:
 | Prefijo | Familia | Ejemplos |
 |---|---|---|
 | `LINT-STR-*` | Estructura | id mal formado, encabezados faltantes |
-| `LINT-BIZ-*` | Lenguaje de negocio | jerga técnica, palabra vaga, escenario sin `ENTONCES` |
+| `LINT-BIZ-*` | Lenguaje de negocio | jerga técnica, palabra vaga, **texto de plantilla sin completar** (`LINT-BIZ-003`) |
 | `LINT-DLT-*` | Deltas | `MODIFIED` incompleto (perderías escenarios), `REMOVED` sin motivo/migración |
 | `LINT-EVD-*` | Evidencia | bloque mal formado, hash con formato raro |
 | `LINT-TSK-*` | Tareas | tarea sin archivo |
@@ -628,7 +673,7 @@ integrations:
 | `ATLAS-*` | Workspace | config inválida, cambio sin `meta.yaml`, plan sin firma vigente |
 | `PACK-*` | Cumplimiento | control de pack incumplido |
 
-Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en **Problems**; en CLI, con `--json` puedes consumirlos desde cualquier CI.
+`satlas explain <código>` cuenta qué significa cada uno, por qué lo vigila el flujo y cómo se cierra; sin argumento lista las familias. Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en **Problems**; en CLI, con `--json` puedes consumirlos desde cualquier CI.
 
 ---
 

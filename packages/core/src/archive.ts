@@ -12,6 +12,7 @@ import { renderRequirement } from './parse/spec.js'
 import { loadChange, loadWorkspace } from './workspace.js'
 import { indexMarkdown } from './templates.js'
 import { loadLivingFixes, writeLivingFix } from './fixes.js'
+import { anchorsFromTasks, loadAnchors, mergeAnchors, writeAnchors } from './anchors.js'
 
 const REQ_HEADER_RE = /^###\s+(?:Requisito|Requirement):\s+(REQ-[A-Z0-9-]+)\s*(?:—|-|–)\s*(.*)$/
 
@@ -161,6 +162,8 @@ export interface ArchiveResult {
   domain?: string
   archivedTo?: string
   livingFix?: string
+  /** Requisitos cuyas anclas de implementación quedaron registradas al plegar. */
+  anchored?: string[]
   fold: FoldOutcome
   diagnostics: Diagnostic[]
   dryRun: boolean
@@ -283,8 +286,16 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
     return { slug: opts.slug, domain, fold, diagnostics, dryRun: opts.dryRun ?? false }
   }
 
+  // Las anclas se derivan de las tareas del cambio: requisito → escenario → tarea → archivo.
+  const incomingAnchors = anchorsFromTasks(change.delta, change.tasks, now)
+  const anchored = incomingAnchors.map((anchor) => anchor.requirement)
+
   if (!opts.dryRun) {
     await writeText(specFile, nextContent)
+    if (incomingAnchors.length > 0) {
+      const current = await loadAnchors(root, domain)
+      await writeAnchors(root, domain, mergeAnchors(current.anchors, incomingAnchors), language)
+    }
     await ensureDir(archiveDir)
     try {
       await moveDirectory(change.dir, target)
@@ -301,7 +312,7 @@ export async function archiveChange(opts: ArchiveOptions): Promise<ArchiveResult
     await regenerateIndex(root, config, now)
   }
 
-  return { slug: opts.slug, domain, archivedTo: target, fold, diagnostics, dryRun: opts.dryRun ?? false }
+  return { slug: opts.slug, domain, archivedTo: target, fold, diagnostics, anchored, dryRun: opts.dryRun ?? false }
 }
 
 export async function regenerateIndex(root: string, cfg?: AtlasConfig, now: Date = new Date()): Promise<void> {

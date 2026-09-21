@@ -1,5 +1,6 @@
 import path from 'node:path'
 import {
+  agentCommand,
   captureMockups,
   checkMockups,
   computeInputsHash,
@@ -58,18 +59,19 @@ export async function runMockup(ctx: CliContext): Promise<CommandResult> {
   }
   const planFile = await writeMockupPlan(root, slug, plan)
   const inputsHash = await computeInputsHash(root, change)
-  const manifestFile = await writeMockupManifest(root, slug, plan, inputsHash)
+  const manifestFile = await writeMockupManifest(root, slug, plan, inputsHash, new Date(), { level: config.mockups.level, a11y: config.mockups.a11y })
   const lines = [
     `Plan de mockups — ${slug}`,
     '',
     `  plataforma: ${plan.platform}`,
+    `  nivel: ${config.mockups.level} · accesibilidad: ${config.mockups.a11y}`,
     `  pantallas: ${plan.screens.length}`,
     ...plan.screens.map((s) => `    - ${s.id}: ${s.title} (${s.illustrates.length} escenario(s))`),
     '',
     `  plan: ${path.relative(ctx.cwd, planFile)}`,
     `  manifiesto: ${path.relative(ctx.cwd, manifestFile)}`,
     '',
-    'Siguiente: genera el HTML de cada pantalla (fase /satlas-mockup) y valida con `satlas mockup ' + slug + ' --check`.',
+    `Siguiente: genera el HTML de cada pantalla (fase ${agentCommand('mockup', slug, config)}) y valida con \`satlas mockup ${slug} --check\`.`,
   ]
   return { exitCode: 0, diagnostics: [], data: { plan, planFile: path.relative(ctx.cwd, planFile), manifestFile: path.relative(ctx.cwd, manifestFile) }, text: lines }
 }

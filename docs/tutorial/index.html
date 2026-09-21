@@ -52,15 +52,59 @@ pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
 pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
 pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
-th, td { border: 1px solid var(--atlas-line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
 th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
 blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
 .callout p { margin: .3em 0; }
 hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
 ul, ol { padding-left: 1.4em; }
 li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
 small, .muted { color: var(--atlas-muted); }
 .mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
 .atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
 .atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
 .atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
@@ -76,38 +120,58 @@ small, .muted { color: var(--atlas-muted); }
 <nav class="atlas-toc"><h2>Índice</h2><ul><li class="toc-h1"><a href="#tutorial-de-specatlas">Tutorial de SpecAtlas</a></li><li class="toc-h2"><a href="#1-que-problema-resuelve">1. Qué problema resuelve</a></li><li class="toc-h2"><a href="#2-los-cinco-conceptos">2. Los cinco conceptos</a></li><li class="toc-h2"><a href="#3-instalacion">3. Instalación</a></li><li class="toc-h2"><a href="#4-tu-primer-proyecto-paso-a-paso">4. Tu primer proyecto, paso a paso</a></li><li class="toc-h2"><a href="#5-el-carril-express-fix">5. El carril express (<code>fix</code>)</a></li><li class="toc-h2"><a href="#6-adoptar-un-proyecto-que-ya-existe">6. Adoptar un proyecto que ya existe</a></li><li class="toc-h2"><a href="#7-trabajar-con-agentes">7. Trabajar con agentes</a></li><li class="toc-h2"><a href="#8-la-extension-de-vs-code">8. La extensión de VS Code</a></li><li class="toc-h2"><a href="#9-mockups-como-contrato-visual">9. Mockups como contrato visual</a></li><li class="toc-h2"><a href="#10-github-opcional-nunca-un-gate-obligatorio">10. GitHub (opcional, nunca un gate obligatorio)</a></li><li class="toc-h2"><a href="#11-packs-de-cumplimiento">11. Packs de cumplimiento</a></li><li class="toc-h2"><a href="#12-configuracion-de-referencia">12. Configuración de referencia</a></li><li class="toc-h2"><a href="#13-comandos-de-referencia">13. Comandos de referencia</a></li><li class="toc-h2"><a href="#14-codigos-de-diagnostico">14. Códigos de diagnóstico</a></li><li class="toc-h2"><a href="#15-preguntas-frecuentes">15. Preguntas frecuentes</a></li><li class="toc-h2"><a href="#16-glosario">16. Glosario</a></li><li class="toc-h2"><a href="#17-chuleta-cheat-sheet">17. Chuleta (cheat sheet)</a></li></ul></nav>
 <h1 id="tutorial-de-specatlas">Tutorial de SpecAtlas</h1>
 <p><strong>El kernel determinista del Spec-Driven Development.</strong> Specs vivas, trazabilidad ejecutable y gates reales para cualquier stack, cualquier agente y cualquier proyecto — incluido el que ya existe.</p>
-<blockquote><p>Este tutorial asume que <strong>no conoces la herramienta</strong>. Está pensado para leerse de arriba a abajo una vez, y después usarse como referencia por secciones. Tiempo de lectura: ~35 minutos. Tiempo hasta tu primer cambio archivado: ~15 minutos.</p></blockquote>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Tiempo de lectura:</b> ~35 minutos. Tiempo hasta tu primer cambio archivado: ~15 minutos.</span></div><p>Este tutorial asume que <strong>no conoces la herramienta</strong>. Está pensado para leerse de arriba a abajo una vez, y después usarse como referencia por secciones.</p></blockquote>
 <hr>
 <h2 id="1-que-problema-resuelve">1. Qué problema resuelve</h2>
 <p>Cuando un equipo desarrolla con IA pasan tres cosas:</p>
 <ol><li>El agente escribe código sin que nadie haya acordado <strong>qué</strong> se va a construir.</li><li>El acuerdo vive en un chat que nadie puede auditar, y la documentación se escribe (si se escribe) después.</li><li>“Está terminado” es una opinión: no hay evidencia de que el comportamiento pedido sea el comportamiento entregado.</li></ol>
 <p><strong>Spec-Driven Development (SDD)</strong> invierte el orden: primero se acuerda el comportamiento en lenguaje de negocio, esa especificación se <strong>aprueba</strong>, y recién entonces se planifica, se construye y se evidencia.</p>
 <p>SpecAtlas aporta la parte que casi ninguna herramienta resuelve: <strong>el proceso se verifica con código, no con buena voluntad</strong>.</p>
-<table><thead><tr><th>Sin SpecAtlas</th><th>Con SpecAtlas</th></tr></thead><tbody><tr><td>El prompt describe la feature</td><td>La spec funcional describe el comportamiento y se firma</td></tr><tr><td>Nadie sabe qué quedó por hacer</td><td>Las tareas son atómicas y trazables al requisito</td></tr><tr><td>“Ya funciona”</td><td>Cada escenario tiene evidencia registrada (comando + resultado + hash)</td></tr><tr><td>La documentación se pudre</td><td>La spec viva es la fuente de verdad; los cambios se pliegan al archivar</td></tr><tr><td>El bugfix entra por el flujo grande</td><td>Carril <code>fix</code>: un solo artefacto, sin ceremonia</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Sin SpecAtlas</th><th>Con SpecAtlas</th></tr></thead><tbody><tr><td>El prompt describe la feature</td><td>La spec funcional describe el comportamiento y se firma</td></tr><tr><td>Nadie sabe qué quedó por hacer</td><td>Las tareas son atómicas y trazables al requisito</td></tr><tr><td>“Ya funciona”</td><td>Cada escenario tiene evidencia registrada (comando + resultado + hash)</td></tr><tr><td>La documentación se pudre</td><td>La spec viva es la fuente de verdad; los cambios se pliegan al archivar</td></tr><tr><td>El bugfix entra por el flujo grande</td><td>Carril <code>fix</code>: un solo artefacto, sin ceremonia</td></tr></tbody></table></div>
 <p>Tres ideas guían todo el diseño:</p>
 <ul><li><strong>El kernel no sabe de IA.</strong> Todo lo verificable (esquemas, trazabilidad, dependencias, gates) es código determinista. El agente solo escribe contenido y ejecuta tareas.</li><li><strong>Las specs son de negocio.</strong> Lo que se aprueba no tiene una línea de tecnología. El plan técnico es otro artefacto, interno.</li><li><strong>Español por defecto.</strong> Todos los artefactos y mensajes salen en español; <code>language: en</code> para inglés.</li></ul>
 <hr>
 <h2 id="2-los-cinco-conceptos">2. Los cinco conceptos</h2>
-<div class="mermaid-block"><pre class="mermaid">flowchart LR
+<div class="mermaid-block">
+  <div class="diagram-tools" role="toolbar" aria-label="Herramientas del diagrama">
+    <button type="button" data-diagram-zoom="out" title="Alejar (Ctrl + rueda)" aria-label="Alejar">−</button>
+    <button type="button" data-diagram-zoom="reset" data-diagram-level title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-zoom="in" title="Acercar (Ctrl + rueda)" aria-label="Acercar">＋</button>
+    <button type="button" data-diagram-fit title="Ajustar al ancho / tamaño real" aria-label="Ajustar al ancho">⤢</button>
+    <button type="button" data-diagram-fullscreen title="Pantalla completa (Esc para salir)" aria-label="Pantalla completa">⛶</button>
+    <button type="button" data-diagram-download title="Descargar SVG" aria-label="Descargar SVG">⤓</button>
+  </div>
+  <div class="diagram-canvas"><pre class="mermaid">flowchart LR
   A[Spec viva&lt;br/&gt;qu&amp;eacute; hace el sistema hoy] --&gt;|delta de un cambio| B[Cambio&lt;br/&gt;una unidad de trabajo]
   B --&gt; C[Tareas at&amp;oacute;micas&lt;br/&gt;con archivo y rollback]
   C --&gt; D[Evidencia&lt;br/&gt;por escenario]
   D --&gt;|al archivar se pliega| A</pre></div>
-<table><thead><tr><th>Concepto</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>El comportamiento acordado del sistema, por dominio. Es la fuente de verdad</td><td><code>.sdd/specs/&lt;dominio&gt;/spec.md</code></td></tr><tr><td><strong>Cambio</strong></td><td>Una unidad de trabajo con su spec (delta), plan, tareas y evidencia</td><td><code>.sdd/changes/&lt;slug&gt;/</code></td></tr><tr><td><strong>Delta</strong></td><td>Solo lo que cambia: <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code>, <code>RENAMED</code></td><td><code>changes/&lt;slug&gt;/spec.md</code></td></tr><tr><td><strong>Tarea</strong></td><td>Paso atómico: qué se hace, en qué archivo, qué requisito cubre, cómo se revierte</td><td><code>changes/&lt;slug&gt;/tasks.md</code></td></tr><tr><td><strong>Evidencia</strong></td><td>Prueba real de que un escenario funciona: comando, resultado, hash y fecha</td><td><code>changes/&lt;slug&gt;/verify.md</code></td></tr></tbody></table>
+</div>
+<div class="table-wrap"><table><thead><tr><th>Concepto</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>El comportamiento acordado del sistema, por dominio. Es la fuente de verdad</td><td><code>.sdd/specs/&lt;dominio&gt;/spec.md</code></td></tr><tr><td><strong>Cambio</strong></td><td>Una unidad de trabajo con su spec (delta), plan, tareas y evidencia</td><td><code>.sdd/changes/&lt;slug&gt;/</code></td></tr><tr><td><strong>Delta</strong></td><td>Solo lo que cambia: <code>ADDED</code>, <code>MODIFIED</code>, <code>REMOVED</code>, <code>RENAMED</code></td><td><code>changes/&lt;slug&gt;/spec.md</code></td></tr><tr><td><strong>Tarea</strong></td><td>Paso atómico: qué se hace, en qué archivo, qué requisito cubre, cómo se revierte</td><td><code>changes/&lt;slug&gt;/tasks.md</code></td></tr><tr><td><strong>Evidencia</strong></td><td>Prueba real de que un escenario funciona: comando, resultado, hash y fecha</td><td><code>changes/&lt;slug&gt;/verify.md</code></td></tr></tbody></table></div>
 <h3 id="la-cadena-de-trazabilidad">La cadena de trazabilidad</h3>
 <p>Todo cuelga de identificadores estables:</p>
-<div class="mermaid-block"><pre class="mermaid">flowchart LR
+<div class="mermaid-block">
+  <div class="diagram-tools" role="toolbar" aria-label="Herramientas del diagrama">
+    <button type="button" data-diagram-zoom="out" title="Alejar (Ctrl + rueda)" aria-label="Alejar">−</button>
+    <button type="button" data-diagram-zoom="reset" data-diagram-level title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-zoom="in" title="Acercar (Ctrl + rueda)" aria-label="Acercar">＋</button>
+    <button type="button" data-diagram-fit title="Ajustar al ancho / tamaño real" aria-label="Ajustar al ancho">⤢</button>
+    <button type="button" data-diagram-fullscreen title="Pantalla completa (Esc para salir)" aria-label="Pantalla completa">⛶</button>
+    <button type="button" data-diagram-download title="Descargar SVG" aria-label="Descargar SVG">⤓</button>
+  </div>
+  <div class="diagram-canvas"><pre class="mermaid">flowchart LR
   R[&quot;REQ-AUTH-001&lt;br/&gt;requisito&quot;] --&gt; S[&quot;REQ-AUTH-001-S1&lt;br/&gt;escenario&quot;]
   S --&gt; T[&quot;T2.1&lt;br/&gt;tarea (Cubre:)&quot;]
   T --&gt; E[&quot;evidence&lt;br/&gt;result: pass&quot;]</pre></div>
+</div>
 <ul><li><code>REQ-&lt;DOMINIO&gt;-NNN</code> — requisito. <strong>Nunca se renumera.</strong></li><li><code>REQ-&lt;DOMINIO&gt;-NNN-S&lt;n&gt;</code> — escenario del requisito.</li><li><code>BR-&lt;DOMINIO&gt;-NNN</code> — regla de negocio.</li><li><code>T&lt;bloque&gt;.&lt;secuencia&gt;</code> — tarea (ej. <code>T2.1</code>).</li></ul>
 <p><code>satlas trace</code> recorre esa cadena y falla si hay huecos: un escenario sin tarea, una tarea que cubre algo inexistente, un escenario sin evidencia cuando ya se construyó.</p>
 <h3 id="carriles-el-proceso-se-adapta-al-tamano">Carriles: el proceso se adapta al tamaño</h3>
-<table><thead><tr><th>Carril</th><th>Para qué</th><th>Artefactos</th><th>Gates</th></tr></thead><tbody><tr><td><code>fix</code></td><td>Incidentes, hotfix, configuración</td><td><code>fix.md</code> (uno solo)</td><td>Evidencia (puede ser manual) + archivo</td></tr><tr><td><code>standard</code></td><td>Features normales</td><td>spec + plan + tasks + verify</td><td>Aprobación, trazabilidad, evidencia</td></tr><tr><td><code>full</code></td><td>Riesgo alto o regulado</td><td>Todo lo anterior + analyze + review + docs</td><td>Todo, más analyze y review bloqueantes</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Carril</th><th>Para qué</th><th>Artefactos</th><th>Gates</th></tr></thead><tbody><tr><td><code>fix</code></td><td>Incidentes, hotfix, configuración</td><td><code>fix.md</code> (uno solo)</td><td>Evidencia (puede ser manual) + archivo</td></tr><tr><td><code>standard</code></td><td>Features normales</td><td>spec + plan + tasks + verify</td><td>Aprobación, trazabilidad, evidencia</td></tr><tr><td><code>full</code></td><td>Riesgo alto o regulado</td><td>Todo lo anterior + analyze + review + docs</td><td>Todo, más analyze y review bloqueantes</td></tr></tbody></table></div>
 <p>El carril se elige al crear el cambio y se puede <strong>promover</strong> (nunca degradar a ciegas).</p>
 <h3 id="gates-quien-decide-y-cuando">Gates: quién decide y cuándo</h3>
 <p>Un <em>gate</em> es una puerta que no se abre sola. En SpecAtlas son verificables:</p>
-<table><thead><tr><th>Gate</th><th>Qué comprueba</th><th>Cómo se satisface</th></tr></thead><tbody><tr><td>Aprobación</td><td>Que una persona firmó la spec</td><td><code>satlas approve</code> (o etiqueta en GitHub)</td></tr><tr><td>Trazabilidad</td><td>Que requisito → tarea → evidencia cierran</td><td><code>satlas trace --check</code></td></tr><tr><td>Verificación</td><td>Que cada escenario tiene evidencia <code>pass</code></td><td><code>satlas verify --record</code></td></tr><tr><td>Analyze / Review</td><td>Consistencia cruzada y calidad (carril <code>full</code>)</td><td><code>satlas analyze</code> / <code>/satlas-review</code></td></tr><tr><td>Packs</td><td>Controles de cumplimiento del dominio</td><td><code>satlas packs --check</code></td></tr><tr><td>CI</td><td>Todos los anteriores, sin agente</td><td><code>satlas ci</code></td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Gate</th><th>Qué comprueba</th><th>Cómo se satisface</th></tr></thead><tbody><tr><td>Aprobación</td><td>Que una persona firmó la spec</td><td><code>satlas approve</code> (o etiqueta en GitHub)</td></tr><tr><td>Trazabilidad</td><td>Que requisito → tarea → evidencia cierran</td><td><code>satlas trace --check</code></td></tr><tr><td>Verificación</td><td>Que cada escenario tiene evidencia <code>pass</code></td><td><code>satlas verify --record</code></td></tr><tr><td>Analyze / Review</td><td>Consistencia cruzada y calidad (carril <code>full</code>)</td><td><code>satlas analyze</code> / <code>/satlas-review</code></td></tr><tr><td>Packs</td><td>Controles de cumplimiento del dominio</td><td><code>satlas packs --check</code></td></tr><tr><td>CI</td><td>Todos los anteriores, sin agente</td><td><code>satlas ci</code></td></tr></tbody></table></div>
 <hr>
 <h2 id="3-instalacion">3. Instalación</h2>
 <p><strong>Requisitos:</strong> Node ≥ 20 y pnpm ≥ 9.</p>
@@ -174,7 +238,7 @@ El sistema DEBE permitir restablecer la contraseña por email.
 <p>Valida siempre antes de seguir:</p>
 <pre><code class="hljs language-bash">satlas validate --change reset-password</code></pre>
 <p>El validador comprueba la estructura <strong>y</strong> el lenguaje: jerga técnica, palabras vagas (“rápido”, “varios”), criterios sin valor observable, escenarios sin <code>ENTONCES</code>, requisitos sin escenario. Si algo se sale del carril de negocio, te lo dice con código y ubicación.</p>
-<blockquote><p><strong>Consejo:</strong> incluye siempre escenarios de error, caso vacío, falta de permiso y límites. Son los que suelen romperse en producción.</p></blockquote>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Consejo:</b> ** incluye siempre escenarios de error, caso vacío, falta de permiso y límites. Son los que suelen romperse en producción.</span></div></blockquote>
 <h3 id="4-4-aprobar-y-presentar">4.4 Aprobar y presentar</h3>
 <p>La aprobación es un acto humano y nominal, con <strong>hash</strong> del artefacto:</p>
 <pre><code class="hljs language-bash">satlas present reset-password --by <span class="hljs-string">&quot;María Pérez&quot;</span>    <span class="hljs-comment"># 1. firma la spec (hash + autor)</span>
@@ -246,7 +310,16 @@ satlas ci                         <span class="hljs-comment"># el gate de pipeli
 satlas archive reset-password --<span class="hljs-built_in">yes</span>        <span class="hljs-comment"># pliega y archiva</span></code></pre>
 <p>El delta se <strong>pliega</strong> en la spec viva: los <code>ADDED</code> se agregan, los <code>MODIFIED</code> reemplazan el bloque completo, los <code>REMOVED</code> se eliminan (con motivo y migración) y los <code>RENAMED</code> se retitulan. El cambio se mueve a <code>changes/archive/AAAA-MM-&lt;slug&gt;/</code> y el <code>INDEX.md</code> se regenera. Todo el plegado es determinista y ocurre <strong>todo-o-nada</strong>: si algo no cuadra, no se escribe nada.</p>
 <h3 id="4-9-el-ciclo-completo">4.9 El ciclo completo</h3>
-<div class="mermaid-block"><pre class="mermaid">flowchart LR
+<div class="mermaid-block">
+  <div class="diagram-tools" role="toolbar" aria-label="Herramientas del diagrama">
+    <button type="button" data-diagram-zoom="out" title="Alejar (Ctrl + rueda)" aria-label="Alejar">−</button>
+    <button type="button" data-diagram-zoom="reset" data-diagram-level title="Tamaño original" aria-label="Tamaño original">100%</button>
+    <button type="button" data-diagram-zoom="in" title="Acercar (Ctrl + rueda)" aria-label="Acercar">＋</button>
+    <button type="button" data-diagram-fit title="Ajustar al ancho / tamaño real" aria-label="Ajustar al ancho">⤢</button>
+    <button type="button" data-diagram-fullscreen title="Pantalla completa (Esc para salir)" aria-label="Pantalla completa">⛶</button>
+    <button type="button" data-diagram-download title="Descargar SVG" aria-label="Descargar SVG">⤓</button>
+  </div>
+  <div class="diagram-canvas"><pre class="mermaid">flowchart LR
   S[Spec] --&gt; A[Aprobar]
   A --&gt; P[Plan + Tareas]
   P --&gt; B[Construir]
@@ -256,7 +329,25 @@ satlas archive reset-password --<span class="hljs-built_in">yes</span>        <s
   D --&gt; P2[PR]
   P2 --&gt; AR[Archivar]
   AR --&gt;|fold| S2[Spec viva actualizada]</pre></div>
+</div>
 <p>En carril <code>standard</code> el flujo es <code>spec → aprobar → plan → construir → verificar → archivar</code>. En <code>full</code> se suman <code>analyze</code>, <code>review</code> y <code>docs</code>. En <code>fix</code> solo hay <code>fix.md</code> y evidencia.</p>
+<hr>
+<h3 id="4-10-donde-vive-cada-requisito-anclas-y-deriva">4.10 Dónde vive cada requisito (anclas y deriva)</h3>
+<p>Al archivar, cada requisito se queda con los archivos que declararon sus tareas. Eso vive en <code>.sdd/specs/&lt;dominio&gt;/anchors.yaml</code> — fuera de la spec, que es de negocio y no nombra tecnología:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">anchors:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">requirement:</span> <span class="hljs-string">REQ-AUTH-001</span>
+    <span class="hljs-attr">files:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">src/auth/reset.ts</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">src/auth/reset.ts#pedirReset</span></code></pre>
+<p>Con eso, la herramienta puede responder dos preguntas que antes no podía:</p>
+<pre><code class="hljs language-bash">satlas impact src/auth/reset.ts   <span class="hljs-comment"># ¿qué requisitos toca este archivo?</span>
+satlas drift                      <span class="hljs-comment"># ¿alguna ancla dejó de existir en el código?</span></code></pre>
+<p><code>satlas drift</code> es el aviso de que el código se movió debajo de la especificación. Si solo cambió la ruta, <code>satlas drift --prune</code> limpia las anclas rotas; si cambió el comportamiento, lo que toca es especificar un cambio. En CI lo decide <code>ci.drift</code>: <code>advisory</code> avisa, <code>strict</code> bloquea.</p>
+<h3 id="4-11-cuando-el-trabajo-se-interrumpe">4.11 Cuando el trabajo se interrumpe</h3>
+<p>El trabajo real se corta: negocio no responde, entra un incidente, cambia la prioridad. La pausa es un hecho del cambio y se registra:</p>
+<pre><code class="hljs language-bash">satlas pause reset-password --reason <span class="hljs-string">&quot;esperando definición de negocio&quot;</span> --by <span class="hljs-string">&quot;Nombre Apellido&quot;</span>
+satlas resume reset-password</code></pre>
+<p>Mientras está pausado, el cambio aparece como <strong>pausado</strong> (con su motivo y quién lo pausó) y su siguiente acción es reanudarlo. Al reanudar, SpecAtlas recalcula el estado desde los artefactos y te dice el paso real: no hace falta recordar dónde quedaste.</p>
 <hr>
 <h2 id="5-el-carril-express-fix">5. El carril express (<code>fix</code>)</h2>
 <p>Para incidentes no hay ceremonia: un solo artefacto.</p>
@@ -291,8 +382,9 @@ satlas archive adopt-auth --<span class="hljs-built_in">yes</span></code></pre>
 <pre><code class="hljs language-bash">satlas adapters                                    <span class="hljs-comment"># usa lo configurado (por defecto opencode + generic)</span>
 satlas adapters --targets cursor,copilot,gemini,codex
 satlas adapters --check                            <span class="hljs-comment"># falla si están desactualizados (para CI)</span></code></pre>
-<table><thead><tr><th>Agente</th><th>Artefactos</th><th>Invocación</th></tr></thead><tbody><tr><td>opencode</td><td><code>.opencode/command/satlas-<em>.md</code> + <code>.opencode/skills/satlas-</em>/SKILL.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Claude Code</td><td><code>.claude/commands/satlas/*.md</code> + skills</td><td><code>/satlas:specify</code></td></tr><tr><td>Cursor</td><td><code>.cursor/skills/satlas-<em>/SKILL.md</code> + <code>.cursor/commands/</em>.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Copilot</td><td><code>.github/prompts/satlas-*.prompt.md</code></td><td><code>/satlas-specify</code> en el chat</td></tr><tr><td>Gemini CLI</td><td><code>.gemini/commands/satlas/*.toml</code> + <code>GEMINI.md</code></td><td><code>/satlas:specify</code></td></tr><tr><td>Codex / genérico</td><td><code>prompts/satlas-*.md</code> + <code>AGENTS.md</code></td><td>chat o <code>/prompts:satlas-*</code></td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Agente</th><th>Artefactos</th><th>Invocación</th></tr></thead><tbody><tr><td>opencode</td><td><code>.opencode/command/satlas-<em>.md</code> + <code>.opencode/skills/satlas-</em>/SKILL.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Claude Code</td><td><code>.claude/commands/satlas/*.md</code> + skills</td><td><code>/satlas:specify</code></td></tr><tr><td>Cursor</td><td><code>.cursor/skills/satlas-<em>/SKILL.md</code> + <code>.cursor/commands/</em>.md</code></td><td><code>/satlas-specify</code></td></tr><tr><td>Copilot</td><td><code>.github/prompts/satlas-*.prompt.md</code></td><td><code>/satlas-specify</code> en el chat</td></tr><tr><td>Gemini CLI</td><td><code>.gemini/commands/satlas/*.toml</code> + <code>GEMINI.md</code></td><td><code>/satlas:specify</code></td></tr><tr><td>Codex / genérico</td><td><code>prompts/satlas-*.md</code> + <code>AGENTS.md</code></td><td>chat o <code>/prompts:satlas-*</code></td></tr></tbody></table></div>
 <p>Fases disponibles (una por comando): <code>adopt</code>, <code>specify</code>, <code>plan</code>, <code>build</code>, <code>verify</code>, <code>review</code>, <code>mockup</code>, <code>docs</code>, <code>archive</code>, <code>fix</code>.</p>
+<p><strong>No tienes que recordar la sintaxis de tu agente.</strong> El primer target de <code>adapters.targets</code> es el agente del proyecto: <code>satlas next</code>, <code>satlas status</code>, los avisos y los botones del panel te dan la invocación en <em>su</em> formato, y los prompts compilados se refieren entre sí igual. Si inicializas con <code>satlas init --agents claude-code</code>, el proyecto queda configurado para Claude Code y lo que copias es <code>/satlas:specify mi-cambio</code>.</p>
 <p><strong>Higiene de contexto:</strong> usa <strong>una sesión por fase</strong>. El kernel guarda todo el estado en <code>.sdd/</code>, así que cada sesión empieza limpia y lee solo lo que necesita — es más barato y mucho más preciso que arrastrar un chat enorme.</p>
 <hr>
 <h2 id="8-la-extension-de-vs-code">8. La extensión de VS Code</h2>
@@ -319,7 +411,7 @@ satlas approve reset-password --from-github           <span class="hljs-comment"
 <pre><code class="hljs language-yaml"><span class="hljs-attr">packs:</span> [<span class="hljs-string">seguridad</span>, <span class="hljs-string">auditoria</span>]</code></pre>
 <pre><code class="hljs language-bash">satlas packs                          <span class="hljs-comment"># lista integrados y si están activos</span>
 satlas packs --check reset-password   <span class="hljs-comment"># evalúa (exit 1 si hay fallas)</span></code></pre>
-<table><thead><tr><th>Pack</th><th>Qué exige</th></tr></thead><tbody><tr><td><code>seguridad</code></td><td>Reversión por tarea, evidencia automatizable, una regla que nombre el control (sesión, permisos, token)</td></tr><tr><td><code>datos</code></td><td>Finalidad y ciclo de vida del dato, Reversión, escenario de eliminación/exportación</td></tr><tr><td><code>auditoria</code></td><td>Reversión, evidencia ejecutable/automática (sin manual), rastro de auditoría, aprobación nominal activa</td></tr><tr><td><code>accesibilidad</code></td><td>Escenarios con teclado/foco/contraste y un requisito no funcional medible</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Pack</th><th>Qué exige</th></tr></thead><tbody><tr><td><code>seguridad</code></td><td>Reversión por tarea, evidencia automatizable, una regla que nombre el control (sesión, permisos, token)</td></tr><tr><td><code>datos</code></td><td>Finalidad y ciclo de vida del dato, Reversión, escenario de eliminación/exportación</td></tr><tr><td><code>auditoria</code></td><td>Reversión, evidencia ejecutable/automática (sin manual), rastro de auditoría, aprobación nominal activa</td></tr><tr><td><code>accesibilidad</code></td><td>Escenarios con teclado/foco/contraste y un requisito no funcional medible</td></tr></tbody></table></div>
 <p>Puedes escribir packs propios en <code>.sdd/packs/&lt;id&gt;.yaml</code> con seis tipos de control: <code>task-rollback</code>, <code>evidence-strong</code>, <code>spec-terms</code>, <code>rule-terms</code>, <code>nfr-measurable</code>, <code>approval-provider</code>. Los hallazgos llevan código <code>PACK-&lt;PACK&gt;-&lt;CONTROL&gt;</code> y se integran en <code>analyze</code>, <code>ci</code> y el panel de Problems.</p>
 <hr>
 <h2 id="12-configuracion-de-referencia">12. Configuración de referencia</h2>
@@ -380,12 +472,12 @@ satlas packs --check reset-password   <span class="hljs-comment"># evalúa (exit
   <span class="hljs-attr">tracker:</span> <span class="hljs-string">none</span>                     <span class="hljs-comment"># none | github | jira | linear | clickup</span></code></pre>
 <hr>
 <h2 id="13-comandos-de-referencia">13. Comandos de referencia</h2>
-<table><thead><tr><th>Comando</th><th>Qué hace</th><th>¿Agente?</th></tr></thead><tbody><tr><td><code>satlas init</code></td><td>Crea <code>.sdd/</code>, detecta stack, compila adaptadores</td><td>No</td></tr><tr><td><code>satlas adopt</code></td><td>Inventario brownfield + specs baseline + informe</td><td>No</td></tr><tr><td><code>satlas new &lt;slug&gt;</code></td><td>Crea el cambio (meta + propuesta + delta)</td><td>No</td></tr><tr><td><code>satlas status</code> / <code>satlas next [slug]</code></td><td>Estado derivado y siguiente acción</td><td>No</td></tr><tr><td><code>satlas validate [--change] [--strict]</code></td><td>Estructura + linter de negocio</td><td>No</td></tr><tr><td><code>satlas trace [--change]</code></td><td>Grafo y huecos de trazabilidad (<code>TRACE-*</code>)</td><td>No</td></tr><tr><td><code>satlas waves [--change]</code></td><td>Olas paralelas con guarda de colisiones</td><td>No</td></tr><tr><td><code>satlas analyze &lt;slug&gt;</code></td><td>Chequeo cruzado completo → <code>analyze.md</code></td><td>No</td></tr><tr><td><code>satlas verify &lt;slug&gt;</code></td><td>Lista huecos o registra evidencia (<code>--scenario</code>, <code>--command</code>)</td><td>No</td></tr><tr><td>`satlas approve &lt;slug</td><td>ruta&gt;`</td><td>Firma con hash y autor (<code>--from-github</code> para etiqueta)</td><td>No</td></tr><tr><td><code>satlas present &lt;slug&gt;</code></td><td>Paquete HTML para el stakeholder</td><td>No</td></tr><tr><td><code>satlas mockup &lt;slug&gt;</code></td><td>Plan, <code>--check</code>, <code>--capture</code> de mockups</td><td>Parcial</td></tr><tr><td><code>satlas packs</code></td><td>Lista/evalúa packs de cumplimiento</td><td>No</td></tr><tr><td><code>satlas ci [--strict]</code></td><td>Gate de pipeline completo</td><td>No</td></tr><tr><td><code>satlas metrics</code></td><td>Métricas locales (progreso, WIP, throughput)</td><td>No</td></tr><tr><td><code>satlas run …</code></td><td>Runs y eventos (auditoría, reanudación)</td><td>No</td></tr><tr><td>`satlas issue sync</td><td>status`</td><td>Tracker GitHub idempotente</td><td>No</td></tr><tr><td>`satlas profile detect</td><td>list</td><td>create`</td><td>Perfiles de stack</td><td>No</td></tr><tr><td><code>satlas adapters [--targets] [--check]</code></td><td>Compila prompts a agentes</td><td>No</td></tr><tr><td>`satlas hash &lt;archivo&gt;</td><td>--text`</td><td>sha256 para evidencia</td><td>No</td></tr><tr><td><code>satlas archive &lt;slug&gt;</code></td><td>Pliega el delta y archiva (<code>--dry-run</code>, <code>--yes</code>)</td><td>No</td></tr><tr><td><code>satlas doctor</code></td><td>Salud del workspace y drift</td><td>No</td></tr><tr><td><code>satlas help</code></td><td>Ayuda completa</td><td>No</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Comando</th><th>Qué hace</th><th>¿Agente?</th><th></th><th></th></tr></thead><tbody><tr><td><code>satlas init</code></td><td>Crea <code>.sdd/</code>, detecta stack, compila adaptadores</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas adopt</code></td><td>Inventario brownfield + specs baseline + informe</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas new &lt;slug&gt;</code></td><td>Crea el cambio (meta + propuesta + delta)</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas status</code> / <code>satlas next [slug]</code></td><td>Estado derivado y siguiente acción</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas validate [--change] [--strict]</code></td><td>Estructura + linter de negocio</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas trace [--change]</code></td><td>Grafo y huecos de trazabilidad (<code>TRACE-*</code>)</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas waves [--change]</code></td><td>Olas paralelas con guarda de colisiones</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas analyze &lt;slug&gt;</code></td><td>Chequeo cruzado completo → <code>analyze.md</code></td><td>No</td><td></td><td></td></tr><tr><td><code>satlas verify &lt;slug&gt;</code></td><td>Lista huecos o registra evidencia (<code>--scenario</code>, <code>--command</code>)</td><td>No</td><td></td><td></td></tr><tr><td>`satlas approve &lt;slug</td><td>ruta&gt;`</td><td>Firma con hash y autor (<code>--from-github</code> para etiqueta)</td><td>No</td><td></td></tr><tr><td><code>satlas present &lt;slug&gt;</code></td><td>Paquete HTML para el stakeholder</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas mockup &lt;slug&gt;</code></td><td>Plan, <code>--check</code>, <code>--capture</code> de mockups</td><td>Parcial</td><td></td><td></td></tr><tr><td><code>satlas packs</code></td><td>Lista/evalúa packs de cumplimiento</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas ci [--strict]</code></td><td>Gate de pipeline completo</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas metrics</code></td><td>Métricas locales (progreso, WIP, throughput)</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas run …</code></td><td>Runs y eventos (auditoría, reanudación)</td><td>No</td><td></td><td></td></tr><tr><td>`satlas issue sync</td><td>status`</td><td>Tracker GitHub idempotente</td><td>No</td><td></td></tr><tr><td>`satlas profile detect</td><td>list</td><td>create`</td><td>Perfiles de stack</td><td>No</td></tr><tr><td><code>satlas adapters [--targets] [--check]</code></td><td>Compila prompts a agentes</td><td>No</td><td></td><td></td></tr><tr><td>`satlas hash &lt;archivo&gt;</td><td>--text`</td><td>sha256 para evidencia</td><td>No</td><td></td></tr><tr><td><code>satlas watch</code></td><td>Recomprueba y dice el siguiente paso al cambiar <code>.sdd/</code></td><td>No</td><td></td><td></td></tr><tr><td><code>satlas next &lt;slug&gt; --run</code></td><td>Ejecuta la siguiente acción</td><td>Parcial</td><td></td><td></td></tr><tr><td><code>satlas explain [&lt;código&gt;]</code></td><td>Qué significa un diagnóstico y cómo se cierra</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas review &lt;slug&gt;</code></td><td>Estado de la revisión de código (crea <code>review.md</code> si falta)</td><td>Parcial</td><td></td><td></td></tr><tr><td><code>satlas amend &lt;slug&gt; --reason &quot;&lt;motivo&gt;&quot; --by &quot;&lt;nombre&gt;&quot;</code></td><td>Firma una revisión de una spec ya aprobada</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas drift [--prune]</code></td><td>Anclas de las specs vivas contra el código real</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas impact &lt;REQ-…|archivo&gt;</code></td><td>Qué toca un requisito o un archivo</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas pause &lt;slug&gt; --reason &quot;&lt;motivo&gt;&quot; --by &quot;&lt;nombre&gt;&quot;</code></td><td>Pausa el cambio dejando constancia del motivo</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas resume &lt;slug&gt;</code></td><td>Reanuda y recalcula el paso desde los artefactos</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas archive &lt;slug&gt;</code></td><td>Pliega el delta y archiva (<code>--dry-run</code>, <code>--yes</code>)</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas doctor</code></td><td>Salud del workspace y drift</td><td>No</td><td></td><td></td></tr><tr><td><code>satlas help</code></td><td>Ayuda completa</td><td>No</td><td></td><td></td></tr></tbody></table></div>
 <p><strong>Exit codes:</strong> <code>0</code> ok (puede haber avisos) · <code>1</code> hallazgos bloqueantes · <code>2</code> uso/configuración · <code>3</code> E/S. <strong>JSON:</strong> todos los comandos aceptan <code>--json</code> con un envelope estable (<code>schemaVersion</code>, <code>ok</code>, <code>data</code>, <code>warnings</code>, <code>errors</code>).</p>
 <hr>
 <h2 id="14-codigos-de-diagnostico">14. Códigos de diagnóstico</h2>
-<table><thead><tr><th>Prefijo</th><th>Familia</th><th>Ejemplos</th></tr></thead><tbody><tr><td><code>LINT-STR-*</code></td><td>Estructura</td><td>id mal formado, encabezados faltantes</td></tr><tr><td><code>LINT-BIZ-*</code></td><td>Lenguaje de negocio</td><td>jerga técnica, palabra vaga, escenario sin <code>ENTONCES</code></td></tr><tr><td><code>LINT-DLT-*</code></td><td>Deltas</td><td><code>MODIFIED</code> incompleto (perderías escenarios), <code>REMOVED</code> sin motivo/migración</td></tr><tr><td><code>LINT-EVD-*</code></td><td>Evidencia</td><td>bloque mal formado, hash con formato raro</td></tr><tr><td><code>LINT-TSK-*</code></td><td>Tareas</td><td>tarea sin archivo</td></tr><tr><td><code>LINT-PLN-*</code></td><td>Plan</td><td>falta un diagrama requerido, mermaid inválido</td></tr><tr><td><code>LINT-MKP-*</code> / <code>MKP-STALE</code></td><td>Mockups</td><td>sin estados, sin breakpoints, recursos externos, obsoleto</td></tr><tr><td><code>TRACE-*</code></td><td>Trazabilidad</td><td>escenario sin tarea, <code>Cubre:</code> inexistente, ciclo de dependencias</td></tr><tr><td><code>ATLAS-*</code></td><td>Workspace</td><td>config inválida, cambio sin <code>meta.yaml</code>, plan sin firma vigente</td></tr><tr><td><code>PACK-*</code></td><td>Cumplimiento</td><td>control de pack incumplido</td></tr></tbody></table>
-<p>Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en <strong>Problems</strong>; en CLI, con <code>--json</code> puedes consumirlos desde cualquier CI.</p>
+<div class="table-wrap"><table><thead><tr><th>Prefijo</th><th>Familia</th><th>Ejemplos</th></tr></thead><tbody><tr><td><code>LINT-STR-*</code></td><td>Estructura</td><td>id mal formado, encabezados faltantes</td></tr><tr><td><code>LINT-BIZ-*</code></td><td>Lenguaje de negocio</td><td>jerga técnica, palabra vaga, <strong>texto de plantilla sin completar</strong> (<code>LINT-BIZ-003</code>)</td></tr><tr><td><code>LINT-DLT-*</code></td><td>Deltas</td><td><code>MODIFIED</code> incompleto (perderías escenarios), <code>REMOVED</code> sin motivo/migración</td></tr><tr><td><code>LINT-EVD-*</code></td><td>Evidencia</td><td>bloque mal formado, hash con formato raro</td></tr><tr><td><code>LINT-TSK-*</code></td><td>Tareas</td><td>tarea sin archivo</td></tr><tr><td><code>LINT-PLN-*</code></td><td>Plan</td><td>falta un diagrama requerido, mermaid inválido</td></tr><tr><td><code>LINT-MKP-*</code> / <code>MKP-STALE</code></td><td>Mockups</td><td>sin estados, sin breakpoints, recursos externos, obsoleto</td></tr><tr><td><code>TRACE-*</code></td><td>Trazabilidad</td><td>escenario sin tarea, <code>Cubre:</code> inexistente, ciclo de dependencias</td></tr><tr><td><code>ATLAS-*</code></td><td>Workspace</td><td>config inválida, cambio sin <code>meta.yaml</code>, plan sin firma vigente</td></tr><tr><td><code>PACK-*</code></td><td>Cumplimiento</td><td>control de pack incumplido</td></tr></tbody></table></div>
+<p><code>satlas explain &lt;código&gt;</code> cuenta qué significa cada uno, por qué lo vigila el flujo y cómo se cierra; sin argumento lista las familias. Los mensajes incluyen archivo, línea y una sugerencia de arreglo. En VS Code aparecen en <strong>Problems</strong>; en CLI, con <code>--json</code> puedes consumirlos desde cualquier CI.</p>
 <hr>
 <h2 id="15-preguntas-frecuentes">15. Preguntas frecuentes</h2>
 <p><strong>¿<code>satlas</code> y <code>specatlas</code> son lo mismo?</strong> Sí: el paquete publica el bin <code>specatlas</code> y el alias <code>satlas</code>. Internamente no usamos <code>sdd</code> como comando porque ese nombre ya pertenece a otro paquete npm.</p>
@@ -399,7 +491,7 @@ satlas packs --check reset-password   <span class="hljs-comment"># evalúa (exit
 <p><strong>¿Cómo personalizo las reglas de mi equipo?</strong> <code>.sdd/constitution.md</code> (principios), <code>.sdd/glossary.md</code> (lenguaje), <code>.sdd/profiles/custom/<em>.yaml</code> (stack) y <code>.sdd/packs/</em>.yaml</code> (cumplimiento). Todo es texto versionado.</p>
 <hr>
 <h2 id="16-glosario">16. Glosario</h2>
-<table><thead><tr><th>Término</th><th>Significado</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>Comportamiento acordado del sistema, por dominio; se actualiza al archivar cada cambio</td></tr><tr><td><strong>Delta</strong></td><td>Cambio relativo a la spec viva: <code>ADDED</code> / <code>MODIFIED</code> / <code>REMOVED</code> / <code>RENAMED</code></td></tr><tr><td><strong>Escenario</strong></td><td>Ejemplo concreto y verificable: <code>CUANDO … ENTONCES …</code></td></tr><tr><td><strong>Regla de negocio</strong></td><td>Restricción estable que aplica siempre (<code>BR-*</code>)</td></tr><tr><td><strong>Evidencia</strong></td><td>Comando, resultado, hash y fecha que prueban un escenario</td></tr><tr><td><strong>Ola</strong></td><td>Grupo de tareas paralelizables (sin dependencias ni archivos compartidos)</td></tr><tr><td><strong>Carril</strong></td><td>Tamaño de proceso: <code>fix</code>, <code>standard</code>, <code>full</code></td></tr><tr><td><strong>Gate</strong></td><td>Puerta verificable que debe abrirse para avanzar</td></tr><tr><td><strong>Fold</strong></td><td>Plegado del delta en la spec viva al archivar</td></tr><tr><td><strong>Ancla</strong></td><td>Archivo o símbolo del código que respalda un requisito (para detectar drift)</td></tr><tr><td><strong>Perfil</strong></td><td>Reglas del stack (comandos, estructura, anti-patrones, validaciones)</td></tr><tr><td><strong>Pack</strong></td><td>Conjunto de controles de cumplimiento activables</td></tr></tbody></table>
+<div class="table-wrap"><table><thead><tr><th>Término</th><th>Significado</th></tr></thead><tbody><tr><td><strong>Spec viva</strong></td><td>Comportamiento acordado del sistema, por dominio; se actualiza al archivar cada cambio</td></tr><tr><td><strong>Delta</strong></td><td>Cambio relativo a la spec viva: <code>ADDED</code> / <code>MODIFIED</code> / <code>REMOVED</code> / <code>RENAMED</code></td></tr><tr><td><strong>Escenario</strong></td><td>Ejemplo concreto y verificable: <code>CUANDO … ENTONCES …</code></td></tr><tr><td><strong>Regla de negocio</strong></td><td>Restricción estable que aplica siempre (<code>BR-*</code>)</td></tr><tr><td><strong>Evidencia</strong></td><td>Comando, resultado, hash y fecha que prueban un escenario</td></tr><tr><td><strong>Ola</strong></td><td>Grupo de tareas paralelizables (sin dependencias ni archivos compartidos)</td></tr><tr><td><strong>Carril</strong></td><td>Tamaño de proceso: <code>fix</code>, <code>standard</code>, <code>full</code></td></tr><tr><td><strong>Gate</strong></td><td>Puerta verificable que debe abrirse para avanzar</td></tr><tr><td><strong>Fold</strong></td><td>Plegado del delta en la spec viva al archivar</td></tr><tr><td><strong>Ancla</strong></td><td>Archivo o símbolo del código que respalda un requisito (para detectar drift)</td></tr><tr><td><strong>Perfil</strong></td><td>Reglas del stack (comandos, estructura, anti-patrones, validaciones)</td></tr><tr><td><strong>Pack</strong></td><td>Conjunto de controles de cumplimiento activables</td></tr></tbody></table></div>
 <hr>
 <h2 id="17-chuleta-cheat-sheet">17. Chuleta (cheat sheet)</h2>
 <pre><code class="hljs language-bash"><span class="hljs-comment"># Preparar</span>
@@ -435,7 +527,148 @@ satlas doctor                                    <span class="hljs-comment"># al
 <script nonce="" src="mermaid.min.js"></script>
 <script nonce="">
   const theme = 'default';
-  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme }); }
+  if (window.mermaid) { mermaid.initialize({ startOnLoad: true, theme, themeVariables: theme === 'dark' ? { fontSize: '13px', lineColor: '#64748b', primaryColor: '#1e293b', primaryTextColor: '#e2e8f0', primaryBorderColor: '#475569', tertiaryColor: '#0f172a' } : { fontSize: '13px' } }); }
+
+(function () {
+  var attempts = 0;
+  function wire() {
+    var blocks = Array.prototype.slice.call(document.querySelectorAll('.mermaid-block'));
+    var pending = false;
+    blocks.forEach(function (block) {
+      var canvas = block.querySelector('.diagram-canvas');
+      var svg = canvas ? canvas.querySelector('svg') : null;
+      if (!canvas) return;
+      if (!svg) { pending = true; return; }
+      if (block.getAttribute('data-wired') === '1') return;
+      block.setAttribute('data-wired', '1');
+      var level = block.querySelector('[data-diagram-level]');
+      var fitButton = block.querySelector('[data-diagram-fit]');
+      var state = { zoom: 1, fit: true };
+      var box = svg.viewBox && svg.viewBox.baseVal;
+      var rect = svg.getBoundingClientRect();
+      var natural = {
+        w: box && box.width ? box.width : rect.width,
+        h: box && box.height ? box.height : rect.height,
+      };
+      svg.style.maxWidth = 'none';
+      svg.style.maxHeight = 'none';
+      svg.style.margin = 'auto';
+      function padding() { return 24; }
+      function fitScale() {
+        var cw = Math.max(0, canvas.clientWidth - padding());
+        var ch = Math.max(0, canvas.clientHeight - padding());
+        if (natural.w <= 0 || natural.h <= 0) return 1;
+        return Math.min(1, cw / natural.w, ch / natural.h);
+      }
+      function apply() {
+        var scale = state.fit ? fitScale() : state.zoom;
+        svg.style.width = Math.max(1, Math.round(natural.w * scale)) + 'px';
+        svg.style.height = Math.max(1, Math.round(natural.h * scale)) + 'px';
+        if (fitButton) fitButton.classList.toggle('active', state.fit);
+        if (level) level.textContent = state.fit ? 'Ajustar' : Math.round(state.zoom * 100) + '%';
+      }
+      function setZoom(delta) {
+        if (state.fit) {
+          state.fit = false;
+          state.zoom = Math.max(0.1, Math.min(4, fitScale()));
+        }
+        state.zoom = Math.max(0.1, Math.min(4, state.zoom + delta));
+        apply();
+      }
+      Array.prototype.slice.call(block.querySelectorAll('[data-diagram-zoom]')).forEach(function (button) {
+        button.addEventListener('click', function () {
+          var action = button.getAttribute('data-diagram-zoom');
+          if (action === 'in') setZoom(0.25);
+          else if (action === 'out') setZoom(-0.25);
+          else { state.fit = true; state.zoom = 1; apply(); }
+        });
+      });
+      if (fitButton) fitButton.addEventListener('click', function () {
+        state.fit = !state.fit;
+        if (state.fit) state.zoom = 1;
+        apply();
+      });
+      canvas.addEventListener('wheel', function (event) {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        setZoom(event.deltaY < 0 ? 0.15 : -0.15);
+      }, { passive: false });
+      var panning = false;
+      var startX = 0;
+      var startY = 0;
+      var originLeft = 0;
+      var originTop = 0;
+      canvas.addEventListener('mousedown', function (event) {
+        panning = true;
+        startX = event.clientX;
+        startY = event.clientY;
+        originLeft = canvas.scrollLeft;
+        originTop = canvas.scrollTop;
+        canvas.classList.add('panning');
+        event.preventDefault();
+      });
+      window.addEventListener('mousemove', function (event) {
+        if (!panning) return;
+        canvas.scrollLeft = originLeft - (event.clientX - startX);
+        canvas.scrollTop = originTop - (event.clientY - startY);
+      });
+      window.addEventListener('mouseup', function () {
+        if (!panning) return;
+        panning = false;
+        canvas.classList.remove('panning');
+      });
+      var preFullscreen = null;
+      var fullscreen = block.querySelector('[data-diagram-fullscreen]');
+      if (fullscreen) fullscreen.addEventListener('click', function () {
+        if (!block.classList.contains('diagram-fullscreen')) {
+          preFullscreen = { zoom: state.zoom, fit: state.fit };
+          block.classList.add('diagram-fullscreen');
+          document.body.style.overflow = 'hidden';
+          state.fit = true;
+          state.zoom = 1;
+        } else {
+          block.classList.remove('diagram-fullscreen');
+          document.body.style.overflow = '';
+          if (preFullscreen) {
+            state.zoom = preFullscreen.zoom;
+            state.fit = preFullscreen.fit;
+            preFullscreen = null;
+          }
+        }
+        apply();
+      });
+      canvas.addEventListener('dblclick', function () {
+        state.fit = !state.fit;
+        if (state.fit) state.zoom = 1;
+        apply();
+      });
+      window.addEventListener('resize', function () { apply(); });
+      var download = block.querySelector('[data-diagram-download]');
+      if (download) download.addEventListener('click', function () {
+        var clone = svg.cloneNode(true);
+        clone.style.width = '';
+        clone.style.height = '';
+        clone.style.margin = '';
+        var data = new XMLSerializer().serializeToString(clone);
+        var link = document.createElement('a');
+        link.href = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+        link.download = 'diagrama.svg';
+        link.click();
+      });
+      apply();
+    });
+    if (pending && attempts < 40) { attempts += 1; setTimeout(wire, 250); }
+  }
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    Array.prototype.slice.call(document.querySelectorAll('.diagram-fullscreen')).forEach(function (block) {
+      var button = block.querySelector('[data-diagram-fullscreen]');
+      if (button) button.click();
+    });
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})()
+
 </script>
 </body>
 </html>

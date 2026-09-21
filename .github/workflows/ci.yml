@@ -21,3 +21,20 @@ jobs:
       - run: pnpm -r build
       - run: pnpm -r typecheck
       - run: pnpm test
+      # El gate del flujo SDD con el código de este mismo commit.
+      - run: pnpm satlas adapters --check
+      - run: pnpm satlas ci
+
+  sdd:
+    # Además, la Action publicada se ejercita sobre este repo en cada propuesta.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          version: latest
+          strict: 'false'
+          upload: 'true'

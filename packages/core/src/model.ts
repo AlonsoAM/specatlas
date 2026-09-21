@@ -1,4 +1,5 @@
 import type { Diagnostic } from './diagnostics.js'
+import type { ReviewFile } from './parse/review.js'
 
 export type Lane = 'fix' | 'standard' | 'full'
 export type RiskLevel = 'low' | 'medium' | 'high'
@@ -169,6 +170,7 @@ export interface ChangeMeta {
   mockups?: 'required' | 'skip'
   tracker?: { provider: string; id: string; url?: string }
   paused?: { reason: string; at: string; by: string }
+  amendments?: Array<{ reason: string; by: string; at: string; from?: string; to?: string }>
   laneHistory?: Array<{ from: Lane; to: Lane; at: string; by: string }>
   diagramExceptions?: string[]
   overrides?: Override[]
@@ -237,6 +239,7 @@ export interface Change {
   contracts?: ContractsState
   planPath?: string
   reviewPath?: string
+  review?: ReviewFile
   presentationPath?: string
   mockupManifestPath?: string
   diagnostics: Diagnostic[]

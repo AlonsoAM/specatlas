@@ -7,6 +7,7 @@ import { checkTrace } from './trace.js'
 import { linkedTraceInput } from './links.js'
 import { planWaves } from './waves.js'
 import { runDoctor } from './doctor.js'
+import { checkDrift } from './drift.js'
 import { loadWorkspace } from './workspace.js'
 import { readTextIfExists } from './fsx.js'
 import type { Requirement } from './model.js'
@@ -99,6 +100,11 @@ export async function runCiGate(opts: CiOptions): Promise<CiResult> {
     changesWarnings += entry.warnings
   }
   checks.push({ name: 'cambios (lint + trace + waves + mockups)', errors: changesErrors, warnings: changesWarnings })
+
+  // Deriva de las anclas: las specs vivas contra el código real.
+  const drift = await checkDrift({ root, config })
+  diagnostics.push(...drift.findings)
+  checks.push(count('anclas (deriva del código)', drift.findings))
 
   const doctor = await runDoctor(root)
   const doctorErrors = doctor.findings.filter((d) => d.severity === 'error')

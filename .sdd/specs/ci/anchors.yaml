@@ -1,0 +1,45 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-CI-001
+    files:
+      - action.yml
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/commands/ci.ts
+      - packages/core/src/index.ts
+      - packages/core/src/sarif.ts
+      - packages/core/test/sarif.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-CI-002
+    files:
+      - packages/cli/test/ci-sarif.test.ts
+      - packages/core/src/index.ts
+      - packages/core/src/sarif.ts
+      - packages/core/test/sarif.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-CI-003
+    files:
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/commands/ci.ts
+      - packages/cli/test/ci-sarif.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-CI-004
+    files:
+      - action.yml
+      - packages/cli/test/ci-sarif.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-CI-005
+    files:
+      - action.yml
+      - packages/cli/test/ci-sarif.test.ts
+      - packages/core/src/index.ts
+      - packages/core/src/sarif.ts
+    updated: 2026-09-21
+    source: archive

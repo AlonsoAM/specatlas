@@ -2,9 +2,20 @@ import * as vscode from 'vscode'
 import path from 'node:path'
 import {
   archiveChange,
+  checkDrift,
   checkTrace,
   collectMetrics,
   createChange,
+  explainDiagnostic,
+  impactOfFile,
+  impactOfRequirement,
+  listExplanations,
+  loadAllAnchors,
+  loadWorkspace,
+  pruneAnchors,
+  renderTemplate,
+  templatesFor,
+  writeText,
   evaluatePacks,
   generatePresentation,
   initWorkspace,
@@ -48,7 +59,12 @@ import {
   type ToolItem,
 } from './logic.js'
 import { formHtml, type FormField } from './forms.js'
-import { boardHtml, matrixHtml, metricsHtml } from './panels.js'
+import { PANEL_KEY, PANEL_TITLE, PANEL_VIEW_TYPE, buildPanelPage, isPanelSection, panelNotice, renderPanelHtml, type PanelResources } from './panel/panel.js'
+import { buildPanelModel } from './panel/model.js'
+import { agentCli } from '@specatlas/core'
+import { buildNow, focusChange, statusBarText } from './views/now.js'
+import { buildHealth, healthBadge } from './views/health.js'
+import { laneOf, resolveCommand, stepsForLane } from './actions.js'
 import { findLivePanel, refreshLivePanels, updateLivePanel, type LivePanelEntry, type LivePanelSurface } from './live.js'
 import { startLanguageClient } from './client.js'
 import type { LanguageClient } from 'vscode-languageclient/node'
@@ -344,53 +360,77 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
 
   private rootNodes(): Node[] {
     if (this.state.snapshots.length === 0) return []
-    return this.state.snapshots.map((snapshot) => {
-      const specs: Node[] = snapshot.specs.map((spec) => ({ kind: 'spec', spec }))
-      const changes: Node[] = snapshot.changes.map((change) => ({ kind: 'change', change }))
-      const fixes: Node[] = snapshot.fixes.map((fix) => ({ kind: 'livingFix', fix }))
-      const archived: Node[] = snapshot.archived.map((entry) => ({ kind: 'archivedChange', archived: entry }))
+    // Con un solo workspace no hay nada que desambiguar: los grupos van a la raíz
+    // para que lo que importa esté a un clic, no a tres.
+    const single = this.state.snapshots.length === 1
+    const nodes = this.state.snapshots.map((snapshot) => {
+      const groups = groupsFor(snapshot)
+      if (single) return groups
       const ready = snapshot.changes.filter((change) => change.state === 'ready').length
       const blocked = snapshot.changes.filter((change) => change.blockedBy.length > 0).length
-      return {
-        kind: 'group',
-        label: snapshot.projectName,
-        description: `${snapshot.summary.specs} specs · ${snapshot.summary.changes} cambios${ready > 0 ? ` · ${ready} listos` : ''}${blocked > 0 ? ` · ${blocked} bloqueados` : ''}`,
-        icon: 'root-folder',
-        tone: 'charts.blue',
-        children: [
-          {
-            kind: 'group',
-            label: 'Specs vivas',
-            description: snapshot.summary.specs > 0 ? `${snapshot.summary.specs}` : '0 · se llenan al archivar un cambio',
-            icon: 'book',
-            tone: 'charts.purple',
-            tooltip: '**Specs vivas** — la fuente de verdad del comportamiento actual.\n\nSe llenan al archivar: `satlas archive <slug>` pliega el delta del cambio en `.sdd/specs/<dominio>/spec.md`.',
-            children: specs,
-          },
-          { kind: 'group', label: 'Cambios', description: `${snapshot.summary.changes}`, icon: 'git-pull-request', tone: 'charts.green', children: changes },
-          {
-            kind: 'group',
-            label: 'Fixes',
-            description: snapshot.fixes.length > 0 ? `${snapshot.fixes.length}` : '0 · se llenan al archivar un fix',
-            icon: 'wrench',
-            tone: 'charts.orange',
-            tooltip:
-              '**Fixes** — las correcciones del carril express, vivas o conservadas del histórico.\n\nSe llenan al archivar: `satlas archive <slug>` conserva el fix en `.sdd/fixes/` con su causa, su cambio y su evidencia. Los fixes archivados por versiones anteriores también aparecen (desde el histórico).',
-            children: fixes,
-          },
-          {
-            kind: 'group',
-            label: 'Histórico de cambios',
-            description: snapshot.archived.length > 0 ? `${snapshot.archived.length}` : '0 · se llena al archivar',
-            icon: 'archive',
-            tooltip:
-              '**Histórico de cambios** — qué cambios se cerraron, cuándo y con qué evidencia (su propuesta, su plan, sus tareas y su verificación).\n\nEs la **historia**, no el comportamiento vigente: eso vive en **Specs vivas**. Los fixes tienen su propio grupo.',
-            children: archived,
-          },
-        ],
-      }
+      return [
+        {
+          kind: 'group' as const,
+          label: snapshot.projectName,
+          description: `${snapshot.summary.specs} specs · ${snapshot.summary.changes} cambios${ready > 0 ? ` · ${ready} listos` : ''}${blocked > 0 ? ` · ${blocked} bloqueados` : ''}`,
+          icon: 'root-folder',
+          tone: 'charts.blue',
+          children: groups,
+        },
+      ]
     })
+    return nodes.flat()
   }
+}
+
+/** Los cuatro grupos del workspace, en el orden en que se usan. */
+function groupsFor(snapshot: Snapshot): Node[] {
+  const specs: Node[] = snapshot.specs.map((spec) => ({ kind: 'spec', spec }))
+  const changes: Node[] = snapshot.changes.map((change) => ({ kind: 'change', change }))
+  const fixes: Node[] = snapshot.fixes.map((fix) => ({ kind: 'livingFix', fix }))
+  const archived: Node[] = snapshot.archived.map((entry) => ({ kind: 'archivedChange', archived: entry }))
+  const ready = snapshot.changes.filter((change) => change.state === 'ready').length
+  const blocked = snapshot.changes.filter((change) => change.blockedBy.length > 0).length
+
+  return [
+    {
+      kind: 'group',
+      label: 'Cambios',
+      description: changes.length > 0 ? `${changes.length}${ready > 0 ? ` · ${ready} listo(s)` : ''}${blocked > 0 ? ` · ${blocked} bloqueado(s)` : ''}` : '0 · empieza uno con «Nuevo cambio»',
+      icon: 'git-pull-request',
+      tone: 'charts.green',
+      tooltip: '**Cambios** — el trabajo en curso: propuesta, especificación, plan, tareas y evidencia.\n\nCada uno avanza por fases y se cierra al archivar.',
+      children: changes,
+    },
+    {
+      kind: 'group',
+      label: 'Specs vivas',
+      description: snapshot.summary.specs > 0 ? `${snapshot.summary.specs}` : '0 · se llenan al archivar un cambio',
+      icon: 'book',
+      tone: 'charts.purple',
+      tooltip: '**Specs vivas** — la fuente de verdad del comportamiento actual.\n\nSe llenan al archivar: `satlas archive <slug>` pliega el delta del cambio en `.sdd/specs/<dominio>/spec.md`.',
+      children: specs,
+    },
+    {
+      kind: 'group',
+      label: 'Fixes',
+      description: snapshot.fixes.length > 0 ? `${snapshot.fixes.length}` : '0 · se llenan al archivar un fix',
+      icon: 'wrench',
+      tone: 'charts.orange',
+      tooltip:
+        '**Fixes** — las correcciones del carril express, vivas o conservadas del histórico.\n\nSe llenan al archivar: `satlas archive <slug>` conserva el fix en `.sdd/fixes/` con su causa, su cambio y su evidencia.',
+      children: fixes,
+    },
+    {
+      kind: 'group',
+      label: 'Histórico de cambios',
+      description: snapshot.archived.length > 0 ? `${snapshot.archived.length}` : '0 · se llena al archivar',
+      icon: 'archive',
+      tooltip:
+        '**Histórico de cambios** — qué cambios se cerraron, cuándo y con qué evidencia.\n\nEs la **historia**, no el comportamiento vigente: eso vive en **Specs vivas**.',
+      children: archived,
+    },
+  ]
 }
 
 function progressGlyphs(percent: number): string {
@@ -402,6 +442,8 @@ function stateIcon(state: string): vscode.ThemeIcon {
   switch (state) {
     case 'ready':
       return new vscode.ThemeIcon('pass-filled', new vscode.ThemeColor('charts.green'))
+    case 'paused':
+      return new vscode.ThemeIcon('debug-pause', new vscode.ThemeColor('charts.yellow'))
     case 'spec_draft':
       return new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.orange'))
     case 'awaiting_approval':
@@ -503,15 +545,65 @@ class ToolsProvider implements vscode.TreeDataProvider<ToolNode> {
   }
 }
 
+/** Nodo de las vistas «Ahora» y «Salud»: mismo contrato, dos modelos puros. */
+interface PanelTreeNode {
+  id: string
+  label: string
+  description?: string
+  tooltip?: string
+  icon: string
+  tone?: string
+  command?: { command: string; args: unknown[] }
+  contextValue?: string
+  children?: PanelTreeNode[]
+  expanded?: boolean
+}
+
+class ModelTreeProvider implements vscode.TreeDataProvider<PanelTreeNode> {
+  private nodes: PanelTreeNode[] = []
+  private readonly emitter = new vscode.EventEmitter<PanelTreeNode | undefined>()
+  readonly onDidChangeTreeData = this.emitter.event
+
+  update(nodes: PanelTreeNode[]): void {
+    this.nodes = nodes
+    this.emitter.fire(undefined)
+  }
+
+  getChildren(node?: PanelTreeNode): PanelTreeNode[] {
+    return node ? (node.children ?? []) : this.nodes
+  }
+
+  getTreeItem(node: PanelTreeNode): vscode.TreeItem {
+    const collapsible =
+      (node.children?.length ?? 0) === 0
+        ? vscode.TreeItemCollapsibleState.None
+        : node.expanded
+          ? vscode.TreeItemCollapsibleState.Expanded
+          : vscode.TreeItemCollapsibleState.Collapsed
+    const item = new vscode.TreeItem(node.label, collapsible)
+    if (node.description !== undefined) item.description = node.description
+    if (node.tooltip !== undefined) item.tooltip = new vscode.MarkdownString(node.tooltip)
+    item.iconPath = new vscode.ThemeIcon(node.icon, node.tone ? new vscode.ThemeColor(node.tone) : undefined)
+    if (node.contextValue !== undefined) item.contextValue = node.contextValue
+    if (node.command) item.command = { command: node.command.command, title: node.label, arguments: node.command.args }
+    item.id = node.id
+    return item
+  }
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   const provider = new AtlasTreeProvider()
   const treeView = vscode.window.createTreeView(VIEW_ID, { treeDataProvider: provider, showCollapseAll: true })
+  const nowProvider = new ModelTreeProvider()
+  const nowView = vscode.window.createTreeView('specatlas.now', { treeDataProvider: nowProvider })
+  const healthProvider = new ModelTreeProvider()
+  const healthView = vscode.window.createTreeView('specatlas.health', { treeDataProvider: healthProvider })
   const tools = new ToolsProvider()
   vscode.window.createTreeView('specatlas.tools', { treeDataProvider: tools })
   const problems = vscode.languages.createDiagnosticCollection('specatlas')
   const output = vscode.window.createOutputChannel('SpecAtlas')
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 40)
-  status.command = 'specatlas.refresh'
+  status.command = 'specatlas.focusNow'
   status.show()
   const panelIcon = vscode.Uri.joinPath(context.extensionUri, 'media', 'icon.png')
 
@@ -559,8 +651,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const entry: LivePanelEntry<vscode.WebviewPanel> = { key: opts.key, target: panel, surface: surfaceOf(panel), build: opts.build }
     livePanels.add(entry)
     panel.onDidDispose(() => livePanels.delete(entry))
+    let wasVisible = panel.visible
     panel.onDidChangeViewState(() => {
-      if (panel.visible) void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+      if (panel.visible && !wasVisible) void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
+      wasVisible = panel.visible
     })
     void updateLivePanel(entry, (message) => output.appendLine(`[paneles] ${message}`))
     return panel
@@ -628,6 +722,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     treeView,
+    nowView,
+    healthView,
     problems,
     output,
     status,
@@ -657,6 +753,25 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
+
+  const openOpencode = async (instruction: string): Promise<void> => {
+    const root = workspaceRoot()
+    const cli = agentCli(provider.snapshotOf(0)?.agent)
+    try {
+      const terminal = vscode.window.createTerminal({ name: cli, cwd: root })
+      terminal.show(true)
+      terminal.sendText(`${cli} "${instruction.replace(/"/g, '\\"')}"`)
+    } catch (error) {
+      await vscode.env.clipboard.writeText(instruction)
+      void vscode.window.showWarningMessage(`SpecAtlas: no se pudo abrir el asistente (${(error as Error).message}); la instrucción quedó copiada al portapapeles.`)
+    }
+  }
+
+  const instructionForStep = (change: SnapshotChange, stepId: string): string | undefined => {
+    const step = stepsForLane(laneOf(change)).find((item) => item.id === stepId)
+    // La invocación depende del agente configurado en el proyecto, no del que suponga la extensión.
+    return step ? resolveCommand(step.command, change.slug, provider.snapshotOf(0)?.agent) : undefined
+  }
 
   const mockupGateBlocked = async (change: SnapshotChange): Promise<boolean> => {
     const root = workspaceRoot()
@@ -729,6 +844,12 @@ export function activate(context: vscode.ExtensionContext): void {
     const selected = provider.getSelected()
     if (slug) return providerSnapshot(provider).find((c) => c.slug === slug) ?? selected
     return selected ?? providerSnapshot(provider)[0]
+  }
+
+  const runInTerminal = async (command: string, cwd: string): Promise<void> => {
+    const terminal = vscode.window.createTerminal({ name: 'SpecAtlas', cwd })
+    terminal.show(true)
+    terminal.sendText(command)
   }
 
   const register = (id: string, handler: (...args: unknown[]) => Promise<void> | void): void => {
@@ -1118,6 +1239,135 @@ export function activate(context: vscode.ExtensionContext): void {
     if (action === 'Ver informe') output.show()
   })
 
+  register('specatlas.focusNow', async () => {
+    await vscode.commands.executeCommand('specatlas.now.focus')
+  })
+
+  register('specatlas.focusHealth', async () => {
+    await vscode.commands.executeCommand('specatlas.health.focus')
+  })
+
+  register('specatlas.drift', async () => {
+    const root = workspaceRoot()
+    if (!root) return
+    const loaded = await loadConfig(path.join(root, '.sdd'))
+    const anchors = await loadAllAnchors(root)
+    const report = await checkDrift({ root, config: loaded.config, anchors })
+    output.clear()
+    output.appendLine('Anclas y deriva del código')
+    output.appendLine('')
+    output.appendLine(`  modo: ${report.mode === 'strict' ? 'estricto (bloquea)' : 'aviso'}`)
+    output.appendLine(`  dominios con anclas: ${report.domains}`)
+    output.appendLine(`  anclas comprobadas: ${report.checked}`)
+    output.appendLine(`  anclas rotas: ${report.drifted.length}`)
+    for (const item of report.drifted) {
+      output.appendLine(`  ${item.domain} · ${item.requirement} — ${item.anchor} (${item.kind === 'missing-file' ? 'el archivo ya no existe' : 'el símbolo ya no está'})`)
+    }
+    output.show(true)
+
+    if (report.drifted.length === 0) {
+      void vscode.window.showInformationMessage(`SpecAtlas: ${report.checked} ancla(s) al día; las specs vivas y el código siguen de acuerdo.`)
+      return
+    }
+    const choice = await vscode.window.showWarningMessage(
+      `SpecAtlas: ${report.drifted.length} ancla(s) apuntan a código que ya no existe.`,
+      { modal: false },
+      'Depurar anclas rotas',
+    )
+    if (choice !== 'Depurar anclas rotas') return
+    const confirm = await vscode.window.showWarningMessage(
+      'Se quitarán las anclas rotas de las specs vivas. Si lo que cambió es el comportamiento, lo que corresponde es especificar un cambio.',
+      { modal: true },
+      'Depurar',
+    )
+    if (confirm !== 'Depurar') return
+    const pruned = await pruneAnchors(root, report.drifted, anchors, loaded.config.project.language)
+    const removed = pruned.reduce((total, entry) => total + entry.removed.length, 0)
+    void vscode.window.showInformationMessage(`SpecAtlas: ${removed} ancla(s) retiradas.`)
+    await refresh()
+  })
+
+  register('specatlas.impact', async (arg?: unknown) => {
+    const root = workspaceRoot()
+    if (!root) return
+    const fromArg = typeof arg === 'string' ? arg : undefined
+    const target =
+      fromArg ??
+      (await vscode.window.showInputBox({
+        title: 'SpecAtlas: impacto',
+        prompt: 'Requisito (REQ-…) o ruta de archivo',
+        value: vscode.window.activeTextEditor ? vscode.workspace.asRelativePath(vscode.window.activeTextEditor.document.uri) : '',
+      }))
+    if (!target) return
+
+    const { workspace } = await loadWorkspace(root)
+    const anchors = await loadAllAnchors(root)
+    const report = /^REQ-[A-Z0-9-]+$/i.test(target)
+      ? impactOfRequirement(workspace, target.toUpperCase().replace(/-S\d+$/, ''), anchors)
+      : impactOfFile(workspace, target, anchors)
+
+    output.clear()
+    output.appendLine(`Impacto — ${target}`)
+    output.appendLine('')
+    if (!report.exists) {
+      output.appendLine('  Sin relaciones registradas.')
+    } else {
+      if (report.requirements.length > 0) output.appendLine(`  requisitos: ${report.requirements.join(', ')}`)
+      if (report.changes.length > 0) output.appendLine(`  cambios: ${report.changes.join(', ')}`)
+      for (const anchor of report.anchors ?? []) {
+        for (const file of anchor.files) output.appendLine(`  ancla: ${anchor.requirement} · ${anchor.domain} — ${file}`)
+      }
+      for (const task of report.tasks) output.appendLine(`  tarea: ${task.change} · ${task.id} — ${task.text}`)
+      for (const evidence of report.evidence) output.appendLine(`  evidencia: ${evidence.scenario} — ${evidence.result}`)
+    }
+    output.show(true)
+  })
+
+  register('specatlas.review', async (arg?: unknown) => {
+    const change = selectedChange(arg)
+    if (!change) return
+    const file = path.join(change.dir, 'review.md')
+    const fs = await import('node:fs')
+    if (!fs.existsSync(file)) {
+      const loaded = await loadConfig(path.join(workspaceRoot() ?? '', '.sdd'))
+      const templates = templatesFor(loaded.config.project.language)
+      await writeText(file, renderTemplate(templates.review, { TITLE: change.title ?? change.slug, SLUG: change.slug }))
+      void vscode.window.showInformationMessage('SpecAtlas: review.md creado. La revisión la hace el agente o una persona.')
+    }
+    await vscode.window.showTextDocument(vscode.Uri.file(file))
+  })
+
+  register('specatlas.explain', async (arg?: unknown) => {
+    const fromContext = typeof arg === 'string' && arg.includes(':') ? arg.split(':').slice(1).join(':') : undefined
+    const code =
+      fromContext ??
+      (await vscode.window.showQuickPick(
+        listExplanations().map((item) => ({ label: item.code, description: item.title })),
+        { title: 'SpecAtlas: explicar un código', placeHolder: 'Elige el código del hallazgo' },
+      ))?.label
+    if (!code) return
+    const { explanation, family } = explainDiagnostic(code)
+    const lines = explanation
+      ? [`**${explanation.code}** — ${explanation.title}`, '', `**Por qué importa:** ${explanation.why}`, '', `**Cómo se cierra:** ${explanation.fix}`]
+      : [`**${code}**`, '', `Sin ficha propia; pertenece a la familia ${family?.prefix ?? '—'}.`]
+    if (family) lines.push('', `_${family.title}: ${family.description}_`)
+    output.clear()
+    output.appendLine(lines.join('\n').replace(/\*\*/g, ''))
+    output.show(true)
+  })
+
+  register('specatlas.adopt', async () => {
+    const root = workspaceRoot()
+    if (!root) return
+    await runInTerminal('satlas adopt', root)
+  })
+
+  register('specatlas.watch', async () => {
+    const root = workspaceRoot()
+    if (!root) return
+    await runInTerminal('satlas watch', root)
+  })
+
   register('specatlas.ci', async () => {
     const root = workspaceRoot()
     if (!root) return
@@ -1287,11 +1537,27 @@ export function activate(context: vscode.ExtensionContext): void {
     const change = selectedChange(arg)
     if (!change) return
     const command = change.next
-    if (!command.startsWith('satlas ')) {
-      await vscode.env.clipboard.writeText(command)
-      void vscode.window.showInformationMessage(`SpecAtlas: acción con agente copiada al portapapeles: ${command}`)
+
+    // La fase del agente abre el asistente configurado en el proyecto.
+    if (change.requiresAgent || command.startsWith('/')) {
+      await openOpencode(command)
       return
     }
+
+    // Lo que firma una persona no se dispara solo: se abre su comando y se avisa.
+    const human = /^satlas (approve|archive|amend|pause|resume)/.exec(command)
+    if (human) {
+      const mapping: Record<string, string> = { approve: 'specatlas.approve', archive: 'specatlas.archive' }
+      const target = mapping[human[1] ?? '']
+      if (target) {
+        await vscode.commands.executeCommand(target, change.slug)
+        return
+      }
+      await vscode.env.clipboard.writeText(command)
+      void vscode.window.showInformationMessage(`SpecAtlas: «${command}» la firma una persona; el comando quedó copiado.`)
+      return
+    }
+
     const sub = command.split(' ')[1] ?? ''
     const mapping: Record<string, string> = {
       validate: 'specatlas.validate',
@@ -1300,65 +1566,109 @@ export function activate(context: vscode.ExtensionContext): void {
       waves: 'specatlas.waves',
       analyze: 'specatlas.analyze',
       present: 'specatlas.present',
-      approve: 'specatlas.approve',
-      archive: 'specatlas.archive',
+      verify: 'specatlas.verify',
+      review: 'specatlas.review',
+      packs: 'specatlas.packs',
+      mockup: 'specatlas.mockup.open',
+      ci: 'specatlas.ci',
+      drift: 'specatlas.drift',
     }
     const target = mapping[sub]
     if (target) {
-      await vscode.commands.executeCommand(target)
-    } else {
-      await vscode.env.clipboard.writeText(command)
-      void vscode.window.showInformationMessage(`SpecAtlas: copiado "${command}" — ejecútalo en la terminal.`)
+      await vscode.commands.executeCommand(target, change.slug)
+      return
     }
+    const root = workspaceRoot()
+    if (root) {
+      await runInTerminal(command, root)
+      return
+    }
+    await vscode.env.clipboard.writeText(command)
+    void vscode.window.showInformationMessage(`SpecAtlas: copiado "${command}" — ejecútalo en la terminal.`)
   })
 
-  register('specatlas.matrix', async () => {
-    const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'matrix',
-      viewType: 'specatlas.matrix',
-      title: 'Matriz de trazabilidad',
-      viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: true, enableCommandUris: true },
-      build: async () => {
-        const model = await buildMatrix(root)
-        return { html: matrixHtml(model, panelNonce()) }
-      },
-    })
-  })
+  const wiredPanels = new WeakSet<vscode.WebviewPanel>()
 
-  register('specatlas.board', async () => {
-    const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'board',
-      viewType: 'specatlas.board',
-      title: 'Tablero',
-      viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: true, enableCommandUris: true },
-      build: async () => {
-        const snapshot = await buildSnapshot(root)
-        if (!snapshot) return undefined
-        return { title: `Tablero — ${snapshot.projectName}`, html: boardHtml(snapshot, panelNonce()) }
-      },
-    })
-  })
+  const handlePanelMessage = async (panel: vscode.WebviewPanel, message: { type?: string; value?: string; step?: string }): Promise<void> => {
+    if (message.type === 'run-step') {
+      const change = selectedChange(message.value)
+      if (!change || !message.step) return
+      const instruction = instructionForStep(change, message.step)
+      if (instruction) await openOpencode(instruction)
+      return
+    }
+    if (message.type === 'copy-command' && message.value) {
+      await vscode.env.clipboard.writeText(message.value)
+      void vscode.window.showInformationMessage(`SpecAtlas: copiado "${message.value}"`)
+      return
+    }
+    if (message.type === 'open-artifact') {
+      const change = selectedChange(message.value)
+      const file = change?.files.find((item) => item.kind === message.value)
+      if (change && file?.exists) await vscode.commands.executeCommand('specatlas.openPreview', file.path, change.slug, file.kind)
+      return
+    }
+    if (message.type === 'mockup-html' && message.value) {
+      const root = workspaceRoot()
+      const target = path.resolve(message.value)
+      if (!root || !target.toLowerCase().startsWith(path.resolve(root).toLowerCase())) return
+      const content = await readTextIfExists(target)
+      if (content === undefined) return
+      await panel.webview.postMessage({ type: 'mockup-html', value: message.value, data: Buffer.from(content, 'utf8').toString('base64') })
+    }
+  }
 
-  register('specatlas.metrics', async () => {
+  register('specatlas.panel', async (arg?: unknown) => {
     const root = workspaceRoot()
-    if (!root) return
-    openLivePanel({
-      key: 'metrics',
-      viewType: 'specatlas.metrics',
-      title: 'Métricas',
+    const section = isPanelSection(arg) ? arg : 'resumen'
+    const panel = openLivePanel({
+      key: PANEL_KEY,
+      viewType: PANEL_VIEW_TYPE,
+      title: PANEL_TITLE,
       viewColumn: vscode.ViewColumn.Active,
-      options: { enableScripts: false, enableCommandUris: true },
-      build: async () => {
-        const metrics = await collectMetrics(root)
-        return { title: `Métricas — ${metrics.project}`, html: metricsHtml(metrics) }
+      options: {
+        enableScripts: true,
+        enableCommandUris: true,
+        retainContextWhenHidden: true,
+        localResourceRoots: [context.extensionUri, ...(root ? [vscode.Uri.file(root)] : [])],
+      },
+      build: async (panel) => {
+        if (!root) return { title: PANEL_TITLE, html: panelNotice('no-workspace', 'Abre una carpeta con SpecAtlas inicializado para ver el panel principal.') }
+        const model = await buildPanelModel(root)
+        if (!model) return { title: PANEL_TITLE, html: panelNotice('not-initialized', 'Inicializar crea .sdd/ y los comandos del agente; después el panel muestra el estado real.') }
+        const mermaidUri = panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', 'mermaid.min.js')).toString()
+        const resources: PanelResources = {}
+        const change = model.change
+        if (change) {
+          const presentation = change.files.find((file) => file.kind === 'presentation' && file.exists)
+          if (presentation) {
+            const raw = await readTextIfExists(presentation.path)
+            if (raw !== undefined) resources.presentationBase64 = Buffer.from(raw, 'utf8').toString('base64')
+          }
+          const mockupFile = change.files.find((file) => file.kind === 'mockup' && file.exists)
+          if (mockupFile && mockupFile.screens && mockupFile.screens.length > 0) {
+            resources.mockups = []
+            for (const [index, screen] of mockupFile.screens.entries()) {
+              const screenPath = pathForScreen(change, screen)
+              const entry: { file: string; title: string; path: string; base64?: string } = { file: screen.file, title: screen.title, path: screenPath }
+              if (index === 0) {
+                const rawScreen = await readTextIfExists(screenPath)
+                if (rawScreen !== undefined) entry.base64 = Buffer.from(rawScreen, 'utf8').toString('base64')
+              }
+              resources.mockups.push(entry)
+            }
+          }
+        }
+        return { title: `${PANEL_TITLE} — ${model.snapshot.projectName}`, html: renderPanelHtml(model, section, panelNonce(), { mermaidUri, cspSource: panel.webview.cspSource, resources }) }
       },
     })
+    if (!wiredPanels.has(panel)) {
+      wiredPanels.add(panel)
+      panel.webview.onDidReceiveMessage((message: { type?: string; value?: string; step?: string }) => {
+        void handlePanelMessage(panel, message)
+      })
+    }
+    void panel.webview.postMessage({ type: 'show-section', value: section })
   })
 
   void refresh()

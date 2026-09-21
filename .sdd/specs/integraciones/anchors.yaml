@@ -1,0 +1,68 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-INTEGRACIONES-001
+    files:
+      - packages/core/src/config.ts
+      - packages/core/src/contracts.ts
+      - packages/core/src/index.ts
+      - packages/core/src/model.ts
+      - packages/core/src/parse/spec.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/contracts.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-INTEGRACIONES-002
+    files:
+      - packages/cli/src/evaluate.ts
+      - packages/core/src/config.ts
+      - packages/core/src/contracts.ts
+      - packages/core/src/index.ts
+      - packages/core/src/lifecycle.ts
+      - packages/core/src/model.ts
+      - packages/core/src/parse/spec.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/contracts.test.ts
+      - packages/vscode/src/logic.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-INTEGRACIONES-003
+    files:
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/core/src/index.ts
+      - packages/core/src/links.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/links.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-INTEGRACIONES-004
+    files:
+      - packages/cli/src/evaluate.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/core/src/gate.ts
+      - packages/core/src/impact.ts
+      - packages/core/src/trace.ts
+      - packages/core/test/links.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-INTEGRACIONES-005
+    files:
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/contracts.ts
+      - packages/cli/src/commands/link.ts
+      - packages/cli/src/mcp/tools/contracts.ts
+      - packages/cli/src/mcp/tools/index.ts
+      - packages/cli/src/mcp/tools/links.ts
+      - packages/cli/src/mcp/tools/list.ts
+      - packages/cli/src/messages.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/core/test/links.test.ts
+    updated: 2026-09-21
+    source: archive

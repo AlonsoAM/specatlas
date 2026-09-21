@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { mockupsReady, requiresMockups, signApproval } from '@specatlas/core'
+import { agentCommand, mockupsReady, requiresMockups, signApproval } from '@specatlas/core'
 import { flagBool, flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { runApproveFromGithub } from './issue.js'
@@ -49,7 +49,7 @@ export async function runApprove(ctx: CliContext): Promise<CommandResult> {
           code: 'ATLAS-APPROVE-002',
           severity: 'error',
           message: `El cambio "${change.slug}" exige mockups (meta.yaml: mockups: required) y no están listos`,
-          suggestion: `Genera el contrato visual con \`/satlas-mockup ${change.slug}\` y vuelve a aprobar (o registra un override del gate "mockup" en meta.yaml)`,
+          suggestion: `Genera el contrato visual con \`${agentCommand('mockup', change.slug, config)}\` y vuelve a aprobar (o registra un override del gate "mockup" en meta.yaml)`,
         },
       ],
     }

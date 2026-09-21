@@ -94,13 +94,17 @@ describe('CLI e2e (F0)', () => {
     const clarifyData = clarify.data as { open: unknown[]; resolved: unknown[]; action?: string }
     expect(clarifyData.open).toHaveLength(1)
     expect(clarifyData.resolved).toHaveLength(1)
-    expect(clarifyData.action).toContain('/satlas.clarify')
+    expect(clarifyData.action).toContain('/satlas-clarify')
     expect((clarify.text ?? []).join('\n')).toContain('preguntas abiertas: 1')
 
     const tecnica = await runDocs(ctx(root, { tipo: 'tecnica' }, ['reset-password']))
     expect(tecnica.exitCode).toBe(0)
-    expect((tecnica.data as { files: Array<{ tipo: string; created: boolean }> }).files).toEqual([{ tipo: 'tecnica', created: true, path: expect.any(String) }])
+    expect((tecnica.data as { files: Array<{ tipo: string; created: boolean }> }).files).toEqual([
+      { tipo: 'tecnica', created: true, path: expect.any(String), html: expect.any(String), pdf: expect.any(String) },
+    ])
     expect(await exists(path.join(changeDir, 'docs', 'tecnica.md'))).toBe(true)
+    expect(await exists(path.join(changeDir, 'docs', 'tecnica.html'))).toBe(true)
+    expect(await exists(path.join(changeDir, 'docs', 'tecnica.pdf'))).toBe(true)
     expect(await exists(path.join(changeDir, 'docs', 'manual.md'))).toBe(false)
 
     const manual = await runDocs(ctx(root, { tipo: 'manual' }, ['reset-password']))

@@ -36,7 +36,6 @@ spec:
   language: es
   business_only: true
   glossary: .sdd/glossary.md
-syntax: {}
 mockups:
   level: hifi
   platform: auto

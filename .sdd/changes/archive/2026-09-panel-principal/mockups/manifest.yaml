@@ -1,0 +1,204 @@
+schema_version: 1
+version: 1
+level: hifi
+platform: web
+inputs_hash: sha256:e1bfa93e7c012ff5148e24059f57de5d2ba2bd4fc4be69d6d3d7b525bd352646
+generated_at: 2026-09-20 18:05:00 -05:00
+screens:
+  - id: panel-resumen
+    title: Panel principal — Resumen y siguiente acción
+    file: panel-resumen.html
+    illustrates:
+      - REQ-EDITOR-001-S1
+      - REQ-EDITOR-001-S2
+      - REQ-EDITOR-001-S3
+      - REQ-EDITOR-002-S1
+      - REQ-EDITOR-002-S2
+      - REQ-EDITOR-002-S3
+      - REQ-EDITOR-002-S4
+      - REQ-EDITOR-002-S5
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-flujo
+    title: Panel principal — Flujo de cambios por fase
+    file: panel-flujo.html
+    illustrates:
+      - REQ-EDITOR-003-S1
+      - REQ-EDITOR-003-S2
+      - REQ-EDITOR-003-S3
+      - REQ-EDITOR-003-S4
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-trazabilidad
+    title: Panel principal — Trazabilidad requisito → evidencia
+    file: panel-trazabilidad.html
+    illustrates:
+      - REQ-EDITOR-004-S1
+      - REQ-EDITOR-004-S2
+      - REQ-EDITOR-004-S3
+      - REQ-EDITOR-004-S4
+      - REQ-EDITOR-004-S5
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-metricas
+    title: Panel principal — Métricas del proceso
+    file: panel-metricas.html
+    illustrates:
+      - REQ-EDITOR-005-S1
+      - REQ-EDITOR-005-S2
+      - REQ-EDITOR-005-S3
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-documentos
+    title: Panel principal — Documentos y mockups del cambio
+    file: panel-documentos.html
+    illustrates:
+      - REQ-EDITOR-006-S1
+      - REQ-EDITOR-006-S2
+      - REQ-EDITOR-006-S3
+      - REQ-EDITOR-006-S4
+      - REQ-EDITOR-006-S5
+      - REQ-EDITOR-006-S6
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-acciones
+    title: Panel principal — Acciones del ciclo
+    file: panel-acciones.html
+    illustrates:
+      - REQ-EDITOR-007-S1
+      - REQ-EDITOR-007-S2
+      - REQ-EDITOR-007-S3
+      - REQ-EDITOR-007-S4
+      - REQ-EDITOR-007-S5
+      - REQ-EDITOR-007-S6
+      - REQ-EDITOR-007-S7
+      - REQ-EDITOR-007-S8
+      - REQ-EDITOR-007-S9
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: panel-estados
+    title: Panel principal — Estados, vacíos y panel vivo
+    file: panel-estados.html
+    illustrates:
+      - REQ-EDITOR-001-S4
+      - REQ-EDITOR-001-S5
+      - REQ-EDITOR-008-S1
+      - REQ-EDITOR-008-S2
+      - REQ-EDITOR-008-S3
+      - REQ-EDITOR-008-S4
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: presentacion
+    title: Presentación para aprobar — propuesta, especificación y mockups
+    file: presentacion.html
+    illustrates:
+      - REQ-EDITOR-009-S1
+      - REQ-EDITOR-009-S2
+      - REQ-EDITOR-009-S3
+      - REQ-EDITOR-009-S4
+      - REQ-EDITOR-009-S5
+      - REQ-EDITOR-009-S6
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+  - id: docs-formatos
+    title: Documentación — texto fuente, HTML y PDF
+    file: docs-formatos.html
+    illustrates:
+      - REQ-EDITOR-010-S1
+      - REQ-EDITOR-010-S2
+      - REQ-EDITOR-010-S3
+      - REQ-EDITOR-010-S4
+      - REQ-EDITOR-010-S5
+    states:
+      - default
+      - loading
+      - empty
+      - error
+    breakpoints:
+      - 390
+      - 768
+      - 1440
+    themes:
+      - oscuro
+      - claro
+screenshots: []

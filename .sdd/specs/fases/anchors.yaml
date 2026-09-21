@@ -1,0 +1,76 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-FASES-001
+    files:
+      - .opencode/
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/clarify.ts
+      - packages/cli/src/commands/docs.ts
+      - packages/cli/test/cli.test.ts
+      - packages/core/src/config.ts
+      - packages/core/src/index.ts
+      - packages/core/src/lifecycle.ts
+      - packages/core/src/model.ts
+      - packages/core/src/parse/clarify.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/clarify-docs.test.ts
+      - packages/vscode/test/logic.test.ts
+      - prompts/
+      - workflow/phases/clarify.md
+      - workflow/phases/docs.md
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FASES-002
+    files:
+      - packages/core/src/lifecycle.ts
+      - packages/core/test/clarify-docs.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FASES-003
+    files:
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/clarify.ts
+      - packages/cli/src/commands/docs.ts
+      - packages/core/src/config.ts
+      - packages/core/src/docs.ts
+      - packages/core/src/index.ts
+      - packages/core/src/model.ts
+      - packages/core/src/parse/clarify.ts
+      - packages/core/src/templates.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/clarify-docs.test.ts
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/logic.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FASES-004
+    files:
+      - packages/core/src/config.ts
+      - packages/core/src/index.ts
+      - packages/core/src/lifecycle.ts
+      - packages/core/src/model.ts
+      - packages/core/src/parse/clarify.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/clarify-docs.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FASES-005
+    files:
+      - .opencode/
+      - packages/cli/src/catalog.ts
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/clarify.ts
+      - packages/cli/src/commands/docs.ts
+      - packages/cli/test/cli.test.ts
+      - packages/vscode/test/logic.test.ts
+      - prompts/
+      - workflow/phases/clarify.md
+      - workflow/phases/docs.md
+    updated: 2026-09-21
+    source: archive

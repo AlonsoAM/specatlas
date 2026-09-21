@@ -111,7 +111,7 @@ describe('aviso y bloqueo de aclaración', () => {
 
     const state = await stateOf(root)
     expect(state.state).toBe('approved')
-    expect(state.nextAction.command).toContain('/satlas.plan')
+    expect(state.nextAction.command).toContain('/satlas-plan')
   })
 
   it('con modo bloqueante no se avanza a plan (REQ-FASES-002-S2)', async () => {
@@ -123,7 +123,7 @@ describe('aviso y bloqueo de aclaración', () => {
     const state = await stateOf(root, cfg)
     expect(state.state).toBe('approved')
     expect(state.blockedBy.join(' ')).toContain('aclaración pendiente (1)')
-    expect(state.nextAction.command).toContain('/satlas.clarify')
+    expect(state.nextAction.command).toContain('/satlas-clarify')
   })
 
   it('con modo apagado no hay aviso ni bloqueo (REQ-FASES-002-S3)', async () => {
@@ -133,7 +133,7 @@ describe('aviso y bloqueo de aclaración', () => {
     cfg.gates.clarify.mode = 'off'
 
     expect(clarifyAdvisory(await loadChange(root, 'reset-password'), cfg)).toEqual([])
-    expect((await stateOf(root, cfg)).nextAction.command).toContain('/satlas.plan')
+    expect((await stateOf(root, cfg)).nextAction.command).toContain('/satlas-plan')
   })
 
   it('sin preguntas no hay aviso en ningún modo (REQ-FASES-002-S4)', async () => {
@@ -143,7 +143,7 @@ describe('aviso y bloqueo de aclaración', () => {
       const cfg = defaultConfig()
       cfg.gates.clarify.mode = mode
       expect(clarifyAdvisory(await loadChange(root, 'reset-password'), cfg)).toEqual([])
-      expect((await stateOf(root, cfg)).nextAction.command).toContain('/satlas.plan')
+      expect((await stateOf(root, cfg)).nextAction.command).toContain('/satlas-plan')
     }
   })
 })
@@ -160,11 +160,16 @@ describe('generación de documentación', () => {
     expect(tecnica).toContain(DOCS_MARKER_END)
     expect(tecnica).toContain('REQ-AUTH-001')
     expect(tecnica).toContain('REQ-AUTH-001-S1')
-    expect(tecnica).toContain('executable · pass')
-    expect(tecnica).toContain('Tareas**: 1/1')
+    expect(tecnica).toContain('| executable | pass |')
+    expect(tecnica).toContain('Trazabilidad requisito')
+    expect(tecnica).toContain('Mapa de archivos')
+    expect(tecnica).toContain('Cómo se reproduce la evidencia')
 
     const manual = await fs.readFile(path.join(root, '.sdd', 'changes', 'reset-password', 'docs', 'manual.md'), 'utf8')
-    expect(manual).toContain('Cómo se usa')
+    expect(manual).toContain('Cómo se usa, tarea por tarea')
+    expect(manual).toContain('| Qué haces | Qué ocurre |')
+    expect(manual).toContain('Primeros pasos')
+    expect(manual).not.toContain('CUANDO')
   })
 
   it('señala lo que queda sin evidencia sin inventarlo (REQ-FASES-003-S3)', async () => {
@@ -173,7 +178,7 @@ describe('generación de documentación', () => {
     const result = await generateDocs({ root, slug: 'reset-password', tipo: 'tecnica' })
     expect(result.files).toHaveLength(1)
     const tecnica = await fs.readFile(result.files[0]!.path, 'utf8')
-    expect(tecnica).toContain('Pendiente de evidencia')
+    expect(tecnica).toContain('Escenarios sin evidencia favorable')
     expect(tecnica).toContain('REQ-AUTH-001-S2')
   })
 
@@ -223,7 +228,7 @@ describe('gate de documentación del carril completo', () => {
     const state = await stateOf(root)
     expect(state.state).toBe('reviewed')
     expect(state.blockedBy.join(' ')).toContain('documentación pendiente')
-    expect(state.nextAction.command).toContain('/satlas.docs')
+    expect(state.nextAction.command).toContain('/satlas-docs')
   })
 
   it('con documentación generada queda listo para archivar (REQ-FASES-004-S2)', async () => {

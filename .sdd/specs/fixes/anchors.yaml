@@ -1,0 +1,57 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-FIXES-001
+    files:
+      - packages/core/src/archive.ts
+      - packages/core/src/fixes.ts
+      - packages/core/src/index.ts
+      - packages/core/src/templates.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/fixes.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FIXES-002
+    files:
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/logic.ts
+      - packages/vscode/test/logic.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FIXES-003
+    files:
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/lsp/src/index.ts
+      - packages/vscode/src/logic.ts
+      - packages/vscode/test/logic.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FIXES-004
+    files:
+      - packages/core/src/fixes.ts
+      - packages/core/src/model.ts
+      - packages/core/src/templates.ts
+      - packages/core/src/trace.ts
+      - packages/core/src/workspace.ts
+      - packages/core/test/fixes.test.ts
+      - packages/lsp/src/index.ts
+      - packages/vscode/src/logic.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-FIXES-005
+    files:
+      - packages/cli/src/commands/status.ts
+      - packages/cli/src/mcp/tools/fixes.ts
+      - packages/cli/src/mcp/tools/index.ts
+      - packages/cli/src/mcp/tools/list.ts
+      - packages/cli/test/cli.test.ts
+      - packages/cli/test/mcp.test.ts
+      - packages/vscode/test/logic.test.ts
+    updated: 2026-09-21
+    source: archive

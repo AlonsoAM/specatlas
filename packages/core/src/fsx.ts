@@ -36,6 +36,11 @@ export async function writeText(p: string, content: string): Promise<void> {
   await fs.writeFile(p, content, 'utf8')
 }
 
+export async function writeBytes(p: string, content: Uint8Array): Promise<void> {
+  await ensureDir(path.dirname(p))
+  await fs.writeFile(p, content)
+}
+
 export async function ensureDir(p: string): Promise<void> {
   await fs.mkdir(p, { recursive: true })
 }
