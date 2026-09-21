@@ -11,6 +11,8 @@ anchors:
       - packages/vscode/src/live.ts
       - packages/vscode/src/logic.ts
       - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/codigo.ts
+      - packages/vscode/test/panel-scenarios.test.ts
       - packages/vscode/test/panel.test.ts
     updated: 2026-09-21
     source: archive
@@ -91,5 +93,22 @@ anchors:
       - packages/vscode/src/actions.ts
       - packages/vscode/src/panel/sections/acciones.ts
       - packages/vscode/test/panel-scenarios.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-012
+    files:
+      - packages/vscode/src/views/now.ts
+      - packages/vscode/test/views.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-013
+    files:
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/views/health.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-014
+    files:
+      - packages/vscode/package.json
     updated: 2026-09-21
     source: archive

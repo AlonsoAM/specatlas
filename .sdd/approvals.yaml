@@ -35,3 +35,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-20 22:41:11 -05:00
     channel: editor
+  - artifact: changes/rediseno-editor/spec.md
+    artifact_hash: sha256:b4591224e624aed24209462cb283e296fd2d801db5fb663b7bece2dd779e857e
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-21 12:49:12 -05:00
+    channel: cli
