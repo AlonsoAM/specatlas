@@ -60,3 +60,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-21 17:37:11 -05:00
     channel: cli
+  - artifact: changes/portada-ayuda/spec.md
+    artifact_hash: sha256:b0dab308ccfa7215afb6e4ce912929f675b0107059eeb901e5edd1131f2ca733
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-21 18:25:05 -05:00
+    channel: presentation

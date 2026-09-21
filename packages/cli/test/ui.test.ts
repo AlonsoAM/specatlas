@@ -11,6 +11,13 @@ import {
   resumenHallazgos,
   simbolos,
   siguienteAccion,
+  banner,
+  colorMarca,
+  degradado,
+  pintaRGB,
+  letrero,
+  soportaDegradado,
+  truncar,
   type Tema,
 } from '../src/ui'
 
@@ -131,5 +138,92 @@ describe('la siguiente acción', () => {
 
   it('sin descripción se queda en una línea', () => {
     expect(siguienteAccion(plano, 'satlas archive x')).toHaveLength(1)
+  })
+})
+
+describe('la marca en la terminal', () => {
+  it('el degradado solo se dibuja donde hay 24 bits', () => {
+    expect(soportaDegradado({ COLORTERM: 'truecolor' })).toBe(true)
+    expect(soportaDegradado({ TERM_PROGRAM: 'vscode' })).toBe(true)
+    expect(soportaDegradado({ WT_SESSION: '1' })).toBe(true)
+    expect(soportaDegradado({ TERM: 'xterm-256color' })).toBe(false)
+  })
+
+  it('sin 24 bits el texto sigue siendo legible, solo que en un color plano', () => {
+    const pobre = degradado(terminal, 'SpecAtlas', undefined, { TERM: 'xterm' })
+    expect(anchoVisible(pobre)).toBe(9)
+    expect(pobre).toContain('[36m')
+  })
+
+  it('el degradado no cambia lo que se lee ni pinta los espacios', () => {
+    const rico = degradado(terminal, 'Spec Atlas', undefined, { COLORTERM: 'truecolor' })
+    expect(anchoVisible(rico)).toBe(10)
+    expect(rico).toContain('[38;2;20;184;166m')
+  })
+
+  it('sin color no queda ni un código de escape', () => {
+    expect(degradado(plano, 'SpecAtlas', undefined, { COLORTERM: 'truecolor' })).toBe('SpecAtlas')
+    expect(pintaRGB(plano, [1, 2, 3], 'x')).toBe('x')
+  })
+
+  it('el color recorre la marca de teal a violeta', () => {
+    expect(colorMarca(0)).toEqual([20, 184, 166])
+    expect(colorMarca(1)).toEqual([124, 58, 237])
+    expect(colorMarca(0.5)).toEqual([37, 99, 235])
+    expect(colorMarca(5)).toEqual([124, 58, 237])
+  })
+
+  it('la portada se presenta con el nombre, la versión y para qué sirve', () => {
+    const texto = banner(plano, '1.2.3').join(String.fromCharCode(10))
+    expect(texto).toContain('█')
+    expect(texto).toContain('1.2.3')
+    expect(texto).toContain('el proceso se verifica')
+  })
+
+  it('el nombre se escribe en grande, con todas las filas casadas columna a columna', () => {
+    const filas = letrero(terminal)!
+    expect(filas).toHaveLength(5)
+    expect(new Set(filas.map((fila) => fila.length)).size).toBe(1)
+    expect(filas[0]!.length).toBe(53)
+  })
+
+  it('cada letra se distingue de las demás: la E no se confunde con la C', () => {
+    const filas = letrero(terminal)!
+    // SPECATLAS: la E es la tercera letra y la C la cuarta, seis columnas cada una.
+    const letra = (indice: number): string => filas.map((fila) => fila.slice(indice * 6, indice * 6 + 5)).join('|')
+    expect(letra(2)).not.toBe(letra(3))
+    // Y ninguna letra repetida deja de parecerse a sí misma.
+    expect(letra(0)).toBe(letra(8))
+  })
+
+  it('donde no hay bloques o no hay sitio, el nombre se escribe normal', () => {
+    expect(letrero(limitado)).toBeUndefined()
+    expect(letrero({ ...terminal, ancho: 50 })).toBeUndefined()
+    expect(banner(limitado, '1.2.3').join(String.fromCharCode(10))).toContain('SpecAtlas')
+  })
+
+  it('la portada dice la versión y para qué sirve debajo del nombre', () => {
+    const lineas = banner(plano, '1.2.3')
+    expect(lineas).toHaveLength(8)
+    expect(lineas[6]).toContain('1.2.3')
+    expect(lineas[6]).toContain('el proceso se verifica')
+  })
+
+})
+
+describe('las descripciones caben en la ventana', () => {
+  it('lo que cabe se deja intacto', () => {
+    expect(truncar('corto', 20)).toBe('corto')
+  })
+
+  it('lo que no cabe se corta por la última palabra entera', () => {
+    const corto = truncar('Registra evidencia por escenario del cambio', 24)
+    expect(corto.endsWith('…')).toBe(true)
+    expect(corto.length).toBeLessThanOrEqual(24)
+    expect(corto).toBe('Registra evidencia por…')
+  })
+
+  it('una palabra sola se corta aunque no haya espacio donde partirla', () => {
+    expect(truncar('supercalifragilistico', 10)).toBe('supercali…')
   })
 })

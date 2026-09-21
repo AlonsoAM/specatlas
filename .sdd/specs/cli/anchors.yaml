@@ -38,3 +38,12 @@ anchors:
       - packages/cli/test/ui.test.ts
     updated: 2026-09-21
     source: archive
+  - requirement: REQ-CLI-006
+    files:
+      - packages/cli/src/cli.ts
+      - packages/cli/src/commands/help.ts
+      - packages/cli/src/ui.ts
+      - packages/cli/test/help.test.ts
+      - packages/cli/test/ui.test.ts
+    updated: 2026-09-21
+    source: archive

@@ -183,3 +183,106 @@ export function seccion(tema: Tema, titulo: string, detalle?: string): string {
   const cabeza = pinta(tema, ['negrita'], titulo)
   return detalle ? `${cabeza} ${pinta(tema, 'gris', detalle)}` : cabeza
 }
+
+/** Colores de la marca: el degradado del logotipo, de teal a violeta. */
+export const MARCA: Array<[number, number, number]> = [
+  [20, 184, 166],
+  [37, 99, 235],
+  [124, 58, 237],
+]
+
+/** Un terminal con 24 bits puede dibujar el degradado; el resto se conforma. */
+export function soportaDegradado(env: NodeJS.ProcessEnv = process.env): boolean {
+  const colorterm = env['COLORTERM'] ?? ''
+  return colorterm.includes('truecolor') || colorterm.includes('24bit') || env['TERM_PROGRAM'] === 'vscode' || Boolean(env['WT_SESSION'])
+}
+
+export function pintaRGB(tema: Tema, [r, g, b]: [number, number, number], texto: string): string {
+  if (!tema.color || texto === '') return texto
+  return `\u001b[38;2;${r};${g};${b}m${texto}\u001b[39m`
+}
+
+/** El color de la marca en un punto del degradado (0 arriba, 1 abajo). */
+export function colorMarca(posicion: number, paradas: Array<[number, number, number]> = MARCA): [number, number, number] {
+  const t = Math.max(0, Math.min(1, posicion)) * (paradas.length - 1)
+  const tramo = Math.min(paradas.length - 2, Math.floor(t))
+  return mezcla(paradas[tramo]!, paradas[tramo + 1]!, t - tramo)
+}
+
+function mezcla(a: [number, number, number], b: [number, number, number], t: number): [number, number, number] {
+  return [Math.round(a[0] + (b[0] - a[0]) * t), Math.round(a[1] + (b[1] - a[1]) * t), Math.round(a[2] + (b[2] - a[2]) * t)]
+}
+
+/** Interpola el degradado carácter a carácter; sin 24 bits, un color plano. */
+export function degradado(tema: Tema, texto: string, paradas: Array<[number, number, number]> = MARCA, env: NodeJS.ProcessEnv = process.env): string {
+  if (!tema.color) return texto
+  if (!soportaDegradado(env)) return pinta(tema, 'cian', texto)
+  const visibles = [...texto]
+  const ultimo = Math.max(1, visibles.length - 1)
+  return visibles
+    .map((caracter, indice) => {
+      if (caracter.trim() === '') return caracter
+      const posicion = (indice / ultimo) * (paradas.length - 1)
+      const tramo = Math.min(paradas.length - 2, Math.floor(posicion))
+      return pintaRGB(tema, mezcla(paradas[tramo]!, paradas[tramo + 1]!, posicion - tramo), caracter)
+    })
+    .join('')
+}
+
+/**
+ * El logotipo en la terminal: el rombo del atlas y la ruta de tres nodos
+ * (requisito, tarea, evidencia) que son el símbolo de la marca.
+ */
+/**
+ * El nombre escrito en grande para la portada: cinco filas de bloques, cinco
+ * columnas por letra. Con menos altura la E y la C salen idénticas y el nombre
+ * se lee mal, que era justo lo que había que evitar.
+ */
+const LETRAS: Record<string, string[]> = {
+  S: ['█████', '█    ', '█████', '    █', '█████'],
+  P: ['█████', '█   █', '█████', '█    ', '█    '],
+  E: ['█████', '█    ', '████ ', '█    ', '█████'],
+  C: ['█████', '█    ', '█    ', '█    ', '█████'],
+  A: ['█████', '█   █', '█████', '█   █', '█   █'],
+  T: ['█████', '  █  ', '  █  ', '  █  ', '  █  '],
+  L: ['█    ', '█    ', '█    ', '█    ', '█████'],
+}
+
+/** Alto del letrero, en filas. */
+const ALTO_LETRERO = 5
+
+const NOMBRE = 'SPECATLAS'
+
+/** Ancho del letrero: cada letra ocupa cinco columnas y van separadas por una. */
+const ANCHO_LETRERO = NOMBRE.length * 6 - 1
+
+/**
+ * El letrero del nombre, o nada cuando la terminal no dibuja bloques o no tiene
+ * sitio: entonces la portada se conforma con el nombre escrito normal.
+ */
+export function letrero(tema: Tema): string[] | undefined {
+  if (!tema.unicode || tema.ancho < ANCHO_LETRERO + 4) return undefined
+  const letras = [...NOMBRE].map((letra) => LETRAS[letra])
+  if (letras.some((letra) => letra === undefined)) return undefined
+  return Array.from({ length: ALTO_LETRERO }, (_, fila) => letras.map((letra) => letra![fila]!).join(' '))
+}
+
+/**
+ * La portada de la herramienta: el nombre en grande, la versión instalada y
+ * para qué sirve.
+ */
+export function banner(tema: Tema, version: string, lema = 'el proceso se verifica, no se confía'): string[] {
+  const pie = pinta(tema, 'gris', `${version}  ${simbolos(tema).separador}  ${lema}`)
+  const letras = letrero(tema)
+  if (!letras) return ['', `  ${degradado(tema, 'SpecAtlas')}`, `  ${pie}`, '']
+  // Todas las filas miden lo mismo, así que el degradado cae en la misma columna.
+  return ['', ...letras.map((fila) => `  ${degradado(tema, fila)}`), `  ${pie}`, '']
+}
+
+/** Recorta al ancho disponible sin partir palabras a lo bruto. */
+export function truncar(texto: string, maximo: number): string {
+  if (maximo <= 1 || anchoVisible(texto) <= maximo) return texto
+  const corte = texto.slice(0, maximo - 1)
+  const espacio = corte.lastIndexOf(' ')
+  return `${(espacio > maximo * 0.6 ? corte.slice(0, espacio) : corte).trimEnd()}…`
+}

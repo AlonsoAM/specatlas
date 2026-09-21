@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta de cambio — portada ayuda</title>
+<style>:root { color-scheme: light; --bg:#f4f6fa; --card:#ffffff; --elev:#f7f9fc; --line:#dde3ec; --line-soft:#e8ecf3; --ink:#161c2b; --muted:#5a6577; --faint:#8b94a6; --accent:#2f6fe0; --accent-soft:rgba(47,111,224,.10); --ok:#1e9e4b; --warn:#b57812; --bad:#cf3b45; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg:#0d1017; --card:#151a24; --elev:#1b2130; --line:#2a3243; --line-soft:#212938; --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789; --accent:#5b9bff; --accent-soft:rgba(91,155,255,.12); --ok:#46c46a; --warn:#e0a33a; --bad:#f0616a; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4,p { margin:0; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size:.88em; background:var(--elev); border:1px solid var(--line-soft); border-radius:5px; padding:1px 5px; }
+.page { max-width:1180px; margin:0 auto; padding:26px 20px 80px; display:grid; grid-template-columns:230px 1fr; gap:26px; }
+.toc { position:sticky; top:20px; align-self:start; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:14px; }
+.toc h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--faint); margin-bottom:10px; }
+.toc ol { margin:0; padding-left:18px; color:var(--muted); font-size:13px; display:flex; flex-direction:column; gap:7px; }
+.toc a { color:var(--muted); }
+.toc a:hover { color:var(--ink); }
+.toc .toc-actions { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+.doc { min-width:0; display:flex; flex-direction:column; gap:22px; }
+section.card { border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden; }
+.card-head { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; padding:16px 20px; border-bottom:1px solid var(--line-soft); }
+.card-head .num { font-family: ui-monospace, Consolas, monospace; font-size:12px; color:var(--faint); }
+.card-head h2 { font-size:19px; letter-spacing:-.01em; }
+.card-head .sub { color:var(--faint); font-size:12.5px; margin-left:auto; }
+.card-body { padding:18px 20px; }
+.cover { padding:26px 24px; }
+.cover .brand { display:flex; align-items:center; gap:12px; color:var(--accent); }
+.cover .kicker { font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.cover h1 { font-size:30px; line-height:1.15; letter-spacing:-.02em; margin:10px 0 6px; }
+.cover .lead { color:var(--muted); max-width:64ch; }
+.meta-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; border:1px solid var(--line); background:var(--elev); color:var(--muted); font-size:12px; }
+.chip b { color:var(--ink); font-weight:600; }
+.cover-foot { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+.sign-state { border:1px solid var(--warn); background:color-mix(in srgb, var(--warn) 10%, transparent); border-radius:8px; padding:12px 14px; }
+.sign-state.ok { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 10%, transparent); }
+.sign-state.stale { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 10%, transparent); }
+.sign-state .ss-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.sign-state b { display:block; font-size:14.5px; margin:3px 0; }
+.sign-state p { color:var(--muted); font-size:12.5px; }
+.hash-box { border:1px solid var(--line); background:var(--elev); border-radius:8px; padding:12px 14px; }
+.hash-box .hb-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); }
+.hash-box code { display:block; border:0; background:transparent; padding:0; margin-top:6px; word-break:break-all; }
+.callout { border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--elev); border-radius:8px; padding:12px 14px; color:var(--muted); font-size:13px; }
+.callout.warn { border-left-color:var(--warn); background:color-mix(in srgb, var(--warn) 9%, transparent); }
+.callout.bad { border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 9%, transparent); }
+.callout.ok { border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 9%, transparent); }
+.req { border-top:1px solid var(--line-soft); padding-top:14px; margin-top:14px; }
+.req:first-of-type { border-top:0; margin-top:0; padding-top:0; }
+.req h3 { font-size:15px; }
+.req .req-id { font-family: ui-monospace, Consolas, monospace; font-size:12.5px; color:var(--accent); }
+.req p { color:var(--muted); font-size:13.5px; margin-top:6px; }
+.req ul { margin:8px 0 0 18px; padding:0; color:var(--muted); font-size:13.5px; }
+.scn { border-left:3px solid var(--accent); background:var(--elev); border-radius:6px; padding:9px 12px; margin-top:10px; }
+.scn b { font-size:13px; }
+.scn .steps { margin-top:5px; color:var(--muted); font-size:13px; }
+.scn .steps span { display:block; }
+.scn .steps b { color:var(--ink); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { border:1px solid var(--line-soft); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--elev); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.pill { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+.pill.pass { color:var(--ok); border-color:var(--ok); }
+.pill.fail { color:var(--bad); border-color:var(--bad); }
+.pill.pending, .pill.skipped { color:var(--warn); border-color:var(--warn); }
+.mockups { display:grid; gap:18px; }
+.mockup { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+.mockup header { padding:10px 14px; border-bottom:1px solid var(--line-soft); font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.mockup header .btn { min-height:28px; padding:0 10px; font-size:12px; }
+.mockup-body { padding:12px 14px; display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12.5px; }
+.mockup-file { font-family: ui-monospace, Consolas, monospace; }
+.mockup iframe { width:100%; height:560px; border:0; background:white; display:block; }
+.mockup.phone iframe { max-width:420px; margin:0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:12px; }
+.grid-shots img { width:100%; border:1px solid var(--line); border-radius:10px; }
+.signature { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.sign-line.signed { border-style:solid; border-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent); }
+.sign-line .mono { font-family:ui-monospace, Consolas, monospace; font-size:11.5px; word-break:break-all; }
+.sign-line { border:1px dashed var(--accent); border-radius:8px; padding:16px; background:var(--accent-soft); }
+.sign-line .sl-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:0 0 6px; margin-bottom:18px; color:var(--muted); font-size:12.5px; }
+.sign-line .sl-row:last-child { border-bottom:0; margin-bottom:0; padding-top:14px; }
+.sign-help { color:var(--muted); font-size:12.5px; }
+.btn { display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 14px; border-radius:8px; border:1px solid var(--line); background:var(--elev); color:var(--ink); cursor:pointer; font:inherit; font-size:12.5px; text-decoration:none; }
+.btn.primary { background:var(--accent); border-color:transparent; color:#fff; }
+.footer { color:var(--faint); font-size:11.5px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px; }
+@media (max-width: 1000px) { .page { grid-template-columns:1fr; padding:18px 14px 60px; } .toc { position:static; order:-1; } .cover-foot, .signature { grid-template-columns:1fr; } .cover h1 { font-size:24px; } }
+@media print {
+  @page { size:A4; margin:16mm; }
+  :root { --bg:#fff; --card:#fff; --elev:#fafafa; --line:#ccc; --line-soft:#e2e2e2; --ink:#111; --muted:#444; --faint:#666; --accent:#111; --accent-soft:#f3f3f3; }
+  body { background:#fff; font-size:12px; }
+  .page { display:block; max-width:none; padding:0; }
+  .toc, .btn { display:none !important; }
+  section.card { break-inside:avoid; border-color:#ccc; }
+  .cover { break-after:page; }
+  #mockups { break-before:page; }
+  #firma { break-before:page; }
+  .sign-line { background:#fff; }
+}</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc" aria-label="Contenido">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#identidad">Identidad del cambio</a></li>
+      <li><a href="#resumen">Resumen de negocio</a></li>
+      <li><a href="#especificacion">Especificación</a></li>
+      <li><a href="#criterios">Criterios de aceptación</a></li>
+      <li><a href="#mockups">Mockups</a></li>
+      <li><a href="#firma">Firma de aprobación</a></li>
+    </ol>
+    <div class="toc-actions">
+      <button type="button" class="btn primary" onclick="window.print()">⎙ Imprimir / Guardar PDF</button>
+      <span style="color:var(--faint);font-size:11.5px">Se imprime desde el propio navegador; sin servicios externos.</span>
+    </div>
+  </aside>
+
+  <main class="doc">
+    <section class="card cover" id="identidad">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" opacity=".5"></path>
+          <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"></path>
+          <circle cx="7.2" cy="14.8" r="1.5" fill="currentColor" stroke="none"></circle>
+          <circle cx="16.6" cy="7.3" r="1.5" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <div>
+          <p class="kicker">SpecAtlas · Propuesta de cambio</p>
+          <p style="color:var(--muted);font-size:12.5px">SpecAtlas</p>
+        </div>
+      </div>
+      <h1>portada ayuda</h1>
+      <p class="lead">Esta presentación reúne la propuesta, la especificación y el contrato visual del cambio <b>portada-ayuda</b> para su revisión y firma.</p>
+      <div class="meta-chips">
+        <span class="chip">cambio <b>portada-ayuda</b></span>
+        <span class="chip">carril <b>standard</b></span>
+        <span class="chip">dominio <b>cli</b></span>
+        <span class="chip">requisitos <b>1</b></span>
+        <span class="chip">escenarios <b>8</b></span>
+        <span class="chip">evidencia <b>0/8</b></span>
+        <span class="chip">mockups <b>0</b></span>
+        <span class="chip">Generado <b>2026-09-21 18:25:05 -05:00</b></span>
+      </div>
+      <div class="cover-foot">
+        <div class="sign-state ok"><span class="ss-label">Firma de aprobación</span><b>Aprobada por Alonso Anchante el 2026-09-21 18:25:05 -05:00. Cualquier cambio posterior invalida la firma.</b></div>
+        <div class="hash-box">
+          <span class="hb-label">Huella</span>
+          <code>sha256:b0dab308ccfa7215afb6e4ce912929f675b0107059eeb901e5edd1131f2ca733</code>
+          <p style="color:var(--muted);font-size:12px;margin-top:8px">La firma se registra con la huella de la especificación y la fecha.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="resumen">
+      <div class="card-head"><span class="num">01</span><h2>Resumen de negocio</h2></div>
+      <div class="card-body"><h1 id="propuesta-la-ayuda-es-la-portada-de-la-herramienta">Propuesta — La ayuda es la portada de la herramienta</h1>
+<h2 id="por-que">Por qué</h2>
+<p>La ayuda es la primera pantalla que ve quien instala la herramienta y la que más se repite para quien ya la usa a diario. Hoy responde con una lista plana de casi cuarenta comandos en orden de catálogo: no dice qué herramienta es, ni para qué sirve, ni por dónde empezar. Quien llega nuevo no sabe cuál de todos esos nombres necesita, y quien ya la conoce tampoco encuentra rápido el que buscaba. Una herramienta que exige verificar el proceso no puede presentarse como un volcado de nombres.</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<p>La ayuda se convierte en una portada: se presenta con el distintivo de la herramienta, la versión instalada y la frase que dice para qué sirve; destaca antes que nada la orden que indica qué toca hacer ahora en el proyecto; y agrupa los comandos por el momento del flujo en que se usan (empezar, el ciclo, saber dónde estás, comprobar, compartir, el proyecto), cada grupo con su propósito en una frase. Preguntar por un comando concreto devuelve solo su uso y sus opciones. La ayuda cierra diciendo qué significa cada resultado de la ejecución y dónde consultar más.</p>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<ul><li>Cambiar los comandos, sus opciones o su comportamiento: solo cambia cómo se presentan.</li><li>Reescribir las descripciones del catálogo.</li><li>La presentación del resto de comandos (estado, validación, verificación), ya cubierta por REQ-CLI-004 y REQ-CLI-005.</li></ul>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<ul><li>Ningún comando del catálogo queda fuera de la ayuda, comprobado automáticamente.</li><li>Ninguna línea de la ayuda se sale del ancho de la terminal.</li><li>La ayuda se reconoce igual en una consola sin color y sin símbolos ampliados.</li><li>Pedir la ayuda de un comando devuelve su uso y sus opciones, y un nombre inexistente se avisa con el código de uso.</li></ul></div>
+    </section>
+
+    <section class="card" id="especificacion">
+      <div class="card-head"><span class="num">02</span><h2>Especificación</h2><span class="sub">1 requisito(s) · 8 escenario(s)</span></div>
+      <div class="card-body"><article class="req">
+  <h3><span class="req-id">REQ-CLI-006</span> — La ayuda presenta la herramienta y orienta, no solo enumera <span class="pill">agregado</span></h3>
+  <p>Quien escribe la orden sin argumentos, o pide ayuda, recibe hoy una lista plana de casi cuarenta comandos en la que todo pesa igual: no sabe qué herramienta tiene delante, ni para qué sirve, ni por dónde empezar, ni cuál de todos los comandos es el que necesita ahora. La ayuda es la primera pantalla que ve una persona nueva y la que más se repite para quien ya la usa, así que debe presentarse, ordenar los comandos por el momento en que se usan y dejar a la vista la acción que casi siempre se quiere.</p>
+  <ul><li><code>BR-CLI-025</code> — la ayuda abre identificando la herramienta con su nombre escrito en grande, su versión instalada y, en una línea, para qué sirve.</li><li><code>BR-CLI-032</code> — el nombre se presenta con los colores de la marca; donde la terminal no los dibuja, se presenta igual de legible en un solo color.</li><li><code>BR-CLI-026</code> — los comandos se presentan agrupados por el momento del flujo en que se usan, cada grupo con un título y una frase que dice para qué es.</li><li><code>BR-CLI-027</code> — ningún comando de la herramienta queda fuera de la ayuda, aunque el catálogo crezca y los grupos no se actualicen.</li><li><code>BR-CLI-028</code> — antes del catálogo se destaca la orden que indica qué toca hacer a continuación en el proyecto.</li><li><code>BR-CLI-029</code> — ninguna línea de la ayuda excede el ancho de la terminal: lo que no cabe se recorta declarando que hay más.</li><li><code>BR-CLI-030</code> — preguntar por un comando concreto devuelve su uso y sus opciones, no el catálogo entero.</li><li><code>BR-CLI-031</code> — la ayuda cierra diciendo qué significa cada resultado de la ejecución y dónde consultar más.</li></ul>
+  <div class="scn"><b>REQ-CLI-006-S1 — La primera pantalla</b><div class="steps"><span><b>CUANDO</b> se pide la ayuda sin indicar ningún comando</span><span><b>ENTONCES</b> la respuesta abre con el nombre de la herramienta en grande, su versión y la frase de para qué sirve, antes de cualquier comando</span></div></div><div class="scn"><b>REQ-CLI-006-S8 — Una terminal que no dibuja el nombre en grande</b><div class="steps"><span><b>CUANDO</b> la terminal no dibuja los caracteres del nombre en grande, o la ventana es más estrecha que ese nombre</span><span><b>ENTONCES</b> la portada presenta el nombre escrito de forma normal, sin perder la versión ni la frase de para qué sirve</span></div></div><div class="scn"><b>REQ-CLI-006-S2 — Por dónde empezar</b><div class="steps"><span><b>CUANDO</b> se lee la ayuda completa</span><span><b>ENTONCES</b> la orden que indica qué toca hacer a continuación aparece destacada antes del catálogo de comandos</span></div></div><div class="scn"><b>REQ-CLI-006-S3 — Los comandos ordenados por momento</b><div class="steps"><span><b>CUANDO</b> se lee el catálogo de la ayuda</span><span><b>ENTONCES</b> los comandos aparecen en grupos titulados por el momento del flujo, cada uno con su frase de propósito</span></div></div><div class="scn"><b>REQ-CLI-006-S4 — Nada se queda fuera</b><div class="steps"><span><b>CUANDO</b> existe un comando que ningún grupo declara</span><span><b>ENTONCES</b> aparece igualmente en la ayuda, bajo un grupo final</span></div></div><div class="scn"><b>REQ-CLI-006-S5 — La ayuda de un comando</b><div class="steps"><span><b>CUANDO</b> se pide la ayuda de un comando concreto</span><span><b>ENTONCES</b> se muestran solo su uso y sus opciones, sin el catálogo</span></div></div><div class="scn"><b>REQ-CLI-006-S6 — Un comando que no existe</b><div class="steps"><span><b>CUANDO</b> se pide la ayuda de un nombre que no corresponde a ningún comando</span><span><b>ENTONCES</b> se avisa de que no existe, se indica cómo ver el catálogo y no se muestra ayuda inventada</span></div></div><div class="scn"><b>REQ-CLI-006-S7 — Una terminal estrecha o sin adornos</b><div class="steps"><span><b>CUANDO</b> la ayuda se muestra en una consola que no dibuja símbolos ampliados o que no usa color</span><span><b>ENTONCES</b> el distintivo y los grupos siguen reconociéndose con equivalentes simples y ninguna línea se sale del ancho</span></div></div>
+</article></div>
+    </section>
+
+    <section class="card" id="criterios">
+      <div class="card-head"><span class="num">03</span><h2>Criterios de aceptación</h2><span class="sub">0/8 con evidencia pass</span></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-CLI-006-S1</code></td><td>La primera pantalla</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S8</code></td><td>Una terminal que no dibuja el nombre en grande</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S2</code></td><td>Por dónde empezar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S3</code></td><td>Los comandos ordenados por momento</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S4</code></td><td>Nada se queda fuera</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S5</code></td><td>La ayuda de un comando</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S6</code></td><td>Un comando que no existe</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-006-S7</code></td><td>Una terminal estrecha o sin adornos</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="card" id="mockups">
+      <div class="card-head"><span class="num">04</span><h2>Mockups</h2><span class="sub">0 pantalla(s)</span></div>
+      <div class="card-body"><div class="callout">Este cambio no declara mockups.</div></div>
+    </section>
+
+    <section class="card" id="firma">
+      <div class="card-head"><span class="num">05</span><h2>Firma de aprobación</h2><span class="sub">acto humano · queda auditado</span></div>
+      <div class="card-body">
+        <div class="signature">
+          <div class="sign-line signed">
+            <div class="sl-row"><span>Aprobada por</span><b>Alonso Anchante</b></div>
+            <div class="sl-row"><span>Fecha</span><b>2026-09-21 18:25:05 -05:00</b></div>
+            <div class="sl-row"><span>Huella firmada</span><span class="mono">sha256:b0dab308ccfa7215afb6e4ce912929f675b0107059eeb901e5edd1131f2ca733</span></div>
+          </div>
+          <div>
+            <p class="sign-help">La firma se registra con la huella de la especificación y la fecha.</p>
+            
+            
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer"><span>SpecAtlas · SpecAtlas · 2026-09-21 18:25:05 -05:00</span><span>sha256:b0dab308ccfa7215afb6e4ce912929f675b0107059eeb901e5edd1131f2ca733</span></div>
+  </main>
+</div>
+<script>
+(function () {
+  // Mejora progresiva: donde los scripts corren (navegador) el mockup se previsualiza en linea.
+  // Donde no corren (webview con CSP) la tarjeta con el enlace ya es suficiente y nada queda en blanco.
+  // Incrustada en otra pagina (el panel del editor la mete en un iframe) las rutas relativas
+  // no resuelven: se queda la tarjeta con el enlace y no se monta ningun marco en blanco.
+  try { if (window.top !== window.self) return; } catch (error) { return; }
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.mockup[data-mockup]'));
+  cards.forEach(function (card) {
+    var frame = document.createElement('iframe');
+    frame.setAttribute('src', card.getAttribute('data-mockup'));
+    frame.setAttribute('loading', 'lazy');
+    frame.setAttribute('title', card.getAttribute('data-title') || 'mockup');
+    var body = card.querySelector('.mockup-body');
+    if (body) body.style.display = 'none';
+    card.appendChild(frame);
+  });
+})();
+</script>
+</body>
+</html>

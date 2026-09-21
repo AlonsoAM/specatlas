@@ -1,0 +1,7 @@
+# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.
+schema_version: 1
+slug: portada-ayuda
+lane: standard
+title: portada ayuda
+domain: cli
+created: 2026-09-21

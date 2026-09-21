@@ -117,7 +117,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   archive: runArchive,
   'self-update': runSelfUpdate,
   version: async () => ({ exitCode: 0, data: { version: cliVersion() }, diagnostics: [], text: [`specatlas ${cliVersion()}`] }),
-  help: (ctx) => runHelp(ctx),
+  help: (ctx) => runHelp(ctx, ctx.positionals[0]),
 }
 
 export const COMMANDS: Record<string, { description: string; flags: string[]; handler: CommandHandler }> = Object.fromEntries(
