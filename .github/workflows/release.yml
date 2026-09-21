@@ -29,9 +29,14 @@ jobs:
       - run: pnpm -r typecheck
       - run: pnpm test
       - name: Publicar paquetes npm (idempotente, orden topológico)
-        if: ${{ env.NPM_TOKEN != '' }}
         run: |
           set -e
+          # Los secretos se enmascaran en las expresiones `if`, así que la ausencia
+          # de token se comprueba aquí dentro: antes el paso se saltaba siempre.
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "Sin NPM_TOKEN configurado: no se publica en npm."
+            exit 0
+          fi
           publish() {
             dir="$1"; name="$2"
             version=$(node -p "require('./$dir/package.json').version")
@@ -66,10 +71,13 @@ jobs:
         working-directory: packages/vscode
         run: ./node_modules/.bin/vsce package --no-dependencies --baseImagesUrl https://github.com/AlonsoAM/specatlas/raw/HEAD/packages/vscode --baseContentUrl https://github.com/AlonsoAM/specatlas/blob/HEAD/packages/vscode
       - name: Publicar en VS Code Marketplace (idempotente)
-        if: ${{ env.VSCE_PAT != '' }}
         working-directory: packages/vscode
         run: |
           set -e
+          if [ -z "$VSCE_PAT" ]; then
+            echo "Sin VSCE_PAT configurado: no se publica en el Marketplace."
+            exit 0
+          fi
           version=$(node -p "require('./package.json').version")
           if ./node_modules/.bin/vsce show specatlas.specatlas-vscode --json 2>/dev/null | grep -q "\"$version\""; then
             echo "specatlas-vscode $version ya está publicado, se omite"
@@ -83,10 +91,13 @@ jobs:
           fi
           exit 1
       - name: Publicar en Open VSX (idempotente)
-        if: ${{ env.OVSX_PAT != '' }}
         working-directory: packages/vscode
         run: |
           set -e
+          if [ -z "$OVSX_PAT" ]; then
+            echo "Sin OVSX_PAT configurado: no se publica en Open VSX."
+            exit 0
+          fi
           version=$(node -p "require('./package.json').version")
           if ./node_modules/.bin/ovsx get specatlas.specatlas-vscode --version "$version" >/dev/null 2>&1; then
             echo "specatlas-vscode $version ya está en Open VSX, se omite"

@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+### Corregido
+
+- **El workflow de publicación nunca publicaba**: los pasos de npm, Marketplace y Open VSX se saltaban con `if: env.X != ''` porque GitHub enmascara los secretos en las expresiones `if`, así que cada release terminaba «con éxito» sin publicar nada. La comprobación del token pasa al propio script.
+
 ## [0.1.33] — 2026-09-21
 
 ### Añadido
