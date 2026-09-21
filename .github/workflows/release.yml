@@ -51,20 +51,58 @@ jobs:
             exit 0
           fi
           npm --version
+
+          staged=0
+          log="$RUNNER_TEMP/npm-publish.log"
+
           publish() {
             dir="$1"; name="$2"
             version=$(node -p "require('./$dir/package.json').version")
             if npm view "$name@$version" version >/dev/null 2>&1; then
               echo "$name@$version ya está publicado, se omite"
-            else
-              pnpm --filter "$name" publish --access public --no-git-checks
+              return 0
             fi
+            # `pnpm pack` ejecuta prepack y reescribe las dependencias
+            # `workspace:*` a su versión real; el tarball ya es publicable.
+            tgz=$(cd "$dir" && pnpm pack --pack-destination "$RUNNER_TEMP" | tail -1)
+            if npm publish "$tgz" --access public >"$log" 2>&1; then
+              cat "$log"
+              echo "$name@$version publicado"
+              return 0
+            fi
+            cat "$log"
+            # Una configuración de publicador de confianza puede permitir solo
+            # encolar (`allow-stage-publish`): entonces se encola y una persona
+            # aprueba con `npm stage approve`.
+            if grep -qiE "OIDC permission denied|allow-publish" "$log"; then
+              echo "La configuración de $name solo permite encolar: se usa npm stage publish"
+              npm stage publish "$tgz" --access public
+              staged=1
+              return 0
+            fi
+            return 1
           }
+
           publish packages/render @specatlas/render
           publish packages/core @specatlas/core
           publish packages/adapters @specatlas/adapters
           publish packages/lsp @specatlas/lsp
           publish packages/cli specatlas
+
+          if [ "$staged" = "1" ]; then
+            {
+              echo "### npm: versiones en cola"
+              echo ""
+              echo "Alguna configuración de publicador de confianza solo permite encolar."
+              echo "Apruébalas con:"
+              echo ""
+              echo '```bash'
+              echo "npm stage list"
+              echo "npm stage approve <stage-id> --otp <código>"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::notice title=npm::Hay versiones en cola pendientes de aprobación (npm stage list)"
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

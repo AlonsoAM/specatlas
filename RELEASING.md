@@ -20,7 +20,7 @@ npm emite la credencial en el momento de publicar a partir de la identidad del w
    - *Repository*: `specatlas`
    - *Workflow filename*: `release.yml`
    - *Environment*: vacío
-3. **Publicación directa**: cada configuración nace en modo **staged** (la versión queda en cola esperando aprobación). Si quieres que el release quede publicado sin intervención, activa *direct publishing* en la configuración; si prefieres el visto bueno humano, déjalo en staged y aprueba con:
+3. **Permisos de la configuración**: cada una nace con `allow-stage-publish` (encolar) y **sin** `allow-publish` (publicar directo). Con el default, `npm publish` responde `403 — OIDC permission denied for this action`; el workflow lo detecta y encola la versión con `npm stage publish`, dejando un aviso en el resumen del job. Si quieres que el release quede publicado sin intervención, activa la publicación directa en la configuración del paquete. Para aprobar lo encolado:
 
 ```bash
 npm stage list                        # versiones en cola
