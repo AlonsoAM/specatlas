@@ -15,6 +15,7 @@
 
 ## Fixes vivos
 
+- 2026-09-21 · `editor` · `firma-en-presentacion` · pass
 - 2026-09-20 · `editor` · `resolutor-workflow` · pass
 - 2026-09-20 · `fixes` · `fixes-heredados` · pass
 - 2026-09 · `editor` · `paneles-vivo` · pass
@@ -26,4 +27,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-15 cambio(s) en `changes/archive/`.
+16 cambio(s) en `changes/archive/`.

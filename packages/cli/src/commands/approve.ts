@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { agentCommand, mockupsReady, requiresMockups, signApproval } from '@specatlas/core'
+import { agentCommand, exists, generatePresentation, mockupsReady, requiresMockups, signApproval } from '@specatlas/core'
 import { flagBool, flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { runApproveFromGithub } from './issue.js'
@@ -73,6 +73,21 @@ export async function runApprove(ctx: CliContext): Promise<CommandResult> {
     lines.push(`  fecha:     ${result.approval.approvedAt}`)
     lines.push('')
     lines.push('La firma desbloquea el plan. Si el artefacto cambia, la firma queda obsoleta automáticamente.')
+
+    // La propuesta es un documento derivado: si existe, se rehace para que
+    // muestre la firma recién registrada en vez del estado anterior.
+    const slug = change?.slug
+    if (slug && !flagBool(ctx.flags, 'dry-run')) {
+      const presentation = path.join(root, '.sdd', 'changes', slug, 'presentation', 'index.html')
+      if (await exists(presentation)) {
+        try {
+          await generatePresentation({ root, slug })
+          lines.push(`Propuesta actualizada con la firma: ${path.relative(ctx.cwd, presentation)}`)
+        } catch (error) {
+          lines.push(`La propuesta no se pudo rehacer (${(error as Error).message}); vuelve a generarla con \`satlas present ${slug}\`.`)
+        }
+      }
+    }
   }
   const hasErrors = result.diagnostics.some((d) => d.severity === 'error')
   return {

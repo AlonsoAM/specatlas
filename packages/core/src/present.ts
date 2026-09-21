@@ -160,6 +160,11 @@ interface Labels {
   signatureName: string
   signatureDate: string
   signatureNote: string
+  signedBy: string
+  signedAt: string
+  signedHash: string
+  signedChannel: string
+  signHere: string
   openMockup: string
   mockupHint: string
   illustrates: string
@@ -196,6 +201,11 @@ function labelsFor(language: Language): Labels {
       signatureName: 'Approver name',
       signatureDate: 'Signature date',
       signatureNote: 'The signature is recorded with the specification hash and the date.',
+      signedBy: 'Approved by',
+      signedAt: 'Date',
+      signedHash: 'Signed hash',
+      signedChannel: 'Channel',
+      signHere: 'Sign here to approve this proposal.',
       openMockup: 'Open mockup',
       mockupHint: 'Each screen opens full size in its own tab. In a browser they are also previewed inline.',
       illustrates: 'Illustrates',
@@ -227,6 +237,11 @@ function labelsFor(language: Language): Labels {
     missingMockups: 'Mockups declarados que faltan',
     screenshots: 'Capturas',
     print: 'Imprimir / Guardar PDF',
+    signedBy: 'Aprobada por',
+    signedAt: 'Fecha',
+    signedHash: 'Huella firmada',
+    signedChannel: 'Canal',
+    signHere: 'Firma aquí para aprobar esta propuesta.',
     signatureName: 'Nombre de quien aprueba',
     signatureDate: 'Fecha de la firma',
     signatureNote: 'La firma se registra con la huella de la especificación y la fecha.',
@@ -310,6 +325,8 @@ th { background:var(--elev); font-size:11px; text-transform:uppercase; letter-sp
 .grid-shots { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:12px; }
 .grid-shots img { width:100%; border:1px solid var(--line); border-radius:10px; }
 .signature { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.sign-line.signed { border-style:solid; border-color:var(--ok); background:color-mix(in srgb, var(--ok) 8%, transparent); }
+.sign-line .mono { font-family:ui-monospace, Consolas, monospace; font-size:11.5px; word-break:break-all; }
 .sign-line { border:1px dashed var(--accent); border-radius:8px; padding:16px; background:var(--accent-soft); }
 .sign-line .sl-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:0 0 6px; margin-bottom:18px; color:var(--muted); font-size:12.5px; }
 .sign-line .sl-row:last-child { border-bottom:0; margin-bottom:0; padding-top:14px; }
@@ -391,6 +408,21 @@ function page(input: {
       : input.approvalStatus === 'stale' && input.approval
         ? `<div class="sign-state stale"><span class="ss-label">${esc(l.approve)}</span><b>${esc(l.approveStale)}</b><p>${esc(l.approveDone.replace('{by}', input.approval.by).replace('{at}', input.approval.at))}</p></div>`
         : `<div class="sign-state"><span class="ss-label">${esc(l.approve)}</span><b>${esc(l.approvePending)}</b><p>${esc(l.approveText)}</p></div>`
+
+  // La firma registrada se muestra; solo cuando falta se dejan las líneas
+  // para firmarla a mano sobre el papel.
+  const signatureBlock =
+    input.approvalStatus === 'valid' && input.approval
+      ? `<div class="sign-line signed">
+            <div class="sl-row"><span>${esc(l.signedBy)}</span><b>${esc(input.approval.by)}</b></div>
+            <div class="sl-row"><span>${esc(l.signedAt)}</span><b>${esc(input.approval.at)}</b></div>
+            <div class="sl-row"><span>${esc(l.signedHash)}</span><span class="mono">${esc(input.hash)}</span></div>
+          </div>`
+      : `<div class="sign-line">
+            <p class="sign-help" style="margin:0 0 12px">${esc(l.signHere)}</p>
+            <div class="sl-row"><span>${esc(l.signatureName)}</span><span style="font-family:ui-monospace,Consolas,monospace">____________________</span></div>
+            <div class="sl-row"><span>${esc(l.signatureDate)}</span><span style="font-family:ui-monospace,Consolas,monospace">____ / ____ / ________</span></div>
+          </div>`
 
   const mockupHtml =
     input.mockups.length === 0
@@ -499,14 +531,11 @@ function page(input: {
       <div class="card-head"><span class="num">05</span><h2>${esc(l.approve)}</h2><span class="sub">acto humano · queda auditado</span></div>
       <div class="card-body">
         <div class="signature">
-          <div class="sign-line">
-            <div class="sl-row"><span>${esc(l.signatureName)}</span><span style="font-family:ui-monospace,Consolas,monospace">____________________</span></div>
-            <div class="sl-row"><span>${esc(l.signatureDate)}</span><span style="font-family:ui-monospace,Consolas,monospace">____ / ____ / ________</span></div>
-          </div>
+          ${signatureBlock}
           <div>
             <p class="sign-help">${esc(l.signatureNote)}</p>
-            <p class="sign-help" style="margin-top:8px"><code>${esc(input.approveHint)}</code></p>
-            <p class="sign-help" style="margin-top:10px">${esc(l.approveStale)}</p>
+            ${input.approvalStatus === 'valid' ? '' : `<p class="sign-help" style="margin-top:8px"><code>${esc(input.approveHint)}</code></p>`}
+            ${input.approvalStatus === 'stale' ? `<p class="sign-help" style="margin-top:10px">${esc(l.approveStale)}</p>` : ''}
           </div>
         </div>
       </div>

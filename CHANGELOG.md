@@ -4,6 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.38] — 2026-09-21
+
+### Corregido
+
+- **La firma no aparecía en la propuesta**: la sección de firma estaba escrita como HTML fijo —las líneas en blanco para firmar a mano y, al final, el aviso de «la especificación cambió después de firmarse» de forma **incondicional**—, así que ese aviso salía en los tres casos, incluida una especificación recién firmada. Ahora la sección refleja el estado real: firmada muestra quién aprobó, cuándo y la huella firmada; pendiente invita a firmar; obsoleta lo explica y vuelve a pedir la firma.
+- **Aprobar rehace la propuesta**: la propuesta es un documento derivado y estático, y `satlas approve` la dejaba con el estado anterior. Ahora, si existe, se regenera al firmar y se dice dónde quedó; si la regeneración falla, se informa sin perder la firma ya registrada.
+
 ## [0.1.37] — 2026-09-21
 
 ### Añadido

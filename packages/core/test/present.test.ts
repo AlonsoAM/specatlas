@@ -3,6 +3,10 @@ import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { generatePresentation } from '../src/present'
+import { signApproval } from '../src/approvals'
+import { initWorkspace } from '../src/init'
+import { createChange } from '../src/new'
+import { defaultConfig } from '../src/config'
 import { createChange } from '../src/new'
 import { initWorkspace } from '../src/init'
 import { signApproval } from '../src/approvals'
@@ -148,5 +152,70 @@ screenshots: []
     expect(html).toContain('Mockups declarados que faltan')
     expect(html).toContain('pantalla.html')
     expect(result.diagnostics.some((finding) => finding.code === 'ATLAS-PRESENT-002')).toBe(true)
+  })
+})
+
+describe('la sección de firma de la propuesta', () => {
+  const NL = String.fromCharCode(10)
+  const DELTA = [
+    '# Delta — Pagar con tarjeta',
+    '',
+    '## Requisitos agregados',
+    '',
+    '### Requisito: REQ-PAGOS-001 — Pagar con tarjeta guardada',
+    'El comprador paga con la tarjeta que dejó guardada, sin volver a teclearla.',
+    '',
+    '- Regla BR-PAGOS-001: el cobro se confirma en menos de 10 segundos',
+    '',
+    '#### Escenario: REQ-PAGOS-001-S1 — Tarjeta vigente',
+    '- **CUANDO** el comprador confirma el pago con una tarjeta vigente',
+    '- **ENTONCES** el pedido queda pagado y recibe su comprobante',
+  ].join(NL)
+
+  async function proyecto(prefijo: string): Promise<string> {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), prefijo))
+    await initWorkspace({ root, name: 'Demo', language: 'es' })
+    await createChange({ root, slug: 'pago', domain: 'pagos', title: 'Pagar con tarjeta', cfg: defaultConfig() })
+    await fs.writeFile(path.join(root, '.sdd', 'changes', 'pago', 'spec.md'), DELTA, 'utf8')
+    return root
+  }
+
+  async function seccionDeFirma(root: string): Promise<string> {
+    const resultado = await generatePresentation({ root, slug: 'pago' })
+    const html = await fs.readFile(resultado.path!, 'utf8')
+    const desde = html.indexOf('id="firma"')
+    return html.slice(desde, desde + 1800)
+  }
+
+  it('sin firmar invita a firmar y no avisa de nada obsoleto', async () => {
+    const root = await proyecto('satlas-firma-pendiente-')
+    const seccion = await seccionDeFirma(root)
+    expect(seccion).toContain('Firma aquí')
+    expect(seccion).toContain('____________________')
+    expect(seccion).toContain('satlas approve pago')
+    expect(seccion).not.toContain('quedó obsoleta')
+  })
+
+  it('firmada muestra quién, cuándo y la huella, sin líneas en blanco', async () => {
+    const root = await proyecto('satlas-firma-valida-')
+    await signApproval({ root, artifact: path.join(root, '.sdd', 'changes', 'pago', 'spec.md'), by: 'Alonso Anchante' })
+    const seccion = await seccionDeFirma(root)
+    expect(seccion).toContain('Aprobada por')
+    expect(seccion).toContain('Alonso Anchante')
+    expect(seccion).toContain('sha256:')
+    expect(seccion).not.toContain('____________________')
+    expect(seccion).not.toContain('quedó obsoleta')
+  })
+
+  it('si la especificación cambia después de firmarse, lo dice y vuelve a pedir la firma', async () => {
+    const root = await proyecto('satlas-firma-obsoleta-')
+    const spec = path.join(root, '.sdd', 'changes', 'pago', 'spec.md')
+    await signApproval({ root, artifact: spec, by: 'Alonso Anchante' })
+    await fs.writeFile(spec, DELTA.replace('10 segundos', '5 segundos'), 'utf8')
+
+    const seccion = await seccionDeFirma(root)
+    expect(seccion).toContain('quedó obsoleta')
+    expect(seccion).toContain('____________________')
+    expect(seccion).toContain('satlas approve pago')
   })
 })
