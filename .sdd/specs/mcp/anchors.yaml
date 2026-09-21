@@ -1,0 +1,48 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-MCP-001
+    files:
+      - packages/cli/src/mcp/tools/status.ts
+      - packages/cli/test/mcp.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-MCP-002
+    files:
+      - packages/cli/src/mcp/tools/next.ts
+      - packages/cli/test/mcp.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-MCP-003
+    files:
+      - packages/cli/src/mcp/tools/trace.ts
+      - packages/cli/src/mcp/tools/validate.ts
+      - packages/cli/test/mcp.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-MCP-004
+    files:
+      - packages/cli/src/mcp/tools/impact.ts
+      - packages/core/src/impact.ts
+      - packages/core/src/index.ts
+      - packages/core/test/impact-glossary.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-MCP-005
+    files:
+      - packages/cli/src/mcp/tools/glossary.ts
+      - packages/core/src/index.ts
+      - packages/core/src/parse/glossary.ts
+      - packages/core/test/impact-glossary.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-MCP-006
+    files:
+      - packages/cli/src/mcp/tools/index.ts
+      - packages/cli/src/mcp/tools/list.ts
+      - packages/cli/test/mcp.test.ts
+    updated: 2026-09-21
+    source: archive

@@ -45,7 +45,6 @@ export const atlasConfigSchema = z.object({
       glossary: z.string().default('.sdd/glossary.md'),
     })
     .default({}),
-  syntax: z.object({ headers: z.enum(['es', 'en']).optional() }).default({}),
   mockups: z
     .object({
       level: z.enum(['sketch', 'hifi']).default('hifi'),

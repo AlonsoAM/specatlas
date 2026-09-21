@@ -51,6 +51,19 @@ export async function createChange(opts: NewChangeOptions): Promise<NewChangeRes
   }
 
   const lane: Lane = opts.lane ?? opts.cfg?.lanes.default ?? 'standard'
+  const allowed = opts.cfg?.lanes.allowed
+  if (allowed && allowed.length > 0 && !allowed.includes(lane)) {
+    return {
+      slug,
+      dir,
+      files: [],
+      diagnostics: [
+        diag('ATLAS-NEW-003', 'error', `El carril "${lane}" no está permitido en este proyecto`, {
+          suggestion: `Carriles permitidos: ${allowed.join(', ')} (se configuran en .sdd/config.yaml → lanes.allowed)`,
+        }),
+      ],
+    }
+  }
   const domain = (opts.domain ?? 'general').toLowerCase()
   const title = opts.title ?? slug.replace(/-/g, ' ')
 

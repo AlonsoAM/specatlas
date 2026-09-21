@@ -1,4 +1,4 @@
-import type { Language } from '@specatlas/core'
+import { agentCommand, type Language, type PhaseId } from '@specatlas/core'
 import { stringify as stringifyYaml } from 'yaml'
 import type { PhaseSource, WorkflowSources } from './workflow.js'
 import { renderPhase } from './workflow.js'
@@ -36,8 +36,19 @@ function frontmatter(data: Record<string, unknown>, body: string): string {
   return `---\n${yaml}\n---\n\n${body}\n`
 }
 
-export function renderFor(ctx: TargetContext, phase: PhaseSource, slugToken: string): string {
-  return renderPhase(phase.body, ctx.sources.snippets, vars(ctx.language, slugToken, ctx.commandPrefix))
+/**
+ * Las fases se escriben una sola vez con la invocación canónica (`/satlas-plan`);
+ * cada agente la recibe en su propia sintaxis (`/satlas:plan` en Claude Code y Gemini).
+ */
+function withInvocation(body: string, target: AgentTarget): string {
+  return body.replace(/\/satlas-([a-z]+)/g, (match, phase: string) => {
+    const command = agentCommand(phase as PhaseId, '', { adapters: { targets: [target] } })
+    return command.startsWith('/') ? command : match
+  })
+}
+
+export function renderFor(ctx: TargetContext, phase: PhaseSource, slugToken: string, target: AgentTarget = 'opencode'): string {
+  return withInvocation(renderPhase(phase.body, ctx.sources.snippets, vars(ctx.language, slugToken, ctx.commandPrefix)), target)
 }
 
 export function compileTarget(target: AgentTarget, ctx: TargetContext): CompiledFile[] {
@@ -59,10 +70,11 @@ export function compileTarget(target: AgentTarget, ctx: TargetContext): Compiled
 }
 
 function compileOpencode(ctx: TargetContext): CompiledFile[] {
+  const target: AgentTarget = 'opencode'
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const commandBody = renderFor(ctx, phase, phase.acceptsArguments ? '$ARGUMENTS' : ctx.slugToken)
-    const skillBody = renderFor(ctx, phase, ctx.slugToken)
+    const commandBody = renderFor(ctx, phase, phase.acceptsArguments ? '$ARGUMENTS' : ctx.slugToken, target)
+    const skillBody = renderFor(ctx, phase, ctx.slugToken, target)
     files.push({
       target: 'opencode',
       path: `.opencode/command/satlas-${phase.id}.md`,
@@ -78,10 +90,11 @@ function compileOpencode(ctx: TargetContext): CompiledFile[] {
 }
 
 function compileClaudeCode(ctx: TargetContext): CompiledFile[] {
+  const target: AgentTarget = 'claude-code'
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const commandBody = renderFor(ctx, phase, phase.acceptsArguments ? '$ARGUMENTS' : ctx.slugToken)
-    const skillBody = renderFor(ctx, phase, ctx.slugToken)
+    const commandBody = renderFor(ctx, phase, phase.acceptsArguments ? '$ARGUMENTS' : ctx.slugToken, target)
+    const skillBody = renderFor(ctx, phase, ctx.slugToken, target)
     files.push({
       target: 'claude-code',
       path: `.claude/commands/satlas/${phase.id}.md`,
@@ -97,9 +110,10 @@ function compileClaudeCode(ctx: TargetContext): CompiledFile[] {
 }
 
 function compileCursor(ctx: TargetContext): CompiledFile[] {
+  const target: AgentTarget = 'cursor'
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const body = renderFor(ctx, phase, ctx.slugToken)
+    const body = renderFor(ctx, phase, ctx.slugToken, target)
     files.push({
       target: 'cursor',
       path: `.cursor/skills/satlas-${phase.id}/SKILL.md`,
@@ -115,9 +129,10 @@ function compileCursor(ctx: TargetContext): CompiledFile[] {
 }
 
 function compileCopilot(ctx: TargetContext): CompiledFile[] {
+  const target: AgentTarget = 'copilot'
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const body = renderFor(ctx, phase, ctx.slugToken)
+    const body = renderFor(ctx, phase, ctx.slugToken, target)
     files.push({
       target: 'copilot',
       path: `.github/prompts/satlas-${phase.id}.prompt.md`,
@@ -129,9 +144,10 @@ function compileCopilot(ctx: TargetContext): CompiledFile[] {
 }
 
 function compileGemini(ctx: TargetContext): CompiledFile[] {
+  const target: AgentTarget = 'gemini'
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const body = renderFor(ctx, phase, phase.acceptsArguments ? '{{args}}' : ctx.slugToken)
+    const body = renderFor(ctx, phase, phase.acceptsArguments ? '{{args}}' : ctx.slugToken, target)
     files.push({
       target: 'gemini',
       path: `.gemini/commands/satlas/${phase.id}.toml`,
@@ -145,7 +161,7 @@ function compileGemini(ctx: TargetContext): CompiledFile[] {
 function compileAgentsMarkdown(ctx: TargetContext, target: 'codex' | 'generic'): CompiledFile[] {
   const files: CompiledFile[] = []
   for (const phase of ctx.sources.phases) {
-    const body = renderFor(ctx, phase, ctx.slugToken)
+    const body = renderFor(ctx, phase, ctx.slugToken, target)
     files.push({
       target,
       path: `prompts/satlas-${phase.id}.md`,

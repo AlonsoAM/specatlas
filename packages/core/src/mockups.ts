@@ -4,6 +4,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 import { z } from 'zod'
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
+import { agentCommand } from './agents.js'
 import { exists, listDir, readText, readTextIfExists, writeText } from './fsx.js'
 import { artifactHash } from './hash.js'
 import type { Change, MockupManifest } from './model.js'
@@ -187,7 +188,7 @@ export function lintMockupManifest(manifest: MockupManifest, knownScenarios: Set
 export async function checkMockups(root: string, slug: string, change: Change): Promise<MockupCheckResult> {
   const dir = mockupsDir(root, slug)
   if (!(await exists(dir))) {
-    return { findings: [diag('LINT-MKP-004', 'warning', 'El cambio no tiene carpeta de mockups', { path: dir, suggestion: 'Genera los mockups con la fase /satlas-mockup' })], stale: false }
+    return { findings: [diag('LINT-MKP-004', 'warning', 'El cambio no tiene carpeta de mockups', { path: dir, suggestion: `Genera los mockups con la fase ${agentCommand('mockup', slug)}` })], stale: false }
   }
   const { manifest, path: manifestPath, diagnostics } = await readMockupManifest(root, slug)
   const findings = [...diagnostics]
@@ -233,13 +234,21 @@ export async function writeMockupPlan(root: string, slug: string, plan: MockupPl
   return file
 }
 
-export async function writeMockupManifest(root: string, slug: string, plan: MockupPlan, inputsHash: string, now: Date = new Date()): Promise<string> {
+export async function writeMockupManifest(
+  root: string,
+  slug: string,
+  plan: MockupPlan,
+  inputsHash: string,
+  now: Date = new Date(),
+  opts: { level?: 'sketch' | 'hifi'; a11y?: 'off' | 'A' | 'AA' | 'AAA' } = {},
+): Promise<string> {
   const file = path.join(mockupsDir(root, slug), 'manifest.yaml')
   if (await exists(file)) return file
   const doc = {
     schema_version: 1,
     version: 1,
-    level: 'hifi',
+    level: opts.level ?? 'hifi',
+    a11y: opts.a11y ?? 'AA',
     platform: plan.platform,
     inputs_hash: inputsHash,
     generated_at: localStamp(now),

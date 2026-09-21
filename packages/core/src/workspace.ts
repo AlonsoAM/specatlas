@@ -11,6 +11,7 @@ import { parseTasksFile } from './parse/tasks.js'
 import { parseVerifyFile } from './parse/evidence.js'
 import { parseApprovals, parseChangeMeta } from './parse/meta.js'
 import { parseClarify } from './parse/clarify.js'
+import { parseReview } from './parse/review.js'
 import { parseFixCovers } from './fixes.js'
 import { loadContracts } from './contracts.js'
 import { LINKS_FILE, loadLinks } from './links.js'
@@ -86,7 +87,12 @@ export async function loadChange(root: string, slug: string, relDir?: string): P
   if (await exists(planFile)) change.planPath = planFile
 
   const reviewFile = path.join(dir, 'review.md')
-  if (await exists(reviewFile)) change.reviewPath = reviewFile
+  const reviewRaw = await readTextIfExists(reviewFile)
+  if (reviewRaw !== undefined) {
+    change.reviewPath = reviewFile
+    change.review = parseReview(reviewRaw, reviewFile)
+    diagnostics.push(...change.review.diagnostics)
+  }
 
   const presentationFile = path.join(dir, 'presentation', 'index.html')
   if (await exists(presentationFile)) change.presentationPath = presentationFile

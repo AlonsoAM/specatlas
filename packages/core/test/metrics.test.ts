@@ -77,7 +77,7 @@ describe('collectMetrics', () => {
   it('expone la siguiente acción por cambio', async () => {
     const root = await makeWorkspace()
     const metrics = await collectMetrics(root)
-    expect(metrics.changes[0]!.next).toContain('/satlas.build')
+    expect(metrics.changes[0]!.next).toContain('/satlas-build')
   })
 
   it('calcula antigüedad, carriles y puntos de atención', async () => {

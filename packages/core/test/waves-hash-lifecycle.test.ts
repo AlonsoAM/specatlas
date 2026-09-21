@@ -9,10 +9,13 @@ import { defaultConfig } from '../src/config'
 import { deriveState, verifyApproval } from '../src/lifecycle'
 import { parseDelta } from '../src/parse/delta'
 import { parseChangeMeta } from '../src/parse/meta'
+import { parseReview } from '../src/parse/review'
 import { setMockupRequirement } from '../src/mockups'
 import { createChange } from '../src/new'
 import { initWorkspace } from '../src/init'
 import type { Change } from '../src/model'
+
+const NL = String.fromCharCode(10)
 
 describe('planWaves', () => {
   it('ordena numéricamente (T1.2 antes que T1.10) y respeta dependencias', () => {
@@ -116,7 +119,7 @@ Prosa.
     const tasks = parseTasksFile('## Bloque 1 — X\n- [ ] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
     const building = deriveState({ change: { ...base, tasks }, cfg, approval, blockingFindings: 0 })
     expect(building.state).toBe('building')
-    expect(building.nextAction.command).toContain('/satlas.build')
+    expect(building.nextAction.command).toContain('/satlas-build')
 
     const tasksDone = parseTasksFile('## Bloque 1 — X\n- [x] T1.1 Uno · Archivos: a.ts · Cubre: REQ-A-001-S1\n', 'tasks.md')
     const built = deriveState({ change: { ...base, tasks: tasksDone }, cfg, approval, blockingFindings: 0 })
@@ -159,9 +162,16 @@ Prosa.
 
     const pending = deriveState({ change, cfg, approval, blockingFindings: 0 })
     expect(pending.state).toBe('verified')
-    expect(pending.nextAction.command).toContain('/satlas.review')
+    expect(pending.nextAction.command).toContain('/satlas-review')
 
-    const reviewed = deriveState({ change: { ...change, reviewPath: 'changes/x/review.md' }, cfg, approval, blockingFindings: 0 })
+    // Que exista review.md no basta: la revisión tiene que estar cerrada.
+    const abierta = parseReview(['## Veredicto', '', '- resultado: pass', '', '## Hallazgos', '', '- [ ] (bloqueante) falta validar la entrada'].join(NL), 'changes/x/review.md')
+    const conHallazgos = deriveState({ change: { ...change, reviewPath: 'changes/x/review.md', review: abierta }, cfg, approval, blockingFindings: 0 })
+    expect(conHallazgos.state).toBe('verified')
+    expect(conHallazgos.nextAction.command).toContain('satlas review')
+
+    const cerrada = parseReview(['## Veredicto', '', '- resultado: pass', '- por: Ana', '', '## Hallazgos', '', '- [x] (bloqueante) validada la entrada'].join(NL), 'changes/x/review.md')
+    const reviewed = deriveState({ change: { ...change, reviewPath: 'changes/x/review.md', review: cerrada }, cfg, approval, blockingFindings: 0 })
     expect(reviewed.state).toBe('ready')
     expect(reviewed.nextAction.command).toContain('satlas archive')
 
@@ -238,7 +248,7 @@ Prosa.
 
     const building = deriveState({ change: { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta, tasks: tasksPending }, cfg, approval, blockingFindings: 3 })
     expect(building.state).toBe('building')
-    expect(building.nextAction.command).toContain('/satlas.build')
+    expect(building.nextAction.command).toContain('/satlas-build')
 
     const specDraft = deriveState({ change: { slug: 'x', dir: 'changes/x', diagnostics: [], meta, delta }, cfg, approval: { status: 'missing' }, blockingFindings: 2 })
     expect(specDraft.state).toBe('spec_draft')

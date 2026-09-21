@@ -1,4 +1,4 @@
-import { impactOfFile, impactOfRequirement, type ImpactReport } from '@specatlas/core'
+import { impactOfFile, impactOfRequirement, loadAllAnchors, type ImpactReport } from '@specatlas/core'
 import { errorResult, jsonResult, noWorkspaceResult, stringArg, type McpHost, type ToolResult } from '../protocol.js'
 
 const REQ_TARGET_RE = /^REQ-[A-Z0-9]+(?:-[A-Z0-9]+)*-\d{3}(?:-S\d+)?$/i
@@ -14,13 +14,15 @@ export async function runAtlasImpact(args: unknown, host: McpHost): Promise<Tool
   const resolved = await host.getWorkspace()
   if (!resolved) return noWorkspaceResult()
   const { workspace } = resolved
+  // Las anclas de las specs vivas responden aunque no haya cambios activos.
+  const anchors = await loadAllAnchors(workspace.root)
 
   let report: ImpactReport
   if (REQ_TARGET_RE.test(target)) {
     const reqId = target.toUpperCase().replace(/-S\d+$/, '')
-    report = impactOfRequirement(workspace, reqId)
+    report = impactOfRequirement(workspace, reqId, anchors)
   } else {
-    report = impactOfFile(workspace, target)
+    report = impactOfFile(workspace, target, anchors)
   }
 
   if (!report.exists) {

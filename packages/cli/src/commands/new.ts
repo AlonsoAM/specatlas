@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { createChange, type Lane, type Language } from '@specatlas/core'
+import { agentCommand, createChange, type Lane, type Language } from '@specatlas/core'
 import { flagString } from '../args.js'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { msg } from '../messages.js'
@@ -35,7 +35,7 @@ export async function runNew(ctx: CliContext): Promise<CommandResult> {
         msg('new.done', ctx.language),
         ...result.files.map((f) => `  + ${path.relative(ctx.cwd, f)}`),
         '',
-        `Siguiente: /satlas.specify ${result.slug} — escribe la especificación 100% funcional y de negocio.`,
+        `Siguiente: ${agentCommand('specify', result.slug, config)} — escribe la especificación 100% funcional y de negocio.`,
       ]
 
   return {

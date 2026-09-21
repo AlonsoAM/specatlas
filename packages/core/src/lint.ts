@@ -1,6 +1,7 @@
 import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import type { Delta, Requirement, SpecFile, TasksFile, VerifyFile } from './model.js'
+import { lintPlaceholders } from './placeholders.js'
 
 const VAGUE_ES = ['rápido', 'rápida', 'rápidos', 'rápidas', 'fácil', 'fáciles', 'varios', 'varias', 'óptimo', 'óptima', 'robusto', 'robusta', 'adecuado', 'adecuada', 'eficiente', 'amigable', 'moderno', 'moderna', 'mejor', 'mejores', 'simple', 'sencillo', 'intuitivo', 'intuitiva', 'apropiado', 'apropiada', 'suficiente', 'razonable']
 const VAGUE_EN = ['fast', 'quick', 'easy', 'several', 'optimal', 'robust', 'adequate', 'efficient', 'friendly', 'modern', 'better', 'best', 'simple', 'intuitive', 'appropriate', 'sufficient', 'reasonable', 'nice', 'clean']
@@ -52,6 +53,7 @@ export function lintRequirement(req: Requirement, path: string, opts: LintOption
       out.push(...lintText(part.text, 'LINT-BIZ-001', tech, 'Jerga técnica en la especificación de negocio', path, part.line))
     }
   }
+  out.push(...lintPlaceholders(req, path))
   if (req.scenarios.length === 0) {
     out.push(diag('TRACE-001', 'error', `El requisito ${req.id} no tiene ningún escenario`, { path, line: req.line, suggestion: 'Añade al menos un escenario CUANDO/ENTONCES' }))
   }

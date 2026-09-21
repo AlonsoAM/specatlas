@@ -1,3 +1,4 @@
+import { agentCommand } from '@specatlas/core'
 import { requireWorkspace, type CliContext, type CommandResult } from '../cli.js'
 import { msg } from '../messages.js'
 
@@ -23,7 +24,7 @@ export async function runClarify(ctx: CliContext): Promise<CommandResult> {
   for (const item of resolved) lines.push(`    [x] ${item.text}${item.answer ? ` — ${item.answer}` : ''}`)
   if (open.length > 0) {
     lines.push('')
-    lines.push(`Aclara con la fase del agente: /satlas.clarify ${slug}`)
+    lines.push(`Aclara con la fase del agente: ${agentCommand('clarify', slug, config)}`)
   } else if (resolved.length === 0) {
     lines.push('')
     lines.push('El cambio no tiene preguntas abiertas ni aclaraciones registradas.')
@@ -37,7 +38,7 @@ export async function runClarify(ctx: CliContext): Promise<CommandResult> {
       mode,
       open: open.map((item) => ({ text: item.text, line: item.line })),
       resolved: resolved.map((item) => ({ text: item.text, line: item.line, answer: item.answer })),
-      ...(open.length > 0 ? { action: `/satlas.clarify ${slug}` } : {}),
+      ...(open.length > 0 ? { action: agentCommand('clarify', slug, config) } : {}),
     },
     text: lines,
   }

@@ -42,7 +42,9 @@ F0 (fundaciones) en desarrollo:
 | F3: fases **aclarar** y **documentar** (carril completo) con modos configurables, comandos `satlas clarify`/`satlas docs` y artefactos en el editor | ✅ |
 | F3: **contratos** del cambio (OpenAPI/GraphQL/protobuf) con cobertura cruzada y **enlaces multi-repo** (`satlas link`) en trazabilidad, impacto y consulta | ✅ |
 | Publicación: 5 paquetes npm (`specatlas`, `@specatlas/core`, `render`, `adapters`, `lsp`) + extensión en **VS Code Marketplace** y **Open VSX** + GitHub Release v0.1.0 | ✅ |
-| F3 restante: contract testing y multi-repo | 🔲 pendiente |
+| F3: **contratos del cambio** (OpenAPI/GraphQL/protobuf) y **multi-repo** (`satlas link`) | ✅ |
+| Higiene del flujo: la plantilla no pasa los gates (`LINT-BIZ-003`), invocación de agente por target, `satlas pause`/`resume`, carriles permitidos y sugerencia de comando | ✅ |
+| Specs vivas ancladas al código: `anchors.yaml` por dominio, `satlas drift`, `satlas impact`, `satlas review` con gate real y `satlas amend` | ✅ |
 
 ## Requisitos
 
@@ -81,12 +83,15 @@ pnpm satlas mockup reset-password                         # plan + manifiesto de
 pnpm satlas present reset-password                        # propuesta HTML para el stakeholder
 pnpm satlas verify reset-password --scenario REQ-AUTH-001-S1 --command "npm test" --by "Nombre Apellido"
 pnpm satlas approve reset-password --by "Nombre Apellido"   # firma la spec (hash + autor)
-pnpm satlas analyze reset-password                        # chequeo cruzado + analyze.md
+pnpm satlas analyze reset-password                        # consistencia entre artefactos + analyze.md
 pnpm satlas ci                                            # gate de pipeline (sin agente)
 pnpm satlas metrics                                       # métricas locales del workspace
 pnpm satlas packs --check reset-password                  # controles de cumplimiento del cambio
 pnpm satlas status
 pnpm satlas archive reset-password --dry-run
+# `analyze` no prueba el código (eso es `verify`): comprueba que los artefactos encajan entre sí
+# — spec bien formada, cada requisito con tarea y evidencia, plan presente, tareas sin ciclos,
+# mockups al día y packs de cumplimiento. Escribe `analyze.md`, que se regenera entero cada vez.
 
 # adaptadores de agente (se compilan solos en `init`; recompila cuando cambie workflow/)
 pnpm satlas adapters                      # usa adapters.targets de config (por defecto opencode + generic)
@@ -109,6 +114,81 @@ Cada agente recibe sus artefactos en su formato nativo:
 Tras compilar adaptadores en un proyecto con opencode, reinicia la sesión para que aparezcan los comandos `/satlas-specify`, `/satlas-plan`, `/satlas-build`, etc.
 
 Todos los comandos aceptan `--json` (envelope estable para CI y agentes) y devuelven exit codes: `0` ok, `1` hallazgos, `2` uso/config, `3` E/S.
+
+## La invocación del agente sale de tu configuración
+
+Cada asistente llama a sus fases con su propia sintaxis. SpecAtlas nunca te propone una invocación que tu agente no reconozca: `status`, `next`, el panel y los avisos la derivan del **primer target** de `adapters.targets` en `.sdd/config.yaml`.
+
+| Target configurado | Lo que te copia SpecAtlas |
+|---|---|
+| `opencode`, `cursor`, `copilot`, `codex` | `/satlas-specify mi-cambio` |
+| `claude-code`, `gemini` | `/satlas:specify mi-cambio` |
+| `generic` | `prompts/satlas-specify.md mi-cambio` |
+
+## Pausar y reanudar un cambio
+
+El trabajo se interrumpe: negocio no responde, entra un incidente, cambia la prioridad. La pausa es un hecho del cambio, se registra con motivo y autor, y no se pierde entre sesiones.
+
+```bash
+satlas pause reset-password --reason "esperando definición de negocio" --by "Nombre Apellido"
+satlas resume reset-password
+```
+
+Mientras está pausado, el cambio aparece como **pausado** en `status`, en el árbol y en el panel, y su siguiente acción es reanudarlo. Al reanudar, SpecAtlas vuelve a derivar el estado de los artefactos y te dice el paso real desde donde quedaste — no el que estaba en curso cuando se pausó.
+
+## Las specs vivas saben dónde viven en el código
+
+Una spec viva describe el comportamiento vigente; **las anclas** dicen en qué archivos vive ese comportamiento. Viven fuera de `spec.md` (la especificación es de negocio y no nombra tecnología), en `.sdd/specs/<dominio>/anchors.yaml`:
+
+```yaml
+schema_version: 1
+anchors:
+  - requirement: REQ-AUTH-001
+    files:
+      - src/auth/reset.ts
+      - src/auth/reset.ts#pedirReset     # ancla también un símbolo
+    updated: 2026-09-21
+    source: archive
+```
+
+**No se escriben a mano**: al archivar un cambio, cada requisito hereda los archivos de las tareas que cubren sus escenarios (requisito → escenario → tarea → archivo). Lo que edites a mano se conserva al volver a archivar.
+
+```bash
+satlas drift                  # ¿alguna ancla dejó de existir en el código?
+satlas drift --prune          # retira las anclas rotas (acción explícita)
+satlas impact REQ-AUTH-001    # escenarios, tareas, evidencia y archivos del requisito
+satlas impact src/auth/reset.ts   # qué requisitos toca este archivo
+```
+
+`satlas ci` incluye la comprobación y el modo la decide `ci.drift`: `advisory` avisa (por defecto), `strict` bloquea. Si lo que cambió no es la ruta sino el comportamiento, lo que toca no es mover el ancla: es especificar un cambio.
+
+## Revisión de código antes del PR
+
+`satlas review <slug>` crea `review.md` si falta y, cuando existe, informa lo único que decide el gate: el veredicto y los hallazgos bloqueantes sin resolver.
+
+```markdown
+## Veredicto
+
+- resultado: pass
+- por: Nombre Apellido
+
+## Hallazgos
+
+- [ ] (bloqueante) la contraseña se registra en el log · Archivo: src/reset.ts:12
+- [x] (menor) faltaba el estado vacío
+```
+
+La revisión **está cerrada** cuando el resultado es favorable y no queda nada bloqueante: que el archivo exista no basta. El gate `gates.review.mode` (`off | advisory | blocking`) aplica a los carriles `standard` y `full`; en aviso, el recordatorio aparece cuando las tareas ya están hechas — revisar código tiene sentido cuando hay código.
+
+## Cambios de alcance sobre lo aprobado (`satlas amend`)
+
+Lo aprobado no se edita en silencio (Artículo 5 de la constitución). Cuando la especificación firmada cambia de alcance:
+
+```bash
+satlas amend reset-password --reason "negocio subió el bloqueo a 30 minutos" --by "Nombre Apellido"
+```
+
+La enmienda queda en `meta.yaml` (motivo, autor, fecha, huella que se deja atrás y huella que se firma) y la spec recupera su firma vigente. Sin aprobación previa, sin motivo o sin cambios reales, no hay enmienda.
 
 ## Packs de cumplimiento (opcional)
 
@@ -188,8 +268,8 @@ Al archivar un fix (`satlas new <slug> --lane fix` → `satlas archive <slug> --
 
 ## Aclarar antes de planificar y documentar el cambio
 
-- **Aclarar** (`/satlas.clarify <slug>` · `satlas clarify <slug>`): después de especificar y antes de aprobar/planificar, resuelve supuestos, dependencias y preguntas abiertas. Las respuestas quedan en `clarify.md` (`- [ ]` abiertas, `- [x] pregunta — respuesta` aclaradas) y el resumen se refleja en la propuesta. Modo: `gates.clarify.mode: off | advisory | blocking` (**aviso** por defecto); en bloqueante no se avanza a plan con preguntas abiertas.
-- **Documentar** (`/satlas.docs <slug>` · `satlas docs <slug> [--tipo tecnica|manual|all]`): carril completo. Genera `docs/tecnica.md` y `docs/manual.md` desde plantillas y la **evidencia real** (lo que no tiene evidencia se señala); el contenido generado vive entre marcadores y **regenerar conserva lo escrito a mano**. Modo: `gates.docs.mode: off | advisory | blocking` (**bloqueante** por defecto en carril completo: no se archiva sin los dos documentos).
+- **Aclarar** (`/satlas-clarify <slug>` · `satlas clarify <slug>`): después de especificar y antes de aprobar/planificar, resuelve supuestos, dependencias y preguntas abiertas. Las respuestas quedan en `clarify.md` (`- [ ]` abiertas, `- [x] pregunta — respuesta` aclaradas) y el resumen se refleja en la propuesta. Modo: `gates.clarify.mode: off | advisory | blocking` (**aviso** por defecto); en bloqueante no se avanza a plan con preguntas abiertas.
+- **Documentar** (`/satlas-docs <slug>` · `satlas docs <slug> [--tipo tecnica|manual|all]`): carril completo. Genera `docs/tecnica.md` y `docs/manual.md` desde plantillas y la **evidencia real** (lo que no tiene evidencia se señala); el contenido generado vive entre marcadores y **regenerar conserva lo escrito a mano**. Modo: `gates.docs.mode: off | advisory | blocking` (**bloqueante** por defecto en carril completo: no se archiva sin los dos documentos).
 
 ## Contratos del cambio y enlaces entre repos
 
@@ -252,6 +332,10 @@ Panel **SpecAtlas** en la barra de actividad con:
 - **Árbol** de specs vivas y cambios: iconos con color por fase, progreso visual (`▓▓▓░░ 3/4`), evidencia, **siguiente acción** (se ejecuta si es determinista o se copia si requiere agente) y, al expandir cada spec, sus **requisitos navegables** (clic abre el archivo en esa línea).
 - **Menú contextual** por cambio (aprobar, analizar, trazabilidad, olas, propuesta, mockups, copiar siguiente acción, archivar), **badge de errores** en la barra de actividad y pantalla de **bienvenida con inicialización** desde el propio editor (`SpecAtlas: Inicializar workspace`, con detección de stack).
 - **Visor** de los artefactos: abre los `.md` con la vista previa nativa de VS Code y, como respaldo, usa `@specatlas/render` (markdown propio, **código resaltado** con highlight.js y **diagramas mermaid** renderizados con el asset local). **Visor de mockups** con selector de pantalla.
+- **Panel principal**: una sola ventana con secciones internas (**Resumen**, **Flujo**, **Trazabilidad**, **Métricas**, **Documentos** y **Acciones**) que reúne el estado, el flujo por fase (incluida «esperando mockups»), la matriz con filtros, las métricas, los documentos y mockups del cambio, y las acciones del ciclo. Se refresca solo al cambiar los artefactos y conserva la sección y los filtros en uso. Sustituye a los paneles sueltos de matriz, tablero y métricas.
+- **Acciones del ciclo en orden y por carril** (`fix`, `standard`, `full`): cada paso muestra su actor (**con agente**, **humana** o **local**), su comando, su estado (hecho, omitido, ahora, pendiente, bloqueada) y su propio botón. Las acciones con agente **abren opencode en una terminal del proyecto** con la instrucción del paso; si no se puede abrir, la instrucción queda para copiar. Aprobar y archivar siguen siendo actos humanos auditados.
+- **Presentación para aprobar** rediseñada: portada con la identidad del cambio, estado de la firma y huella; guía de secciones navegable; resumen de negocio, especificación con escenarios, criterios de aceptación, galería de mockups y bloque de firma. Se imprime o se guarda como PDF con la firma en página propia.
+- **Documentación en tres formatos**: los documentos técnico y manual se generan en texto fuente, **HTML** y **PDF** (generado localmente, sin servicios externos); si un formato falla se avisa con el motivo y los demás quedan.
 - **Problems** alimentado por el kernel (lint + trazabilidad + doctor) con códigos `LINT-*`, `TRACE-*`, `ATLAS-*`.
 - **Servidor de lenguaje (LSP)** en `.sdd/**`: diagnósticos inline, hover con el detalle del requisito/escenario/tarea, **CodeLens** (`N tareas · evidencia M/N`, `ola N`, `evidencia: pass`), ir a definición y **referencias** entre spec, tareas, verificación y mockups, símbolos del documento y del workspace, y **quick fixes** (añadir `Cubre:` con el escenario pendiente, copiar el bloque completo para `MODIFIED`).
 - **Matriz de trazabilidad**: portada con cobertura (donut), KPIs y tabla agrupada por requisito, con huecos en rojo y navegación al artefacto.
@@ -260,6 +344,8 @@ Panel **SpecAtlas** en la barra de actividad con:
 - Acciones seguras: **aprobar** (firma con hash y autor), **archivar**, generar la **propuesta**, analizar, validar, olas y doctor.
 
 Se puede desactivar con `specatlas.lsp: false` en la configuración.
+
+**Acciones con agente**: los botones abren una terminal del proyecto y ejecutan el asistente configurado con la instrucción del paso (por ejemplo `opencode "/satlas-mockup panel-principal"`). La invocación y el ejecutable salen del primer target de `adapters.targets`: con `claude-code` el mismo paso es `claude "/satlas:mockup panel-principal"`. El asistente trabaja sobre el mismo cambio y, al terminar, el panel se actualiza solo.
 
 **Instalar el `.vsix`** (recomendado para usarla ya):
 

@@ -5,6 +5,7 @@ import {
   contractsAdvisory,
   deriveState,
   docsAdvisory,
+  reviewAdvisory,
   linkedTraceInput,
   lintDelta,
   mockupsReady,
@@ -70,7 +71,7 @@ export async function evaluateChange(
     ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
   })
 
-  const phaseAdvisories = [...clarifyAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
+  const phaseAdvisories = [...clarifyAdvisory(change, config), ...reviewAdvisory(change, config), ...docsAdvisory(change, config), ...contractsAdvisory(change, config)]
 
   return { change, approval, lintFindings: [...lintFindings, ...phaseAdvisories], trace, blocking, state }
 }

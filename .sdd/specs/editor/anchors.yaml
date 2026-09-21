@@ -1,0 +1,95 @@
+# Anclas de implementación: dónde vive en el código cada requisito de esta spec.
+# Lo mantiene `satlas archive` con los archivos que declaran las tareas; puedes editarlo a mano.
+# `satlas drift` avisa cuando un ancla ya no existe en el código.
+
+schema_version: 1
+anchors:
+  - requirement: REQ-EDITOR-001
+    files:
+      - packages/vscode/package.json
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/live.ts
+      - packages/vscode/src/logic.ts
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-002
+    files:
+      - packages/vscode/src/logic.ts
+      - packages/vscode/src/panel/model.ts
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/resumen.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-003
+    files:
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/flujo.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-004
+    files:
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/trazabilidad.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-005
+    files:
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/metricas.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-006
+    files:
+      - packages/vscode/src/logic.ts
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/src/panel/sections/documentos.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-007
+    files:
+      - packages/core/src/lifecycle.ts
+      - packages/core/src/new.ts
+      - packages/vscode/src/actions.ts
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/panel/sections/acciones.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-008
+    files:
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/live.ts
+      - packages/vscode/src/panel/panel.ts
+      - packages/vscode/test/panel.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-009
+    files:
+      - packages/core/src/present.ts
+      - packages/render/src/index.ts
+      - packages/render/test/pdf.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-010
+    files:
+      - packages/cli/src/commands/docs.ts
+      - packages/core/src/docs.ts
+      - packages/render/package.json
+      - packages/render/src/pdf.ts
+      - packages/render/test/pdf.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-011
+    files:
+      - packages/vscode/src/actions.ts
+      - packages/vscode/src/panel/sections/acciones.ts
+      - packages/vscode/test/panel-scenarios.test.ts
+    updated: 2026-09-21
+    source: archive

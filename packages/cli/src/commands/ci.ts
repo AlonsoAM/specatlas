@@ -52,7 +52,9 @@ export async function runCi(ctx: CliContext): Promise<CommandResult> {
     }
   }
   for (const check of gate.checks) {
-    lines.push(`  ${check.errors === 0 && check.warnings === 0 ? 'OK  ' : 'FALLA'} ${check.name}: ${check.errors} errores, ${check.warnings} avisos`)
+    // Un aviso no es una falla: solo bloquea en modo estricto, y el veredicto final lo dice.
+    const mark = check.errors > 0 ? 'FALLA' : check.warnings > 0 ? 'AVISO' : 'OK  '
+    lines.push(`  ${mark} ${check.name}: ${check.errors} errores, ${check.warnings} avisos`)
   }
   lines.push('')
   lines.push(gate.failed ? 'Resultado: BLOQUEADO' : 'Resultado: OK')

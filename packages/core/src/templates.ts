@@ -10,6 +10,7 @@ export interface TemplateSet {
   tasks: string
   verify: string
   fix: string
+  review: string
   docTecnica: string
   docManual: string
 }
@@ -184,43 +185,149 @@ o, si es manual:
 satlas verify <slug> --file fix --scenario REQ-DOMINIO-001-S1 --method manual --result pass --by "<nombre>" --notes "<cómo se comprobó>"
 -->
 `,
+  review: `# Revisión — {{TITLE}}
+
+> La escribe quien revisa (agente o persona) antes del PR. El gate lee el veredicto
+> y los hallazgos bloqueantes sin resolver.
+
+## Veredicto
+
+- resultado: pending
+- por: (nombre de quien revisa)
+- fecha: (AAAA-MM-DD)
+
+## Alcance
+
+(qué se revisó: archivos, tareas o requisitos)
+
+## Hallazgos
+
+<!-- Un hallazgo por línea. La severidad entre paréntesis: (bloqueante) | (menor) | (sugerencia).
+Marca \`- [x]\` cuando quede resuelto. Sólo los bloqueantes sin resolver detienen el cambio. -->
+
+- [ ] (bloqueante) (qué está mal y por qué importa) · Archivo: ruta/archivo.ext:12
+
+## Qué quedó bien
+
+(lo que se comprobó y está correcto)
+`,
   docTecnica: `# Documentación técnica — {{TITLE}}
 
-## Resumen del cambio
+> **Cambio**: \`{{SLUG}}\` · **Dominio**: {{DOMAIN}} · **Carril**: {{LANE}} · **Tareas**: {{TASKS}} · **Actualizado**: {{DATE}}
 
-- **Cambio**: \`{{SLUG}}\` · dominio \`{{DOMAIN}}\` · carril \`{{LANE}}\`
-- **Actualizado**: {{DATE}}
-- **Tareas**: {{TASKS}}
+## 1. Resumen del cambio
 
-## Requisitos y escenarios
+{{SUMMARY}}
 
-{{REQUIREMENTS}}
+## 2. Qué es y por qué
 
-## Evidencia registrada
+{{WHY}}
 
-{{EVIDENCE}}
+## 3. Qué cambia, en lenguaje de negocio
 
-## Pendiente de evidencia
+{{REQ_BUSINESS}}
+
+## 4. Cómo estaba antes (AS-IS)
+
+{{PLAN_CONTEXT}}
+
+## 5. Enfoque técnico y decisiones
+
+{{PLAN_APPROACH}}
+
+## 6. Diagramas
+
+{{PLAN_DIAGRAMS}}
+
+## 7. Diseño por capas y componentes
+
+{{PLAN_DESIGN}}
+
+## 8. Mapa de archivos
+
+Cada archivo, la tarea que lo tocó y el requisito al que responde.
+
+{{FILES_TABLE}}
+
+## 9. Trazabilidad requisito → escenario → tarea → evidencia
+
+{{TRACE_SUMMARY}}
+
+{{TRACE_TABLE}}
+
+## 10. Pruebas y evidencia
+
+{{EVIDENCE_SUMMARY}}
+
+{{EVIDENCE_TABLE}}
+
+### 10.1 Cómo se reproduce la evidencia
+
+{{COMMANDS}}
+
+## 11. Riesgos y mitigaciones
+
+{{PLAN_RISKS}}
+
+## 12. Cómo se revierte
+
+{{PLAN_ROLLBACK}}
+
+## 13. Pendientes y deuda conocida
 
 {{PENDING}}
 `,
-  docManual: `# Manual — {{TITLE}}
+  docManual: `# Manual de usuario — {{TITLE}}
 
-## Qué hace este cambio
+> **Cambio**: \`{{SLUG}}\` · **Dominio**: {{DOMAIN}} · **Actualizado**: {{DATE}}
+>
+> Este manual explica cómo se usa lo que el cambio entrega: qué verás, qué puedes hacer y qué ocurre en cada caso.
 
-{{TITLE}} — dominio \`{{DOMAIN}}\` (cambio \`{{SLUG}}\`, carril \`{{LANE}}\`).
+## 1. Qué es y qué resuelve
 
-## Cómo se usa
+{{MANUAL_WHAT}}
 
-{{SCENARIOS}}
+### Por qué se hizo
 
-## Cómo se comprobó
+{{WHY}}
 
-{{EVIDENCE}}
+## 2. Antes de empezar
 
-## Pendiente de comprobar
+{{MANUAL_BEFORE}}
 
-{{PENDING}}
+## 3. Primeros pasos
+
+Recorrido corto, en orden, para ver la funcionalidad completa por primera vez.
+
+{{WALKTHROUGH}}
+
+## 4. Las pantallas, una por una
+
+{{SCREENS}}
+
+## 5. Cómo se usa, tarea por tarea
+
+{{TASK_STEPS}}
+
+## 6. Qué ves cuando todavía no hay nada
+
+{{UI_STATES}}
+
+## 7. Problemas frecuentes y qué hacer
+
+{{TROUBLESHOOT}}
+
+## 8. Reglas que conviene conocer
+
+{{RULES}}
+
+## 9. Glosario
+
+{{MANUAL_GLOSSARY}}
+
+## 10. Cómo se comprobó
+
+{{MANUAL_VERIFIED}}
 `,
 }
 
@@ -348,43 +455,142 @@ Cubre: REQ-DOMAIN-001
 satlas verify <slug> --file fix --scenario REQ-DOMAIN-001-S1 --command "<command>" --by "<name>"
 -->
 `,
+  review: `# Review — {{TITLE}}
+
+## Verdict
+
+- verdict: pending
+- by: (reviewer)
+- date: (YYYY-MM-DD)
+
+## Scope
+
+## Findings
+
+<!-- One finding per line. Severity in parentheses: (blocking) | (minor) | (nit).
+Tick \`- [x]\` once resolved. Only unresolved blocking findings stop the change. -->
+
+- [ ] (blocking) (what is wrong and why it matters) · File: path/file.ext:12
+
+## What looks good
+`,
   docTecnica: `# Technical documentation — {{TITLE}}
 
-## Change summary
+> **Change**: \`{{SLUG}}\` · **Domain**: {{DOMAIN}} · **Lane**: {{LANE}} · **Tasks**: {{TASKS}} · **Updated**: {{DATE}}
 
-- **Change**: \`{{SLUG}}\` · domain \`{{DOMAIN}}\` · lane \`{{LANE}}\`
-- **Updated**: {{DATE}}
-- **Tasks**: {{TASKS}}
+## 1. Change summary
 
-## Requirements and scenarios
+{{SUMMARY}}
 
-{{REQUIREMENTS}}
+## 2. What it is and why
 
-## Recorded evidence
+{{WHY}}
 
-{{EVIDENCE}}
+## 3. What changes, in business language
 
-## Pending evidence
+{{REQ_BUSINESS}}
+
+## 4. How it was before (AS-IS)
+
+{{PLAN_CONTEXT}}
+
+## 5. Technical approach and decisions
+
+{{PLAN_APPROACH}}
+
+## 6. Diagrams
+
+{{PLAN_DIAGRAMS}}
+
+## 7. Layers and components
+
+{{PLAN_DESIGN}}
+
+## 8. File map
+
+Every file, the task that touched it and the requirement it answers.
+
+{{FILES_TABLE}}
+
+## 9. Traceability requirement → scenario → task → evidence
+
+{{TRACE_SUMMARY}}
+
+{{TRACE_TABLE}}
+
+## 10. Tests and evidence
+
+{{EVIDENCE_SUMMARY}}
+
+{{EVIDENCE_TABLE}}
+
+### 10.1 How to reproduce the evidence
+
+{{COMMANDS}}
+
+## 11. Risks and mitigations
+
+{{PLAN_RISKS}}
+
+## 12. How to roll it back
+
+{{PLAN_ROLLBACK}}
+
+## 13. Pending work and known debt
 
 {{PENDING}}
 `,
-  docManual: `# Manual — {{TITLE}}
+  docManual: `# User manual — {{TITLE}}
 
-## What this change does
+> **Change**: \`{{SLUG}}\` · **Domain**: {{DOMAIN}} · **Updated**: {{DATE}}
+>
+> This manual explains how to use what the change delivers: what you see, what you can do and what happens in each case.
 
-{{TITLE}} — domain \`{{DOMAIN}}\` (change \`{{SLUG}}\`, lane \`{{LANE}}\`).
+## 1. What it is and what it solves
 
-## How to use it
+{{MANUAL_WHAT}}
 
-{{SCENARIOS}}
+### Why it was done
 
-## How it was verified
+{{WHY}}
 
-{{EVIDENCE}}
+## 2. Before you start
 
-## Pending verification
+{{MANUAL_BEFORE}}
 
-{{PENDING}}
+## 3. First steps
+
+A short, ordered walkthrough to see the whole feature for the first time.
+
+{{WALKTHROUGH}}
+
+## 4. The screens, one by one
+
+{{SCREENS}}
+
+## 5. How to use it, task by task
+
+{{TASK_STEPS}}
+
+## 6. What you see when there is nothing yet
+
+{{UI_STATES}}
+
+## 7. Common problems and what to do
+
+{{TROUBLESHOOT}}
+
+## 8. Rules worth knowing
+
+{{RULES}}
+
+## 9. Glossary
+
+{{MANUAL_GLOSSARY}}
+
+## 10. How it was verified
+
+{{MANUAL_VERIFIED}}
 `,
 }
 

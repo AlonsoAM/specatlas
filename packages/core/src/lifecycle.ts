@@ -5,12 +5,16 @@ import type { Diagnostic } from './diagnostics.js'
 import { diag } from './diagnostics.js'
 import { artifactHash } from './hash.js'
 import { contractCoverage } from './contracts.js'
+import { agentCommand } from './agents.js'
+import { isSkeletonDelta } from './placeholders.js'
+import { openBlockingFindings, reviewPassed } from './parse/review.js'
 
 export type ChangeState =
   | 'draft'
   | 'spec_draft'
   | 'awaiting_mockups'
   | 'awaiting_approval'
+  | 'paused'
   | 'approved'
   | 'planned'
   | 'building'
@@ -82,9 +86,35 @@ export function clarifyAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] 
   return [
     diag('ATLAS-CLARIFY-001', 'warning', `El cambio "${change.slug}" tiene ${open} pregunta(s) sin aclarar`, {
       ...(change.clarifyPath !== undefined ? { path: change.clarifyPath } : {}),
-      suggestion: `Aclara antes de planificar: /satlas.clarify ${change.slug} (o satlas clarify ${change.slug})`,
+      suggestion: `Aclara antes de planificar: ${agentCommand('clarify', change.slug, cfg)} (o satlas clarify ${change.slug})`,
     }),
   ]
+}
+
+export function reviewAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] {
+  const lane = change.meta?.lane ?? cfg.lanes.default
+  if (lane === 'fix' || cfg.gates.review.mode !== 'advisory') return []
+  // Revisar código tiene sentido cuando ya hay código: se avisa con las tareas terminadas.
+  const tasks = change.tasks?.counts
+  if (!tasks || tasks.total === 0 || tasks.done < tasks.total) return []
+  if (!change.reviewPath) {
+    return [
+      diag('ATLAS-REVIEW-001', 'warning', `El cambio "${change.slug}" no tiene revisión de código (review.md)`, {
+        suggestion: `Revisa antes del PR: satlas review ${change.slug}`,
+      }),
+    ]
+  }
+  if (change.review && !reviewPassed(change.review)) {
+    const open = openBlockingFindings(change.review).length
+    const motivo = change.review.verdict === 'pass' ? `${open} hallazgo(s) bloqueante(s) sin resolver` : `resultado "${change.review.verdict}"`
+    return [
+      diag('ATLAS-REVIEW-003', 'warning', `La revisión del cambio "${change.slug}" no está cerrada: ${motivo}`, {
+        ...(change.reviewPath !== undefined ? { path: change.reviewPath } : {}),
+        suggestion: 'Resuelve los hallazgos bloqueantes y deja `- resultado: pass` en el veredicto',
+      }),
+    ]
+  }
+  return []
 }
 
 export function docsAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] {
@@ -92,7 +122,7 @@ export function docsAdvisory(change: Change, cfg: AtlasConfig): Diagnostic[] {
   if (lane !== 'full' || cfg.gates.docs.mode !== 'advisory' || docsReady(change)) return []
   return [
     diag('ATLAS-DOCS-001', 'warning', `El cambio "${change.slug}" (carril completo) no tiene su documentación técnica y manual`, {
-      suggestion: `Genera la documentación: satlas docs ${change.slug} (o /satlas.docs ${change.slug})`,
+      suggestion: `Genera la documentación: satlas docs ${change.slug} (o ${agentCommand('docs', change.slug, cfg)})`,
     }),
   ]
 }
@@ -111,13 +141,13 @@ export function deriveState(input: DeriveInput): DerivedState {
   const next = (command: string, description: string, requiresAgent = false): NextAction => ({ command, description, requiresAgent })
 
   if (change.meta?.paused) {
-    return { state: 'building', blockedBy: [`pausado: ${change.meta.paused.reason}`], nextAction: next(`satlas resume ${change.slug}`, 'Reanudar el cambio pausado'), progress }
+    return { state: 'paused', blockedBy: [`pausado: ${change.meta.paused.reason}`], nextAction: next(`satlas resume ${change.slug}`, 'Reanudar el cambio pausado'), progress }
   }
 
   if (lane === 'fix') {
     const fixEvidence = change.fix?.evidence ?? []
     if (fixEvidence.length === 0) {
-      return { state: 'draft', blockedBy, nextAction: next(`/satlas-fix ${change.slug}`, 'Investigar la causa raíz, aplicar el fix y registrar la evidencia', true), progress }
+      return { state: 'draft', blockedBy, nextAction: next(agentCommand('fix', change.slug, cfg), 'Investigar la causa raíz, aplicar el fix y registrar la evidencia', true), progress }
     }
     if (!fixEvidence.some((e) => e.result === 'pass')) {
       blockedBy.push('la evidencia del fix no está en pass')
@@ -127,7 +157,17 @@ export function deriveState(input: DeriveInput): DerivedState {
   }
 
   if (!change.delta) {
-    return { state: 'draft', blockedBy, nextAction: next(`/satlas.specify ${change.slug}`, 'Especificar el cambio (spec funcional y de negocio)', true), progress }
+    return { state: 'draft', blockedBy, nextAction: next(agentCommand('specify', change.slug, cfg), 'Especificar el cambio (spec funcional y de negocio)', true), progress }
+  }
+
+  if (isSkeletonDelta(change.delta)) {
+    blockedBy.push('la especificación sigue siendo la plantilla de `satlas new`')
+    return {
+      state: 'spec_draft',
+      blockedBy,
+      nextAction: next(agentCommand('specify', change.slug, cfg), 'Especificar el cambio (spec funcional y de negocio)', true),
+      progress,
+    }
   }
 
   if (blockingFindings > 0) {
@@ -136,7 +176,7 @@ export function deriveState(input: DeriveInput): DerivedState {
       return {
         state: 'building',
         blockedBy,
-        nextAction: next(`/satlas.build ${change.slug}`, `Construir en olas (${tasksDone}/${tasksTotal} tareas) · ${blockingFindings} hallazgo(s) pendientes`, true),
+        nextAction: next(agentCommand('build', change.slug, cfg), `Construir en olas (${tasksDone}/${tasksTotal} tareas) · ${blockingFindings} hallazgo(s) pendientes`, true),
         progress,
       }
     }
@@ -150,7 +190,7 @@ export function deriveState(input: DeriveInput): DerivedState {
     return {
       state: 'awaiting_mockups',
       blockedBy: ['mockups requeridos y no listos'],
-      nextAction: next(`/satlas-mockup ${change.slug}`, 'Generar los mockups (contrato visual) antes de aprobar', true),
+      nextAction: next(agentCommand('mockup', change.slug, cfg), 'Generar los mockups (contrato visual) antes de aprobar', true),
       progress,
     }
   }
@@ -175,15 +215,15 @@ export function deriveState(input: DeriveInput): DerivedState {
       return {
         state: 'approved',
         blockedBy,
-        nextAction: next(`/satlas.clarify ${change.slug}`, `Aclarar ${openQuestions} pregunta(s) antes de planificar`, true),
+        nextAction: next(agentCommand('clarify', change.slug, cfg), `Aclarar ${openQuestions} pregunta(s) antes de planificar`, true),
         progress,
       }
     }
-    return { state: 'approved', blockedBy, nextAction: next(`/satlas.plan ${change.slug}`, 'Crear el plan técnico y las tareas', true), progress }
+    return { state: 'approved', blockedBy, nextAction: next(agentCommand('plan', change.slug, cfg), 'Crear el plan técnico y las tareas', true), progress }
   }
 
   if (tasksTotal > 0 && tasksDone < tasksTotal) {
-    return { state: 'building', blockedBy, nextAction: next(`/satlas.build ${change.slug}`, `Construir en olas (${tasksDone}/${tasksTotal} tareas)`, true), progress }
+    return { state: 'building', blockedBy, nextAction: next(agentCommand('build', change.slug, cfg), `Construir en olas (${tasksDone}/${tasksTotal} tareas)`, true), progress }
   }
 
   if (cfg.gates.verify.mode !== 'off' && cfg.gates.verify.require_evidence && deltaScenarios.length > 0 && scenariosEvidenced < deltaScenarios.length) {
@@ -191,14 +231,28 @@ export function deriveState(input: DeriveInput): DerivedState {
     return { state: 'built', blockedBy, nextAction: next(`satlas verify ${change.slug}`, 'Registrar evidencia por escenario'), progress }
   }
 
-  if (lane === 'full' && cfg.gates.review.mode === 'blocking' && !change.reviewPath) {
-    blockedBy.push('review pendiente')
-    return { state: 'verified', blockedBy, nextAction: next(`/satlas.review ${change.slug}`, 'Revisión de código', true), progress }
+  if (cfg.gates.review.mode === 'blocking' && !reviewPassed(change.review)) {
+    const openFindings = change.review ? openBlockingFindings(change.review).length : 0
+    blockedBy.push(
+      !change.reviewPath
+        ? 'review pendiente'
+        : openFindings > 0
+          ? `review con ${openFindings} hallazgo(s) bloqueante(s)`
+          : `review sin resultado favorable (${change.review?.verdict ?? 'pendiente'})`,
+    )
+    return {
+      state: 'verified',
+      blockedBy,
+      nextAction: !change.reviewPath
+        ? next(agentCommand('review', change.slug, cfg), 'Revisión de código', true)
+        : next(`satlas review ${change.slug}`, 'Cerrar los hallazgos de la revisión'),
+      progress,
+    }
   }
 
   if (lane === 'full' && cfg.gates.docs.mode === 'blocking' && !docsReady(change)) {
     blockedBy.push('documentación pendiente')
-    return { state: 'reviewed', blockedBy, nextAction: next(`/satlas.docs ${change.slug}`, 'Generar la documentación técnica y manual del cambio', true), progress }
+    return { state: 'reviewed', blockedBy, nextAction: next(agentCommand('docs', change.slug, cfg), 'Generar la documentación técnica y manual del cambio', true), progress }
   }
 
   if (cfg.gates.contracts.mode === 'blocking') {
@@ -218,6 +272,7 @@ export function stateLabel(state: ChangeState): string {
     spec_draft: 'spec en borrador',
     awaiting_mockups: 'esperando mockups',
     awaiting_approval: 'esperando aprobación',
+    paused: 'pausado',
     approved: 'aprobado',
     planned: 'planificado',
     building: 'construyendo',

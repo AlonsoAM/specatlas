@@ -16,6 +16,7 @@ export const changeMetaSchema = z.object({
   mockups: z.enum(['required', 'skip']).optional(),
   tracker: z.object({ provider: z.string(), id: z.string() }).optional(),
   paused: z.object({ reason: z.string(), at: z.string(), by: z.string() }).optional(),
+  amendments: z.array(z.object({ reason: z.string(), by: z.string(), at: z.string(), from: z.string().optional(), to: z.string().optional() })).optional(),
   lane_history: z.array(z.object({ from: z.enum(['fix', 'standard', 'full']), to: z.enum(['fix', 'standard', 'full']), at: z.string(), by: z.string() })).optional(),
   diagram_exceptions: z.array(z.string()).optional(),
   overrides: z.array(z.object({ gate: z.string(), reason: z.string(), by: z.string(), at: z.string() })).optional(),
@@ -47,6 +48,7 @@ export function parseChangeMeta(raw: string, filePath: string): { meta?: ChangeM
   if (v.mockups !== undefined) meta.mockups = v.mockups
   if (v.tracker !== undefined) meta.tracker = v.tracker
   if (v.paused !== undefined) meta.paused = v.paused
+  if (v.amendments !== undefined) meta.amendments = v.amendments
   if (v.lane_history !== undefined) meta.laneHistory = v.lane_history
   if (v.diagram_exceptions !== undefined) meta.diagramExceptions = v.diagram_exceptions
   if (v.overrides !== undefined) meta.overrides = v.overrides

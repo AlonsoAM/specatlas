@@ -1,5 +1,7 @@
 import type { Workspace } from './model.js'
 import { toPosix } from './fsx.js'
+import type { AnchorsFile } from './anchors.js'
+import { splitAnchor } from './anchors.js'
 
 export interface ImpactTask {
   id: string
@@ -15,6 +17,12 @@ export interface ImpactEvidence {
   change: string
 }
 
+export interface ImpactAnchor {
+  requirement: string
+  domain: string
+  files: string[]
+}
+
 export interface ImpactReport {
   target: string
   kind: 'requirement' | 'file'
@@ -27,6 +35,8 @@ export interface ImpactReport {
   changes: string[]
   files: string[]
   evidence: ImpactEvidence[]
+  /** Dónde vive en el código, según las anclas de las specs vivas. */
+  anchors?: ImpactAnchor[]
 }
 
 function normalizePath(p: string): string {
@@ -90,7 +100,30 @@ function collect(workspace: Workspace, report: ImpactReport, covers: Set<string>
   report.evidence.sort((a, b) => a.scenario.localeCompare(b.scenario))
 }
 
-export function impactOfRequirement(workspace: Workspace, reqId: string): ImpactReport {
+/** Anclas de las specs vivas que apuntan a un archivo (coincide por sufijo de ruta). */
+function anchorsForFile(anchors: AnchorsFile[], query: string): ImpactAnchor[] {
+  const out: ImpactAnchor[] = []
+  for (const file of anchors) {
+    for (const anchor of file.anchors) {
+      const matched = anchor.files.filter((declared) => fileMatches(query, normalizePath(splitAnchor(declared).file)))
+      if (matched.length > 0) out.push({ requirement: anchor.requirement, domain: file.domain, files: matched })
+    }
+  }
+  return out
+}
+
+function anchorsForRequirement(anchors: AnchorsFile[], id: string): ImpactAnchor[] {
+  const out: ImpactAnchor[] = []
+  for (const file of anchors) {
+    for (const anchor of file.anchors) {
+      if (anchor.requirement !== id) continue
+      out.push({ requirement: anchor.requirement, domain: file.domain, files: [...anchor.files] })
+    }
+  }
+  return out
+}
+
+export function impactOfRequirement(workspace: Workspace, reqId: string, anchors: AnchorsFile[] = []): ImpactReport {
   const id = reqId.toUpperCase()
   const scenarios = new Set<string>()
   let exists = false
@@ -136,10 +169,17 @@ export function impactOfRequirement(workspace: Workspace, reqId: string): Impact
     report.external = true
     report.origin = origin
   }
+  const anchored = anchorsForRequirement(anchors, id)
+  if (anchored.length > 0) {
+    report.anchors = anchored
+    const files = new Set(report.files)
+    for (const anchor of anchored) for (const file of anchor.files) files.add(file)
+    report.files = [...files].sort()
+  }
   return report
 }
 
-export function impactOfFile(workspace: Workspace, file: string): ImpactReport {
+export function impactOfFile(workspace: Workspace, file: string, anchors: AnchorsFile[] = []): ImpactReport {
   const query = normalizePath(file)
   const report = emptyReport(file, 'file')
   const covers = new Set<string>()
@@ -158,13 +198,19 @@ export function impactOfFile(workspace: Workspace, file: string): ImpactReport {
     }
   }
 
-  if (matched.size === 0) return report
+  // Las anclas responden aunque no haya ningún cambio activo tocando el archivo.
+  const anchored = anchorsForFile(anchors, query)
+  if (anchored.length > 0) report.anchors = anchored
+
+  if (matched.size === 0 && anchored.length === 0) return report
   report.exists = true
+  for (const anchor of anchored) for (const declared of anchor.files) matched.add(declared)
   report.files = [...matched].sort()
   report.changes = [...changes].sort()
   const reqOf = scenarioToReq(workspace)
   const requirements = new Set<string>()
   for (const c of covers) requirements.add(reqOf.get(c) ?? c)
+  for (const anchor of anchored) requirements.add(anchor.requirement)
   report.requirements = [...requirements].sort()
   return report
 }

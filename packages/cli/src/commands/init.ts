@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { initWorkspace, loadConfig, type Language } from '@specatlas/core'
+import { initWorkspace, loadConfig, writeConfig, type Language } from '@specatlas/core'
 import { AGENT_TARGETS, compileTargets, isAgentTarget, type AgentTarget } from '@specatlas/adapters'
 import { flagBool, flagString } from '../args.js'
 import type { CliContext, CommandResult } from '../cli.js'
@@ -42,6 +42,11 @@ export async function runInit(ctx: CliContext): Promise<CommandResult> {
         suggestion: `Targets disponibles: ${AGENT_TARGETS.join(', ')}`,
       })
     } else {
+      // El agente elegido al inicializar manda: la configuración del proyecto lo refleja
+      // para que las invocaciones que se copian sean las de ese agente.
+      if (agentsFlag) {
+        await writeConfig(result.sddDir, { ...loaded.config, adapters: { ...loaded.config.adapters, targets: requested as AgentTarget[] } })
+      }
       const report = await compileTargets({
         root: ctx.cwd,
         workflowDir,

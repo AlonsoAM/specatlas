@@ -201,7 +201,7 @@ export interface Anchors { files: string[]; symbols?: string[] }
 
 ```ts
 export type Phase = 'spec' | 'approve' | 'plan' | 'analyze' | 'build' | 'verify' | 'review' | 'docs' | 'pr' | 'archive'
-export type ChangeState = 'draft' | 'spec_draft' | 'awaiting_approval' | 'approved' | 'planned' | 'analyzed' | 'building' | 'built' | 'verified' | 'reviewed' | 'documented' | 'pr_open' | 'archived'
+export type ChangeState = 'draft' | 'spec_draft' | 'awaiting_mockups' | 'awaiting_approval' | 'paused' | 'approved' | 'planned' | 'building' | 'built' | 'verified' | 'reviewed' | 'ready' | 'archived'
 
 export interface DerivedState {
   state: ChangeState
@@ -216,20 +216,37 @@ export function deriveState(change: ChangeContext, cfg: AtlasConfig): DerivedSta
 
 **Reglas de derivación (orden de prioridad):**
 
-1. `paused` en `meta.yaml` → estado conservado + `phase: 'paused'` como atributo; `next` propone `resume`.
-2. Sin `spec.md` en el change → `draft`; `next: /satlas.clarify` o `/satlas.specify`.
-3. Delta con diagnósticos bloqueantes o linter de negocio fallando → `spec_draft`; `next: corregir`.
+1. `paused` en `meta.yaml` → estado `paused`; `next: satlas resume` (se registra con `satlas pause --reason --by`).
+2. Sin `spec.md` en el change → `draft`; `next:` la fase de especificar del agente.
+3. Delta que sigue siendo la plantilla de `satlas new` (prosa, reglas y escenarios sin completar) → `spec_draft`; `next:` especificar, **no** aprobar. La detección vive en `placeholders.ts` (`isSkeletonDelta`) y el lint la reporta como `LINT-BIZ-003`.
+4. Delta con diagnósticos bloqueantes o linter de negocio fallando → `spec_draft`; `next: corregir`.
 4. Spec válida sin firma vigente → `awaiting_approval`; `next: satlas approve` (o `present`).
 5. Firma vigente, sin `plan.md`/`tasks.md` (carril que los exige) → `approved`; `next: /satlas.plan`.
 6. Con plan/tareas y `analyze` obligatorio sin reporte verde → `planned`; `next: /satlas.analyze`.
 7. **Hay tareas pendientes → `building`**, aun si ya existen verify/review (lección AmigoXCD: las fases tardías pueden añadir tareas).
 8. Todas las tareas hechas, evidencia incompleta → `built`; `next: satlas verify`.
-9. Evidencia completa, review pendiente → `verified`; `next: /satlas.review`.
+9. Evidencia completa y revisión sin cerrar (falta `review.md`, el veredicto no es favorable o quedan hallazgos bloqueantes) → `verified`; `next:` la fase de revisión del agente, o `satlas review` para cerrar los hallazgos. Aplica a `standard` y `full`.
 10. Review cerrado, docs (carril full) pendientes → `reviewed`; `next: /satlas.docs`.
 11. PR abierto → `pr_open`; `next: satlas archive`.
 12. Archivado → `archived`.
 
 La derivación es una función pura sobre `ChangeContext = { meta, spec?, delta?, plan?, tasks?, verify?, review?, approvals, mockups?, cfg }` — testeable con fixtures sin tocar disco.
+
+### 5.5.1 `agents` (invocación por agente)
+
+Cada asistente llama a sus fases con su propia sintaxis; el compilador de adaptadores escribe los archivos, y este módulo dice cómo se llaman.
+
+```ts
+export type PhaseId = 'adopt' | 'specify' | 'clarify' | 'mockup' | 'plan' | 'build' | 'verify' | 'review' | 'docs' | 'fix' | 'archive'
+export function primaryTarget(cfg?: Pick<AtlasConfig, 'adapters'>): AgentTarget
+export function agentCommand(phase: PhaseId, slug: string, cfg?: Pick<AtlasConfig, 'adapters'>): string
+export function agentCommandsByTarget(phase: PhaseId, slug: string): Array<{ target: AgentTarget; command: string }>
+export function agentCli(target?: AgentTarget): string   // ejecutable de terminal
+```
+
+- El target primario es el primero de `adapters.targets`; sin configuración, `opencode`.
+- `opencode`, `cursor`, `copilot` y `codex` usan `/satlas-<fase>`; `claude-code` y `gemini`, `/satlas:<fase>`; `generic`, la ruta del prompt.
+- **Nadie escribe la invocación a mano**: `lifecycle`, `next`, `status`, `analyze`, `mockups`, el panel y la extensión la derivan de aquí, para que lo que se copia exista de verdad en el agente del proyecto. Los pasos del panel declaran la fase (`<agent:plan> <slug>`) y se resuelven al pintar.
 
 ### 5.6 `gates` (matriz por carril)
 
@@ -319,7 +336,7 @@ export function planWaves(tasks: Task[], opts: { maxParallel: number }): WavePla
 | Grupo | Códigos | Ejemplos |
 |---|---|---|
 | Estructura | `LINT-STR-*` | encabezado de sección faltante, frontmatter inválido, ID mal formado |
-| Negocio | `LINT-BIZ-*` | `LINT-BIZ-001` jerga técnica; `002` palabra vaga; `003` criterio no medible; `004` requisito sin actor; `005` escenario sin `THEN`; `006` multi-`WHEN/THEN` en un escenario; `007` término fuera del glosario; `008` requisito duplicado; `009` contradicción heurística; `010` spec sobredimensionada (sugerir split) |
+| Negocio | `LINT-BIZ-*` | `LINT-BIZ-001` jerga técnica; `002` palabra vaga; `003` texto de plantilla sin completar (implementado; un requisito entero sin escribir se reporta una sola vez); `004` requisito sin actor; `005` escenario sin `THEN`; `006` multi-`WHEN/THEN` en un escenario; `007` término fuera del glosario; `008` requisito duplicado; `009` contradicción heurística; `010` spec sobredimensionada (sugerir split) |
 | Delta | `LINT-DLT-*` | `001` `MODIFIED` sin bloque completo; `002` `REMOVED` sin `Reason`/`Migration`; `003` `RENAMED` sin `FROM/TO` |
 | Evidencia | `LINT-EVD-*` | `001` evidencia sin comando en método `executable`; `002` fecha inválida; `003` hash con formato incorrecto |
 | Mockup | `LINT-MKP-*` | `001` sin estados; `002` sin breakpoints; `003` texto placeholder (`Lorem ipsum`, `Item \d`); `004` contraste insuficiente; `005` área táctil < 44 px; `006` sin `Illustrates`; `007` tokens no respetados |
@@ -327,25 +344,33 @@ export function planWaves(tasks: Task[], opts: { maxParallel: number }): WavePla
 
 Vocabularios del linter de negocio configurables por idioma y proyecto (`lint.vocabulary.<lang>.vague[]`, `.technical[]`), con defaults en español (los de inglés se aplican solo si `language: en`).
 
-### 5.10 `drift` (anclas)
+### 5.10 `anchors` y `drift` (dónde vive el comportamiento)
 
-Las specs vivas declaran anclas de implementación opcionales:
+Las anclas **no** viven en `spec.md`: la especificación es de negocio y no nombra tecnología (Artículo 3). Viven por dominio en `.sdd/specs/<dominio>/anchors.yaml`.
 
-```markdown
-## Implementation anchors
-- src/auth/reset.ts
-- src/auth/reset.ts#requestReset
+```yaml
+schema_version: 1
+anchors:
+  - requirement: REQ-AUTH-001
+    files: [src/auth/reset.ts, 'src/auth/reset.ts#pedirReset']
+    updated: 2026-09-21
+    source: archive        # archive | manual
 ```
 
 ```ts
-export interface DriftFinding { specFile: string; anchor: string; kind: 'missing-file' | 'missing-symbol'; }
-export function checkDrift(root: string, cfg: AtlasConfig): Promise<DriftFinding[]>
+export function anchorsFromTasks(delta: Delta, tasks?: TasksFile, now?: Date): RequirementAnchor[]
+export function mergeAnchors(current: RequirementAnchor[], incoming: RequirementAnchor[]): RequirementAnchor[]
+export async function checkDrift(opts: { root: string; config: Pick<AtlasConfig, 'ci'>; anchors?: AnchorsFile[] }): Promise<DriftReport>
+export async function pruneAnchors(root: string, drifted: DriftFinding[], anchors: AnchorsFile[], language?: Language): Promise<PruneResult[]>
 ```
 
-- `missing-file`: el path no existe (glob no matchea).
-- `missing-symbol`: búsqueda textual del símbolo en el archivo (regex configurable por perfil de lenguaje).
-- Modo `ci.drift`: `advisory` (warning) o `strict` (exit 1). Nunca bloquea el flujo local.
-- El mockup tiene su propio drift: `satlas mockup --check` compara el hash de entradas (spec + tokens) contra `mockups/manifest.yaml` y marca mockups obsoletos (`MKP-STALE`).
+- **Se llenan solas**: `satlas archive` deriva las anclas de cada requisito desde los `Archivos:` de las tareas que cubren sus escenarios. Los artefactos del propio proceso (`.sdd/**`) se descartan: el ancla apunta al código.
+- `mergeAnchors` conserva lo escrito a mano (`source: manual` no se degrada a `archive`).
+- `ATLAS-DRIFT-001` (`missing-file`): la ruta no existe; admite `*` y `**`. `ATLAS-DRIFT-002` (`missing-symbol`): búsqueda textual del símbolo como palabra completa, válida en cualquier lenguaje.
+- Modo `ci.drift`: `advisory` (aviso, por defecto) o `strict` (error y gate bloqueado). Nunca bloquea el flujo local.
+- `satlas drift --prune` retira las anclas rotas; es explícito a propósito, porque si lo que cambió es el comportamiento lo que corresponde es un cambio, no borrar el ancla.
+- `impact` cruza las anclas: `satlas impact <archivo>` responde qué requisitos toca aunque no haya ningún cambio activo.
+- El mockup tiene su propio drift: `satlas mockup --check` compara el hash de entradas contra `mockups/manifest.yaml` (`MKP-STALE`).
 
 ### 5.11 `hash` (canónico)
 
@@ -472,6 +497,37 @@ export function linkedTraceInput(workspace: { links?: LinksState }): { ids: stri
 - Los escenarios pueden declarar la operación que prometen (`- **Contrato**: GET /tareas`); el identificador canónico es `GET /ruta`, `Query.campo` o `Servicio.Método`.
 - `gates.contracts.mode` (`off|advisory|blocking`, por defecto `advisory`); en bloqueante el archivado espera a resolver huecos (`ATLAS-CONTRACT-003`) y roturas (`ATLAS-CONTRACT-004`).
 - Los enlaces son rutas locales a proyectos inicializados; sus specs se leen en **solo lectura**. `checkTrace` resuelve requisitos externos e informa `ATLAS-LINK-003` cuando hay enlaces no disponibles; `impactOfRequirement` marca lo externo con `origin`.
+
+### 5.20 `render/pdf` (documentación en tres formatos)
+
+```ts
+export async function renderPdf(markdown: string, opts: PdfOptions): Promise<PdfResult>   // A4 con paginado, tablas y saneado
+export function markdownToBlocks(markdown: string): Block[]                                // encabezados, párrafos, listas, tablas, código, citas
+export function sanitizePdfText(text: string): string                                      // símbolos → ASCII, conserva Latin-1/WinAnsi (acentos)
+```
+
+- Motor propio sobre `pdf-lib` (puro JavaScript, sin servicios externos): márgenes de 56 pt, encabezado y pie con `pagina X de Y`, títulos, párrafos con ajuste de línea, listas, tablas con bordes y bloques de código.
+- `generateDocs` escribe `tecnica.md|html|pdf` y `manual.md|html|pdf` desde el mismo contenido gestionado; si un formato falla se emite `ATLAS-DOCS-003` (aviso) y los demás quedan disponibles.
+
+### 5.21 Panel principal de la extensión (`packages/vscode/src/panel/`)
+
+```ts
+export async function buildPanelPage(root: string, active: PanelSectionId, nonce: string): Promise<{ title: string; html: string } | undefined>
+export function renderPanelHtml(model: PanelModel, active: PanelSectionId, nonce: string): string   // una sola página con las seis secciones
+export async function buildPanelModel(root: string): Promise<PanelModel | undefined>                 // snapshot + matriz + métricas + documentos + pasos
+export function buildStepStates(change: SnapshotChange): ActionStepState[]                           // pasos por carril con actor y validez
+```
+
+- **Ventana única** (`specatlas.panel`) con pestañas internas (Resumen, Flujo, Trazabilidad, Métricas, Documentos, Acciones); el panel se reutiliza por clave con `live.ts` y se refresca al cambiar `.sdd/`; la sección activa y los filtros viven en `getState/setState` de la webview.
+- **Secciones** puras en `panel/sections/*`: reciben el `PanelModel` y devuelven HTML (y un script de filtros cuando aplica). El flujo es vertical por fase e incluye `awaiting_mockups`.
+- **Acciones** (`actions.ts`): catálogo puro por carril (`fix` 4 pasos, `standard` 9, `full` 12) con actor (`agent` | `human` | `local`), comando, validez y motivo; el paso actual se deriva del estado del cambio. Las de agente abren una terminal del proyecto y lanzan `opencode "<instrucción>"` con respaldo al portapapeles.
+- Los paneles sueltos de matriz, tablero y métricas se retiraron: su información vive en las secciones del panel principal.
+
+### 5.22 Presentación para aprobar (`present.ts`)
+
+- Página autocontenida con portada (identidad, estado de firma, huella), guía de secciones, resumen de negocio, especificación, criterios de aceptación, galería de mockups y bloque de firma.
+- Reglas de impresión (`@media print`): portada y firma en páginas propias, sin cortes; el botón «Imprimir / Guardar PDF» usa el navegador, sin servicios externos.
+- Avisos: propuesta vacía, cambio sin mockups, firma obsoleta (`stale`) y mockups declarados que faltan (`ATLAS-PRESENT-002`).
 
 ---
 
