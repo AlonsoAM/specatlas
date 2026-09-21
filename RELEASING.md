@@ -28,6 +28,8 @@ npm stage approve <stage-id> --otp <código>
 npm stage reject <stage-id>           # descartar
 ```
 
+> Los subcomandos `npm stage` exigen **npm ≥ 11.15**; con uno anterior responde `Unknown command: "stage"`. Actualiza con `npm i -g npm@latest` o aprueba desde la ficha del paquete en npmjs.com. El id de la versión encolada aparece en el log del release (`staged with id …`) y en el resumen del job.
+
 Con OIDC, npm además **firma la procedencia** de cada publicación (attestation verificable desde la ficha del paquete).
 
 > `NPM_TOKEN` sigue funcionando como respaldo: si el job no tiene OIDC disponible, usa el secreto. Un token de tipo *granular* con alcance **Read and write (stage only)** deja que el pipeline encole versiones sin poder publicarlas directamente.

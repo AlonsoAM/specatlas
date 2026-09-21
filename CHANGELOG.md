@@ -4,6 +4,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+### Cambiado
+
+- **El release publica directo o encola, según lo que permita el publicador de confianza**: una configuración de *trusted publishing* nace con permiso para encolar (`allow-stage-publish`) y sin publicación directa, así que `npm publish` responde `403 — OIDC permission denied for this action`. Cada paquete se empaqueta con `pnpm pack` (que reescribe las dependencias `workspace:*` a su versión real), se intenta publicar y, si solo se permite encolar, se usa `npm stage publish` y el resumen del job explica cómo aprobarlo.
+
 ## [0.1.34] — 2026-09-21
 
 ### Cambiado
