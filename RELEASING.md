@@ -2,11 +2,35 @@
 
 ## Requisitos previos (una vez)
 
-| Recurso | Qué crear | Token / secreto |
+| Recurso | Qué crear | Credencial |
 |---|---|---|
-| npm | Organización `specatlas` (paquetes con scope `@specatlas`) | `NPM_TOKEN` (automation, con permiso de publicación) |
+| npm | Organización `specatlas` (paquetes con scope `@specatlas`) | **Trusted publishing (OIDC)** — sin secretos; ver abajo |
 | VS Code Marketplace | Publisher `specatlas` (Azure DevOps PAT con *Marketplace → Manage*) | `VSCE_PAT` |
 | Open VSX | Namespace `specatlas` + **Publisher Agreement** de Eclipse Foundation (perfil de Open VSX → *Log in with Eclipse* → *Show Publisher Agreement* → *Agree*; no es la ECA) | `OVSX_PAT` |
+
+### Publicar en npm sin tokens (trusted publishing)
+
+npm emite la credencial en el momento de publicar a partir de la identidad del workflow (OIDC): no hay token que rotar ni que se pueda filtrar. El job `npm` de `release.yml` ya declara `id-token: write` y actualiza el CLI (el intercambio exige npm ≥ 11.5.1).
+
+**Hay que declararlo una vez por paquete** en npmjs.com — son cinco: `specatlas`, `@specatlas/core`, `@specatlas/render`, `@specatlas/adapters`, `@specatlas/lsp`.
+
+1. npmjs.com → el paquete → **Settings** → sección **Trusted Publisher** → botón **GitHub Actions**.
+2. Rellenar:
+   - *Organization or user*: `AlonsoAM`
+   - *Repository*: `specatlas`
+   - *Workflow filename*: `release.yml`
+   - *Environment*: vacío
+3. **Publicación directa**: cada configuración nace en modo **staged** (la versión queda en cola esperando aprobación). Si quieres que el release quede publicado sin intervención, activa *direct publishing* en la configuración; si prefieres el visto bueno humano, déjalo en staged y aprueba con:
+
+```bash
+npm stage list                        # versiones en cola
+npm stage approve <stage-id> --otp <código>
+npm stage reject <stage-id>           # descartar
+```
+
+Con OIDC, npm además **firma la procedencia** de cada publicación (attestation verificable desde la ficha del paquete).
+
+> `NPM_TOKEN` sigue funcionando como respaldo: si el job no tiene OIDC disponible, usa el secreto. Un token de tipo *granular* con alcance **Read and write (stage only)** deja que el pipeline encole versiones sin poder publicarlas directamente.
 
 Los paquetes npm se publican con **pnpm** (reescribe `workspace:*` a la versión real). Orden topológico obligatorio: `@specatlas/render` → `@specatlas/core` → `@specatlas/adapters` → `@specatlas/lsp` → `specatlas`.
 
@@ -50,6 +74,23 @@ npx specatlas@latest init --name prueba-en-vacio
 code --install-extension specatlas.specatlas-vscode
 ```
 
+## Si el release termina en verde y no publicó nada
+
+Ya pasó (v0.1.33 a v0.1.41): los pasos usaban `if: ${{ env.NPM_TOKEN != '' }}` y **GitHub enmascara los secretos en las expresiones `if`**, así que la condición era siempre falsa y el paso se saltaba sin ruido. La comprobación de credenciales vive ahora dentro del script. Al revisar un release, mira que el paso diga *«Publicando con…»* y no *«no se publica»*:
+
+```bash
+gh api repos/AlonsoAM/specatlas/actions/runs/<run-id>/jobs --jq '.jobs[] | "\(.name): \(.conclusion)"'
+gh run view <run-id> --log --job <job-id> | grep -iE "publicando|no se publica|ya está publicado"
+```
+
+Y confirma en el registro, no en el log:
+
+```bash
+curl -s https://registry.npmjs.org/specatlas | python -c "import json,sys; print(json.load(sys.stdin)['dist-tags']['latest'])"
+curl -s -o /dev/null -w '%{http_code}
+' https://open-vsx.org/api/specatlas/specatlas-vscode/<version>
+```
+
 ## Notas
 
 - El CLI **bundlea** `@specatlas/core` y `@specatlas/adapters` en `dist/`, pero los declara como dependencias: publica siempre `core`/`render`/`adapters` antes que `specatlas`.
@@ -58,3 +99,5 @@ code --install-extension specatlas.specatlas-vscode
 - `packages/vscode/README.md` no admite SVG (restricción de `vsce`); usa `media/logo.png` (las rutas base del monorepo las fijan los scripts `package`/`publish:vsce`).
 - Publicar en Open VSX exige firmar el **Publisher Agreement** desde el perfil de Open VSX (vinculando la cuenta Eclipse); la ECA no aplica.
 - Los `.vsix` y `.tgz` no se versionan (están en `.gitignore`).
+- La numeración de las etiquetas del repositorio es **independiente** de la versión de los paquetes: `v0.1.42` publicó `specatlas@0.1.33`.
+- Los paquetes npm publican su propio `README.md` (npm lo incluye siempre, aunque `files` no lo liste); sin él la ficha del paquete sale vacía.

@@ -4,8 +4,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+### Cambiado
+
+- **La publicación en npm deja de necesitar tokens**: el job de release pide un token OIDC de corta vida (*trusted publishing*), con `NPM_TOKEN` como respaldo si no hay OIDC disponible. `RELEASING.md` explica cómo declarar el publicador de confianza en cada paquete y cómo aprobar una versión en cola (`npm stage approve`).
+
 ### Corregido
 
+- **Open VSX se daba por publicado sin estarlo**: la comprobación usaba `ovsx get`, que devuelve éxito sin credencial válida, así que el paso se saltaba y la extensión se quedaba atrás. Ahora se consulta la API pública del registro.
 - **El workflow de publicación nunca publicaba**: los pasos de npm, Marketplace y Open VSX se saltaban con `if: env.X != ''` porque GitHub enmascara los secretos en las expresiones `if`, así que cada release terminaba «con éxito» sin publicar nada. La comprobación del token pasa al propio script.
 
 ## [0.1.33] — 2026-09-21

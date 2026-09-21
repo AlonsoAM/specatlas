@@ -14,6 +14,11 @@ env:
 jobs:
   npm:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Publicación sin tokens (trusted publishing de npm): el job pide un
+      # token OIDC de corta vida en lugar de guardar credenciales en secretos.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -24,6 +29,8 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
+      # El intercambio OIDC necesita npm >= 11.5.1; el que trae Node es anterior.
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r build
       - run: pnpm -r typecheck
@@ -31,12 +38,19 @@ jobs:
       - name: Publicar paquetes npm (idempotente, orden topológico)
         run: |
           set -e
-          # Los secretos se enmascaran en las expresiones `if`, así que la ausencia
-          # de token se comprueba aquí dentro: antes el paso se saltaba siempre.
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "Sin NPM_TOKEN configurado: no se publica en npm."
+          # Dos vías: el token OIDC que GitHub emite para este job (trusted
+          # publishing, sin secretos) o, si no está disponible, NPM_TOKEN.
+          # Los secretos se enmascaran en las expresiones `if`, así que la
+          # comprobación vive aquí dentro: antes el paso se saltaba siempre.
+          if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "Publicando con trusted publishing (OIDC), sin tokens."
+          elif [ -n "$NODE_AUTH_TOKEN" ]; then
+            echo "Publicando con NPM_TOKEN."
+          else
+            echo "Ni OIDC ni NPM_TOKEN disponibles: no se publica en npm."
             exit 0
           fi
+          npm --version
           publish() {
             dir="$1"; name="$2"
             version=$(node -p "require('./$dir/package.json').version")
@@ -99,7 +113,9 @@ jobs:
             exit 0
           fi
           version=$(node -p "require('./package.json').version")
-          if ./node_modules/.bin/ovsx get specatlas.specatlas-vscode --version "$version" >/dev/null 2>&1; then
+          # `ovsx get` devuelve éxito sin credencial válida: se consulta la API.
+          status=$(curl -s -o /dev/null -w '%{http_code}' "https://open-vsx.org/api/specatlas/specatlas-vscode/$version")
+          if [ "$status" = "200" ]; then
             echo "specatlas-vscode $version ya está en Open VSX, se omite"
             exit 0
           fi
