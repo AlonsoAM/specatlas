@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.34] — 2026-09-21
+
 ### Cambiado
 
 - **La publicación en npm deja de necesitar tokens**: el job de release pide un token OIDC de corta vida (*trusted publishing*), con `NPM_TOKEN` como respaldo si no hay OIDC disponible. `RELEASING.md` explica cómo declarar el publicador de confianza en cada paquete y cómo aprobar una versión en cola (`npm stage approve`).
