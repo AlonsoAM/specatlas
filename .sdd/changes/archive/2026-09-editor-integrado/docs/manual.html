@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de usuario — El editor, integrado con el trabajo</title>
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<h1 id="manual-de-usuario-el-editor-integrado-con-el-trabajo">Manual de usuario — El editor, integrado con el trabajo</h1>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Cambio:</b> <code>editor-integrado</code></span><span class="meta-chip"><b>Dominio:</b> editor</span><span class="meta-chip"><b>Actualizado:</b> 2026-09-21</span></div><p>Este manual explica cómo se usa lo que el cambio entrega: qué verás, qué puedes hacer y qué ocurre en cada caso.</p></blockquote>
+<h2 id="1-que-es-y-que-resuelve">1. Qué es y qué resuelve</h2>
+<ul><li>El panel <strong>sigue al archivo abierto</strong>: entrar en un artefacto selecciona su cambio y las acciones pasan a ser las suyas; un archivo ajeno al flujo no altera nada.</li><li>Los <strong>archivos del flujo llevan su estado</strong> junto al nombre: lo que bloquea el avance se distingue de lo que solo avisa, y tiene prioridad sobre la fase.</li><li>Una <strong>tarea se marca como hecha desde el panel</strong>, y queda escrita en el artefacto sin tocar lo demás que declara.</li><li>La ventana con <strong>más de una carpeta</strong> funciona de verdad: el trabajo en curso, la salud y el recuento abarcan todas; cada cambio dice de qué proyecto es y se ejecuta con el asistente de ese proyecto.</li><li>El editor <strong>solo ofrece lo que puede hacer</strong>, y el ajuste sin efecto desaparece.</li></ul>
+<h3 id="por-que-se-hizo">Por qué se hizo</h3>
+<p>Como desarrollador que tiene el editor abierto todo el día, quiero que el panel del flujo esté donde estoy trabajando y me diga el estado de cada artefacto sin abrirlo, para dejar de saltar entre ventanas y de comprobar a mano en qué punto está cada cosa.</p>
+<p>Tres cosas rompen hoy esa continuidad. La primera: abro la especificación de un cambio y el panel sigue mostrando otro, así que las acciones que ofrece no son las de lo que tengo delante. La segunda: cuando la ventana tiene dos carpetas de proyecto, el estado, la salud y el asistente que se abre corresponden solo a la primera, mientras el árbol lista los cambios de todas — veo una cosa y actúo sobre otra. La tercera: el editor ofrece acciones que no puede ejecutar (en un proyecto sin inicializar todas están disponibles y no hacen nada) y un ajuste de idioma que no cambia nada.</p>
+<h2 id="2-antes-de-empezar">2. Antes de empezar</h2>
+<ul><li><code>TreeItem.checkboxState</code>, <code>onDidChangeCheckboxState</code> y <code>registerFileDecorationProvider</code> existen en la API de VS Code desde 1.72; el <code>engines.vscode</code> del paquete ya lo cubre.</li><li>La prueba sigue siendo sobre módulos puros con vitest; los proveedores de VS Code quedan como capa sin lógica.</li></ul>
+<h2 id="3-primeros-pasos">3. Primeros pasos</h2>
+<p>Recorrido corto, en orden, para ver la funcionalidad completa por primera vez.</p>
+<ol><li><strong>Abrir el artefacto de otro cambio</strong> — Se abre un artefacto perteneciente a un cambio distinto del seleccionado. El panel pasa a mostrar ese cambio y sus acciones.</li><li><strong>Dos proyectos con trabajo en curso</strong> — La ventana tiene dos carpetas de proyecto con cambios en curso. El panel lista los cambios de ambas, y cada uno indica su proyecto.</li></ol>
+<h2 id="4-las-pantallas-una-por-una">4. Las pantallas, una por una</h2>
+<p>_Este cambio no declara mockups, así que no hay contrato visual que recorrer._</p>
+<h2 id="5-como-se-usa-tarea-por-tarea">5. Cómo se usa, tarea por tarea</h2>
+<h3 id="el-panel-lateral-acompana-al-archivo-abierto">El panel lateral acompaña al archivo abierto</h3>
+<p>Quien trabaja pasa el día en los archivos, no en el panel. Hoy abre la especificación de un cambio y el panel lateral sigue mostrando otro, así que las acciones que ofrece no son las del trabajo que tiene delante. El panel debe seguir al archivo abierto, y los propios archivos deben decir en qué estado están sin necesidad de abrirlos.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>Se abre un artefacto perteneciente a un cambio distinto del seleccionado</td><td>El panel pasa a mostrar ese cambio y sus acciones</td></tr><tr><td>Se abre un archivo que no pertenece a ningún cambio</td><td>La selección del panel se mantiene como estaba</td></tr><tr><td>Se marca una tarea desde el panel</td><td>Queda registrada como hecha en el artefacto de tareas, conservando lo demás que declara esa tarea</td></tr><tr><td>Se marca una tarea cuyo texto ya no corresponde a una tarea del artefacto</td><td>No se escribe nada y se avisa de que hay que revisarlo a mano</td></tr></tbody></table></div>
+<h3 id="mas-de-una-carpeta-de-proyecto-en-la-misma-ventana">Más de una carpeta de proyecto en la misma ventana</h3>
+<p>Un equipo abre a la vez el servicio y su cliente, o dos productos que comparten specs. Hoy el editor solo atiende a la primera carpeta: el estado, la salud y el asistente que se abre corresponden a un proyecto mientras el árbol muestra los de todos, así que se ve una cosa y se actúa sobre otra.</p>
+<div class="table-wrap"><table><thead><tr><th>Qué haces</th><th>Qué ocurre</th></tr></thead><tbody><tr><td>La ventana tiene dos carpetas de proyecto con cambios en curso</td><td>El panel lista los cambios de ambas, y cada uno indica su proyecto</td></tr><tr><td>Se ejecuta la siguiente acción de un cambio</td><td>Se ejecuta en la carpeta de ese cambio y con el asistente configurado en ese proyecto</td></tr><tr><td>La ventana tiene una única carpeta de proyecto</td><td>Los cambios no repiten el nombre del proyecto</td></tr></tbody></table></div>
+<h3 id="el-editor-solo-ofrece-lo-que-puede-hacer">El editor solo ofrece lo que puede hacer</h3>
+<p>Ofrecer una acción que no va a funcionar cuesta más que no ofrecerla: quien la elige espera un resultado y no recibe nada. Las acciones del editor deben estar disponibles solo cuando tienen sentido, y los ajustes que se ofrecen deben tener efecto.</p>
+<p>_La especificación no describe pasos de uso._</p>
+<h2 id="6-que-ves-cuando-todavia-no-hay-nada">6. Qué ves cuando todavía no hay nada</h2>
+<div class="table-wrap"><table><thead><tr><th>Situación</th><th>Qué hace la herramienta</th></tr></thead><tbody><tr><td><strong>Un archivo sin hallazgos</strong> — Un artefacto no tiene hallazgos</td><td>Junto a su nombre aparece la fase en la que está su cambio</td></tr><tr><td><strong>Proyecto sin inicializar</strong> — Se buscan las acciones del editor en un proyecto que no usa el flujo</td><td>Solo se ofrecen inicializar y adoptar</td></tr><tr><td><strong>Proyecto sin cambios</strong> — El proyecto está inicializado y no tiene ningún cambio</td><td>Las acciones que operan sobre un cambio no se ofrecen</td></tr><tr><td><strong>Ajustes sin efecto</strong> — Se revisan los ajustes que ofrece el editor</td><td>Cada uno tiene un efecto observable en su comportamiento</td></tr></tbody></table></div>
+<p>Un estado vacío no es un error: la herramienta indica qué falta y qué acción lo produce.</p>
+<h2 id="7-problemas-frecuentes-y-que-hacer">7. Problemas frecuentes y qué hacer</h2>
+<div class="table-wrap"><table><thead><tr><th>Situación</th><th>Qué hace la herramienta</th></tr></thead><tbody><tr><td><strong>Un archivo con hallazgos que bloquean</strong> — Un artefacto acumula hallazgos que bloquean el avance</td><td>Junto a su nombre aparece cuántos son, distinguidos de los avisos</td></tr><tr><td><strong>La salud es la del conjunto</strong> — Una de las carpetas tiene hallazgos que bloquean</td><td>La sección de salud y el recuento anunciado los incluyen, sin importar en qué carpeta estén</td></tr></tbody></table></div>
+<p>En todos estos casos la herramienta explica el motivo y no deja el trabajo a medias: corrige lo que indica y vuelve a intentarlo.</p>
+<h2 id="8-reglas-que-conviene-conocer">8. Reglas que conviene conocer</h2>
+<ul><li><code>BR-EDITOR-025</code> — al abrir un artefacto de un cambio, ese cambio queda seleccionado y las acciones del panel pasan a ser las suyas.</li><li><code>BR-EDITOR-026</code> — un archivo que no pertenece a ningún cambio no altera la selección vigente.</li><li><code>BR-EDITOR-027</code> — los archivos del flujo muestran su estado junto a su nombre; lo que bloquea el avance se distingue de lo que solo avisa y tiene prioridad sobre la fase.</li><li><code>BR-EDITOR-028</code> — una tarea se marca como hecha desde el propio panel, y el cambio queda escrito en el artefacto de tareas sin alterar el resto de su contenido.</li><li><code>BR-EDITOR-029</code> — el trabajo en curso, la salud y el recuento de hallazgos abarcan todas las carpetas de proyecto abiertas.</li><li><code>BR-EDITOR-030</code> — con más de una carpeta, cada cambio indica a qué proyecto pertenece.</li><li><code>BR-EDITOR-031</code> — cada acción se ejecuta en el proyecto de su cambio, con el asistente que ese proyecto tiene configurado.</li><li><code>BR-EDITOR-032</code> — una acción que necesita un proyecto inicializado no se ofrece mientras no lo haya.</li><li><code>BR-EDITOR-033</code> — una acción que opera sobre un cambio no se ofrece mientras no haya ninguno.</li><li><code>BR-EDITOR-034</code> — los ajustes ofrecidos tienen efecto observable; los que no lo tienen se retiran.</li></ul>
+<h2 id="9-glosario">9. Glosario</h2>
+<ul><li><strong>Panel principal</strong> _(Panel único)_: La única ventana de trabajo de la herramienta en el editor; reúne el resumen, el flujo, la trazabilidad, las métricas, los documentos y las acciones</li><li><strong>Sección</strong> _(Pestaña)_: Cada una de las partes internas del panel principal (Resumen, Flujo, Trazabilidad, Métricas y Documentos)</li><li><strong>Artefacto del cambio</strong> _(Documento)_: Documento del ciclo de un cambio (propuesta, especificación, aclaraciones, plan, tareas, verificación, documentación y presentación)</li><li><strong>Mockup</strong> _(Prototipo visual)_: Contrato visual de la propuesta de un cambio; ilustra la interfaz sin ser funcional</li></ul>
+<h2 id="10-como-se-comprobo">10. Cómo se comprobó</h2>
+<p>Se comprobaron 13 de 13 escenario(s) (13 ejecutable). El detalle, con comandos y resultados, está en la documentación técnica.</p>
+<div class="table-wrap"><table><thead><tr><th>Requisito</th><th>Escenarios</th><th>Con evidencia favorable</th></tr></thead><tbody><tr><td>El panel lateral acompaña al archivo abierto</td><td>6</td><td>6</td></tr><tr><td>Más de una carpeta de proyecto en la misma ventana</td><td>4</td><td>4</td></tr><tr><td>El editor solo ofrece lo que puede hacer</td><td>3</td><td>3</td></tr></tbody></table></div>
+<h2 id="notas">Notas</h2>
+<p>(Escribe aquí lo que quieras conservar entre regeneraciones.)</p>
+</article>
+</body>
+</html>

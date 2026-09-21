@@ -1,5 +1,5 @@
-import type { FlatDiagnostic, Snapshot } from '../logic.js'
-import { TONE } from './now.js'
+import type { FlatDiagnostic, Snapshot, SnapshotDrift } from '../logic.js'
+import { asList, TONE } from './now.js'
 
 /**
  * Vista «Salud»: todo lo que el flujo tiene que decir, agrupado por qué hay que
@@ -42,12 +42,27 @@ const DRIFT_LABEL: Record<string, string> = {
   'missing-symbol': 'el símbolo ya no está',
 }
 
-export function buildHealth(snapshot: Snapshot | undefined): HealthNode[] {
-  if (!snapshot) return []
+export function buildHealth(input: Snapshot | Snapshot[] | undefined): HealthNode[] {
+  const snapshots = asList(input)
+  if (snapshots.length === 0) return []
 
-  const drift = snapshot.drift ?? { mode: 'advisory', domains: 0, checked: 0, broken: [] }
-  const errors = snapshot.diagnostics.filter((item) => item.severity === 'error')
-  const warnings = snapshot.diagnostics.filter((item) => item.severity === 'warning')
+  // Con varias carpetas abiertas, la salud es la del workspace entero.
+  const drift: SnapshotDrift = snapshots.reduce<SnapshotDrift>(
+    (total, snapshot) => {
+      const own = snapshot.drift
+      if (!own) return total
+      return {
+        mode: own.mode === 'strict' ? 'strict' : total.mode,
+        domains: total.domains + own.domains,
+        checked: total.checked + own.checked,
+        broken: [...total.broken, ...own.broken],
+      }
+    },
+    { mode: 'advisory', domains: 0, checked: 0, broken: [] },
+  )
+  const diagnostics = snapshots.flatMap((snapshot) => snapshot.diagnostics)
+  const errors = diagnostics.filter((item) => item.severity === 'error')
+  const warnings = diagnostics.filter((item) => item.severity === 'warning')
   const nodes: HealthNode[] = []
 
   if (errors.length === 0 && warnings.length === 0 && drift.broken.length === 0) {
@@ -130,7 +145,8 @@ export function buildHealth(snapshot: Snapshot | undefined): HealthNode[] {
 }
 
 /** Conteo para el badge de la barra de actividad: lo que de verdad detiene. */
-export function healthBadge(snapshot: Snapshot | undefined): number {
-  if (!snapshot) return 0
-  return snapshot.diagnostics.filter((item) => item.severity === 'error').length
+export function healthBadge(input: Snapshot | Snapshot[] | undefined): number {
+  return asList(input)
+    .flatMap((snapshot) => snapshot.diagnostics)
+    .filter((item) => item.severity === 'error').length
 }

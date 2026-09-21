@@ -38,11 +38,26 @@ export function progressBar(done: number, total: number): string {
   return `${'▰'.repeat(filled)}${'▱'.repeat(8 - filled)} ${done}/${total}`
 }
 
+/** Un workspace puede tener varias carpetas; cada una trae su propio estado. */
+export function asList(input: Snapshot | Snapshot[] | undefined): Snapshot[] {
+  if (!input) return []
+  return Array.isArray(input) ? input : [input]
+}
+
+/** Los cambios en curso de todo el workspace, con el proyecto al que pertenecen. */
+export function activeChanges(input: Snapshot | Snapshot[] | undefined): Array<{ change: SnapshotChange; snapshot: Snapshot }> {
+  const pairs = asList(input).flatMap((snapshot) =>
+    snapshot.changes.filter((change) => change.state !== 'archived').map((change) => ({ change, snapshot })),
+  )
+  const order = sortChanges(pairs.map((pair) => pair.change))
+  return order
+    .map((change) => pairs.find((pair) => pair.change === change))
+    .filter((pair): pair is { change: SnapshotChange; snapshot: Snapshot } => pair !== undefined)
+}
+
 /** El cambio en foco: el más avanzado en el flujo que aún pide trabajo. */
-export function focusChange(snapshot: Snapshot | undefined): SnapshotChange | undefined {
-  if (!snapshot) return undefined
-  const active = snapshot.changes.filter((change) => change.state !== 'archived')
-  return sortChanges(active)[0]
+export function focusChange(input: Snapshot | Snapshot[] | undefined): SnapshotChange | undefined {
+  return activeChanges(input)[0]?.change
 }
 
 function actorOf(change: SnapshotChange): ActionStepState['actor'] {
@@ -66,7 +81,7 @@ function emptyWorkspace(): NowNode[] {
   ]
 }
 
-function changeNode(change: SnapshotChange, snapshot: Snapshot, expanded: boolean): NowNode {
+function changeNode(change: SnapshotChange, snapshot: Snapshot, expanded: boolean, showProject: boolean): NowNode {
   const actor = actorOf(change)
   const steps = buildStepStates(change)
   const current = steps.find((step) => step.status === 'now')
@@ -162,9 +177,9 @@ function changeNode(change: SnapshotChange, snapshot: Snapshot, expanded: boolea
   }
 
   return {
-    id: `now.${change.slug}`,
+    id: `now.${snapshot.root}.${change.slug}`,
     label: change.title ?? change.slug,
-    description: `${change.stateLabel} · ${doneSteps}/${totalSteps} pasos`,
+    description: `${showProject ? `${snapshot.projectName} · ` : ''}${change.stateLabel} · ${doneSteps}/${totalSteps} pasos`,
     icon: 'rocket',
     tone: change.blocking > 0 ? TONE.red : change.state === 'ready' ? TONE.green : TONE.blue,
     tooltip: [
@@ -181,25 +196,31 @@ function changeNode(change: SnapshotChange, snapshot: Snapshot, expanded: boolea
   }
 }
 
-export function buildNow(snapshot: Snapshot | undefined): NowNode[] {
-  if (!snapshot) return []
-  const active = sortChanges(snapshot.changes.filter((change) => change.state !== 'archived'))
+export function buildNow(input: Snapshot | Snapshot[] | undefined): NowNode[] {
+  const snapshots = asList(input)
+  if (snapshots.length === 0) return []
+  const active = activeChanges(snapshots)
   if (active.length === 0) return emptyWorkspace()
-  return active.map((change, index) => changeNode(change, snapshot, index === 0))
+  // Con varias carpetas abiertas, cada cambio dice de qué proyecto viene.
+  const showProject = snapshots.length > 1
+  return active.map((pair, index) => changeNode(pair.change, pair.snapshot, index === 0, showProject))
 }
 
 /** Texto para la barra de estado: la acción de un vistazo, sin abrir nada. */
-export function statusBarText(snapshot: Snapshot | undefined): { text: string; tooltip: string; warning: boolean } | undefined {
-  const change = focusChange(snapshot)
-  if (!snapshot) return undefined
+export function statusBarText(input: Snapshot | Snapshot[] | undefined): { text: string; tooltip: string; warning: boolean } | undefined {
+  const snapshots = asList(input)
+  if (snapshots.length === 0) return undefined
+  const pair = activeChanges(snapshots)[0]
+  const change = pair?.change
   if (!change) {
     return { text: '$(compass) SpecAtlas: sin cambios activos', tooltip: 'Crea un cambio con `SpecAtlas: Nuevo cambio`.', warning: false }
   }
+  const prefix = snapshots.length > 1 && pair ? `${pair.snapshot.projectName}/` : ''
   const steps = stepsForLane(laneOf(change))
   const step = steps.find((item) => item.id === buildStepStates(change).find((state) => state.status === 'now')?.id)
   const label = step?.title ?? change.nextDescription
   return {
-    text: `$(compass) ${change.slug}: ${label}`,
+    text: `$(compass) ${prefix}${change.slug}: ${label}`,
     tooltip: [`**${change.title ?? change.slug}** — ${change.stateLabel}`, '', `Siguiente: \`${change.next}\``, change.blocking > 0 ? `\n${change.blocking} hallazgo(s) bloqueante(s)` : ''].join('\n'),
     warning: change.blocking > 0 || change.blockedBy.length > 0,
   }

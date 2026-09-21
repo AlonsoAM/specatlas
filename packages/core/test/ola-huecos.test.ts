@@ -10,6 +10,7 @@ import { lintDelta } from '../src/lint'
 import { createChange } from '../src/new'
 import { parseDelta } from '../src/parse/delta'
 import { parseChangeMeta } from '../src/parse/meta'
+import { parseTasksFile } from '../src/parse/tasks'
 import { pauseChange, resumeChange } from '../src/pause'
 import { isPlaceholderText, isSkeletonDelta } from '../src/placeholders'
 import type { Change } from '../src/model'
@@ -176,5 +177,63 @@ describe('carriles permitidos', () => {
 
     const accepted = await createChange({ root, slug: 'normal', lane: 'standard', cfg })
     expect(accepted.diagnostics).toHaveLength(0)
+  })
+})
+
+describe('la firma no se salta', () => {
+  const DELTA_OK = [
+    '## Requisitos agregados',
+    '',
+    '### Requisito: REQ-AUTH-001 — Iniciar sesión',
+    'El solicitante accede con sus credenciales vigentes.',
+    '',
+    '- Regla BR-AUTH-001: la sesión caduca a los 30 minutos sin actividad',
+    '',
+    '#### Escenario: REQ-AUTH-001-S1 — Credenciales válidas',
+    '- **CUANDO** el solicitante envía credenciales vigentes',
+    '- **ENTONCES** obtiene acceso y ve su panel inicial',
+  ].join(String.fromCharCode(10))
+
+  function cambioConTareas(): Change {
+    const delta = parseDelta(DELTA_OK, 'changes/x/spec.md')
+    const meta = parseChangeMeta(['schema_version: 1', 'slug: x', 'lane: standard', 'domain: auth'].join(String.fromCharCode(10)), 'meta.yaml').meta
+    const tasks = parseTasksFile(['## Bloque 1 — X', '- [x] T1.1 Uno · Archivos: a.ts · Cubre: REQ-AUTH-001-S1'].join(String.fromCharCode(10)), 'tasks.md')
+    return { slug: 'x', dir: 'changes/x', diagnostics: [], delta, tasks, planPath: 'plan.md', ...(meta ? { meta } : {}) } as Change
+  }
+
+  it('un cambio sin firma no avanza a construido aunque sus tareas estén hechas', () => {
+    // Antes: los huecos de trazabilidad (escenarios sin evidencia) desviaban el
+    // estado a «construido» y la firma quedaba atrás sin que nadie la pidiera.
+    const state = deriveState({ change: cambioConTareas(), cfg: defaultConfig(), approval: { status: 'missing' }, blockingFindings: 3, specFindings: 0 })
+    expect(state.state).toBe('awaiting_approval')
+    expect(state.blockedBy.join(' ')).toContain('no está aprobada')
+
+    // Con la propuesta ya generada, la acción es firmarla.
+    const conPropuesta = deriveState({
+      change: { ...cambioConTareas(), presentationPath: 'changes/x/presentation/index.html' },
+      cfg: defaultConfig(),
+      approval: { status: 'missing' },
+      blockingFindings: 3,
+      specFindings: 0,
+    })
+    expect(conPropuesta.nextAction.command).toContain('satlas approve x')
+  })
+
+  it('una firma obsoleta tampoco deja avanzar', () => {
+    const state = deriveState({ change: cambioConTareas(), cfg: defaultConfig(), approval: { status: 'stale' }, blockingFindings: 3, specFindings: 0 })
+    expect(state.state).toBe('awaiting_approval')
+  })
+
+  it('los hallazgos de la propia especificación se corrigen antes de firmar', () => {
+    const state = deriveState({ change: cambioConTareas(), cfg: defaultConfig(), approval: { status: 'missing' }, blockingFindings: 2, specFindings: 2 })
+    expect(state.state).toBe('spec_draft')
+    expect(state.nextAction.command).toContain('satlas validate')
+  })
+
+  it('con la firma vigente, los huecos de trazabilidad sí marcan la fase', () => {
+    const approval = { status: 'valid' as const, approvedBy: 'Alonso', approvedAt: '2026-01-01' }
+    const state = deriveState({ change: cambioConTareas(), cfg: defaultConfig(), approval, blockingFindings: 3, specFindings: 0 })
+    expect(state.state).toBe('built')
+    expect(state.nextAction.command).toContain('satlas verify')
   })
 })

@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.35] — 2026-09-21
+
+### Añadido
+
+- **El panel lateral acompaña al archivo abierto**: entrar en un artefacto selecciona su cambio y las acciones pasan a ser las suyas; un archivo ajeno al flujo no altera la selección. Los archivos de `.sdd/` muestran su estado junto al nombre —lo que bloquea el avance por delante de la fase— y una tarea se marca como hecha desde el propio panel, sustituyendo solo su marcador en el artefacto de tareas.
+- **Más de una carpeta de proyecto en la misma ventana**: el trabajo en curso, la salud y el recuento de hallazgos abarcan todas; cada cambio indica a qué proyecto pertenece y cada acción se ejecuta en el suyo, con el asistente que ese proyecto tiene configurado.
+- **El editor solo ofrece lo que puede hacer**: 25 de 30 comandos declaran cuándo aplican (proyecto inicializado o cambio existente) y el ajuste `specatlas.language`, que no se leía en ningún punto, se retira.
+
+### Corregido
+
+- **La firma dejaba de pedirse cuando el cambio ya tenía tareas**: los huecos de trazabilidad (escenarios sin evidencia) se evaluaban antes que la aprobación, así que un cambio sin firmar con las tareas marcadas aparecía como «construido» y la siguiente acción era verificar. El `doctor` sí lo detectaba (`ATLAS-LIFECYCLE-001`), pero el estado y la acción mentían. Ahora los hallazgos de la propia especificación se corrigen primero, la firma va después y solo entonces cuentan los huecos de trazabilidad.
+
 ### Cambiado
 
 - **El release publica directo o encola, según lo que permita el publicador de confianza**: una configuración de *trusted publishing* nace con permiso para encolar (`allow-stage-publish`) y sin publicación directa, así que `npm publish` responde `403 — OIDC permission denied for this action`. Cada paquete se empaqueta con `pnpm pack` (que reescribe las dependencias `workspace:*` a su versión real), se intenta publicar y, si solo se permite encolar, se usa `npm stage publish` y el resumen del job explica cómo aprobarlo.

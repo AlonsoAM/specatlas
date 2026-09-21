@@ -247,6 +247,7 @@ export async function buildSnapshot(startDir: string): Promise<Snapshot | undefi
       cfg: config,
       approval,
       blockingFindings: change.delta ? blocking : 0,
+      specFindings: change.delta ? lintFindings.filter((d) => d.severity === 'error').length : 0,
       ...(mockupsAreReady !== undefined ? { mockupsReady: mockupsAreReady } : {}),
     })
 

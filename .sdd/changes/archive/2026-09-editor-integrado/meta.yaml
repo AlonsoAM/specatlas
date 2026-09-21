@@ -1,0 +1,8 @@
+# Estado del cambio. La fase se DERIVA de los artefactos; aquí solo hechos.
+schema_version: 1
+slug: editor-integrado
+lane: full
+title: El editor, integrado con el trabajo
+domain: editor
+created: 2026-09-21
+mockups: skip

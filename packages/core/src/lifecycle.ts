@@ -61,6 +61,12 @@ export interface DeriveInput {
   cfg: AtlasConfig
   approval: ApprovalStatus
   blockingFindings: number
+  /**
+   * Hallazgos de la especificación misma (lint del delta). Se separan del resto
+   * porque corregir la spec va antes de firmarla, mientras que los huecos de
+   * trazabilidad llegan después y no pueden saltarse la firma.
+   */
+  specFindings?: number
   mockupsReady?: boolean
   specContent?: string
 }
@@ -170,19 +176,10 @@ export function deriveState(input: DeriveInput): DerivedState {
     }
   }
 
-  if (blockingFindings > 0) {
-    blockedBy.push(`${blockingFindings} hallazgo(s) bloqueante(s)`)
-    if (tasksTotal > 0 && tasksDone < tasksTotal) {
-      return {
-        state: 'building',
-        blockedBy,
-        nextAction: next(agentCommand('build', change.slug, cfg), `Construir en olas (${tasksDone}/${tasksTotal} tareas) · ${blockingFindings} hallazgo(s) pendientes`, true),
-        progress,
-      }
-    }
-    if (tasksTotal > 0) {
-      return { state: 'built', blockedBy, nextAction: next(`satlas verify ${change.slug}`, 'Registrar evidencia por escenario'), progress }
-    }
+  // Una especificación con hallazgos propios se corrige antes de firmarse.
+  const specFindings = input.specFindings ?? (tasksTotal === 0 ? blockingFindings : 0)
+  if (specFindings > 0) {
+    blockedBy.push(`${specFindings} hallazgo(s) en la especificación`)
     return { state: 'spec_draft', blockedBy, nextAction: next(`satlas validate --change ${change.slug}`, 'Corregir los hallazgos de la especificación'), progress }
   }
 
@@ -205,6 +202,22 @@ export function deriveState(input: DeriveInput): DerivedState {
         ? next(`satlas approve ${change.slug} --by "<nombre>"`, 'Firmar la aprobación (la presentación ya está generada)')
         : next(`satlas present ${change.slug}`, 'Presentar la propuesta y firmar la aprobación (satlas approve)'),
       progress,
+    }
+  }
+
+  // Huecos de trazabilidad y de tareas: ya con la firma vigente.
+  if (blockingFindings > 0) {
+    blockedBy.push(`${blockingFindings} hallazgo(s) bloqueante(s)`)
+    if (tasksTotal > 0 && tasksDone < tasksTotal) {
+      return {
+        state: 'building',
+        blockedBy,
+        nextAction: next(agentCommand('build', change.slug, cfg), `Construir en olas (${tasksDone}/${tasksTotal} tareas) · ${blockingFindings} hallazgo(s) pendientes`, true),
+        progress,
+      }
+    }
+    if (tasksTotal > 0) {
+      return { state: 'built', blockedBy, nextAction: next(`satlas verify ${change.slug}`, 'Registrar evidencia por escenario'), progress }
     }
   }
 

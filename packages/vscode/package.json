@@ -2,7 +2,7 @@
   "name": "specatlas-vscode",
   "displayName": "SpecAtlas",
   "description": "Spec-Driven Development con gates reales: specs vivas, trazabilidad, evidencia y mockups.",
-  "version": "0.0.57",
+  "version": "0.0.58",
   "license": "MIT",
   "publisher": "specatlas",
   "type": "module",
@@ -16,7 +16,8 @@
   ],
   "main": "./dist/extension.cjs",
   "activationEvents": [
-    "workspaceContains:**/.sdd/config.yaml"
+    "workspaceContains:**/.sdd/config.yaml",
+    "onView:specatlas.now"
   ],
   "icon": "media/icon.png",
   "repository": {
@@ -61,43 +62,53 @@
       {
         "command": "specatlas.refresh",
         "title": "SpecAtlas: Refrescar",
-        "icon": "$(refresh)"
+        "icon": "$(refresh)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.validate",
-        "title": "SpecAtlas: Validar specs y deltas"
+        "title": "SpecAtlas: Validar specs y deltas",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.trace",
-        "title": "SpecAtlas: Verificar trazabilidad"
+        "title": "SpecAtlas: Verificar trazabilidad",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.waves",
-        "title": "SpecAtlas: Calcular olas"
+        "title": "SpecAtlas: Calcular olas",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.analyze",
-        "title": "SpecAtlas: Analizar un cambio"
+        "title": "SpecAtlas: Analizar un cambio",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.doctor",
-        "title": "SpecAtlas: Diagnóstico del workspace"
+        "title": "SpecAtlas: Diagnóstico del workspace",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.present",
-        "title": "SpecAtlas: Generar propuesta para el stakeholder"
+        "title": "SpecAtlas: Generar propuesta para el stakeholder",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.mockup.open",
-        "title": "SpecAtlas: Abrir mockups"
+        "title": "SpecAtlas: Abrir mockups",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.approve",
-        "title": "SpecAtlas: Aprobar (firmar) la spec"
+        "title": "SpecAtlas: Aprobar (firmar) la spec",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.archive",
-        "title": "SpecAtlas: Archivar el cambio"
+        "title": "SpecAtlas: Archivar el cambio",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.openPreview",
@@ -105,7 +116,8 @@
       },
       {
         "command": "specatlas.copyNext",
-        "title": "SpecAtlas: Copiar la siguiente acción"
+        "title": "SpecAtlas: Copiar la siguiente acción",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.init",
@@ -119,62 +131,74 @@
       {
         "command": "specatlas.panel",
         "title": "SpecAtlas: Panel principal",
-        "icon": "$(window)"
+        "icon": "$(window)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.adapters",
         "title": "SpecAtlas: Compilar adaptadores (comandos del agente)",
-        "icon": "$(plug)"
+        "icon": "$(plug)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.new",
         "title": "SpecAtlas: Nuevo cambio (fix · standard · full)",
-        "icon": "$(add)"
+        "icon": "$(add)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.verify",
         "title": "SpecAtlas: Registrar evidencia de un escenario",
-        "icon": "$(beaker)"
+        "icon": "$(beaker)",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.packs",
         "title": "SpecAtlas: Evaluar packs de cumplimiento",
-        "icon": "$(shield)"
+        "icon": "$(shield)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.ci",
         "title": "SpecAtlas: CI (gate local)",
-        "icon": "$(check-all)"
+        "icon": "$(check-all)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.mockups.decide",
         "title": "SpecAtlas: Decidir mockups del cambio (sí/no)",
-        "icon": "$(device-mobile)"
+        "icon": "$(device-mobile)",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.focusNow",
         "title": "SpecAtlas: Ir a «Ahora»",
-        "icon": "$(compass)"
+        "icon": "$(compass)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.focusHealth",
         "title": "SpecAtlas: Ir a «Salud»",
-        "icon": "$(pulse)"
+        "icon": "$(pulse)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.drift",
         "title": "SpecAtlas: Anclas y deriva del código",
-        "icon": "$(compass-dot)"
+        "icon": "$(compass-dot)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.impact",
         "title": "SpecAtlas: Impacto de un requisito o archivo",
-        "icon": "$(references)"
+        "icon": "$(references)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.review",
         "title": "SpecAtlas: Revisión de código",
-        "icon": "$(comment-discussion)"
+        "icon": "$(comment-discussion)",
+        "enablement": "specatlas.hasChanges"
       },
       {
         "command": "specatlas.explain",
@@ -189,12 +213,14 @@
       {
         "command": "specatlas.watch",
         "title": "SpecAtlas: Vigilar el workspace (terminal)",
-        "icon": "$(eye)"
+        "icon": "$(eye)",
+        "enablement": "specatlas.initialized"
       },
       {
         "command": "specatlas.runNext",
         "title": "SpecAtlas: Ejecutar la siguiente acción",
-        "icon": "$(play)"
+        "icon": "$(play)",
+        "enablement": "specatlas.hasChanges"
       }
     ],
     "menus": {
@@ -359,10 +385,6 @@
       ],
       "commandPalette": [
         {
-          "command": "specatlas.openAt",
-          "when": "false"
-        },
-        {
           "command": "specatlas.runNext",
           "when": "false"
         },
@@ -372,6 +394,14 @@
         },
         {
           "command": "specatlas.focusHealth",
+          "when": "false"
+        },
+        {
+          "command": "specatlas.openAt",
+          "when": "false"
+        },
+        {
+          "command": "specatlas.openPreview",
           "when": "false"
         }
       ]
@@ -395,15 +425,6 @@
           "type": "boolean",
           "default": true,
           "description": "Validar y actualizar Problems automáticamente al guardar archivos del repo."
-        },
-        "specatlas.language": {
-          "type": "string",
-          "enum": [
-            "es",
-            "en"
-          ],
-          "default": "es",
-          "description": "Idioma de la interfaz de la extensión (los artefactos usan .sdd/config.yaml)."
         },
         "specatlas.lsp": {
           "type": "boolean",

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import {
   archiveChange,
@@ -64,6 +65,7 @@ import { buildPanelModel } from './panel/model.js'
 import { agentCli } from '@specatlas/core'
 import { buildNow, focusChange, statusBarText } from './views/now.js'
 import { buildHealth, healthBadge } from './views/health.js'
+import { changeForFile, fileBadge, toggleTaskLine } from './views/artefactos.js'
 import { laneOf, resolveCommand, stepsForLane } from './actions.js'
 import { findLivePanel, refreshLivePanels, updateLivePanel, type LivePanelEntry, type LivePanelSurface } from './live.js'
 import { startLanguageClient } from './client.js'
@@ -143,6 +145,21 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
 
   snapshotOf(index: number): Snapshot | undefined {
     return this.state.snapshots[index]
+  }
+
+  all(): Snapshot[] {
+    return this.state.snapshots
+  }
+
+  /** Todos los cambios del workspace, no solo los de la primera carpeta. */
+  changes(): SnapshotChange[] {
+    return this.state.snapshots.flatMap((snapshot) => snapshot.changes)
+  }
+
+  /** El proyecto al que pertenece un cambio (con varias carpetas abiertas importa). */
+  snapshotOfChange(change: SnapshotChange | undefined): Snapshot | undefined {
+    if (!change) return this.state.snapshots[0]
+    return this.state.snapshots.find((snapshot) => snapshot.changes.some((item) => item.slug === change.slug && item.dir === change.dir)) ?? this.state.snapshots[0]
   }
 
   getTreeItem(node: Node): vscode.TreeItem {
@@ -303,6 +320,8 @@ class AtlasTreeProvider implements vscode.TreeDataProvider<Node> {
       case 'task': {
         const item = new vscode.TreeItem(node.task.title, vscode.TreeItemCollapsibleState.None)
         item.description = `${node.task.id} · ${node.task.block}`
+        // La casilla marca la tarea en tasks.md sin abrir el markdown.
+        item.checkboxState = node.task.done ? vscode.TreeItemCheckboxState.Checked : vscode.TreeItemCheckboxState.Unchecked
         item.iconPath = node.task.done
           ? new vscode.ThemeIcon('check', new vscode.ThemeColor('charts.green'))
           : new vscode.ThemeIcon('circle-large-outline', new vscode.ThemeColor('charts.foreground'))
@@ -612,6 +631,53 @@ export function activate(context: vscode.ExtensionContext): void {
     if (node && (node.kind === 'change' || node.kind === 'action')) provider.setSelected(node.change)
   })
 
+  // Marcar la casilla de una tarea escribe la `x` en tasks.md.
+  treeView.onDidChangeCheckboxState(async (event) => {
+    for (const [node, state] of event.items) {
+      if (node.kind !== 'task') continue
+      const done = state === vscode.TreeItemCheckboxState.Checked
+      const file = node.file.path
+      try {
+        const raw = await fsp.readFile(file, 'utf8')
+        const next = toggleTaskLine(raw, node.task.line, done)
+        if (!next) {
+          void vscode.window.showWarningMessage(`SpecAtlas: no se pudo marcar ${node.task.id}; abre tasks.md y revisa la línea.`)
+          continue
+        }
+        await fsp.writeFile(file, next, 'utf8')
+      } catch (error) {
+        void vscode.window.showWarningMessage(`SpecAtlas: no se pudo escribir en tasks.md (${(error as Error).message}).`)
+      }
+    }
+    await refresh()
+  })
+
+  // El panel lateral sigue al archivo abierto: al entrar en un artefacto, su
+  // cambio queda seleccionado y las acciones apuntan a él.
+  const followEditor = (editor: vscode.TextEditor | undefined): void => {
+    const ref = changeForFile(provider.all(), editor?.document.uri.fsPath)
+    if (!ref) return
+    if (provider.getSelected()?.slug === ref.change.slug) return
+    provider.setSelected(ref.change)
+    nowProvider.update(buildNow(provider.all()))
+  }
+
+  // Decoración sobre los propios archivos de `.sdd/`: hallazgos y fase.
+  const decorations = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>()
+  const decorationProvider = vscode.window.registerFileDecorationProvider({
+    onDidChangeFileDecorations: decorations.event,
+    provideFileDecoration(uri) {
+      const badge = fileBadge(provider.all(), uri.fsPath)
+      if (!badge) return undefined
+      return {
+        badge: badge.badge,
+        tooltip: badge.tooltip,
+        ...(badge.color !== undefined ? { color: new vscode.ThemeColor(badge.color) } : {}),
+        propagate: badge.propagate,
+      }
+    },
+  })
+
   let refreshTimer: NodeJS.Timeout | undefined
   const livePanels = new Set<LivePanelEntry<vscode.WebviewPanel>>()
 
@@ -705,6 +771,9 @@ export function activate(context: vscode.ExtensionContext): void {
       treeView.badge = undefined
     }
 
+    decorations.fire(undefined)
+    followEditor(vscode.window.activeTextEditor)
+
     await refreshLivePanels(livePanels, (message) => output.appendLine(`[paneles] ${message}`))
   }
 
@@ -724,6 +793,8 @@ export function activate(context: vscode.ExtensionContext): void {
     treeView,
     nowView,
     healthView,
+    decorationProvider,
+    vscode.window.onDidChangeActiveTextEditor((editor) => followEditor(editor)),
     problems,
     output,
     status,
@@ -754,9 +825,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const workspaceRoot = (): string | undefined => vscode.workspace.workspaceFolders?.[0]?.uri.fsPath
 
-  const openOpencode = async (instruction: string): Promise<void> => {
-    const root = workspaceRoot()
-    const cli = agentCli(provider.snapshotOf(0)?.agent)
+  const openOpencode = async (instruction: string, change?: SnapshotChange): Promise<void> => {
+    const snapshot = provider.snapshotOfChange(change)
+    const root = snapshot?.root ?? workspaceRoot()
+    const cli = agentCli(snapshot?.agent)
     try {
       const terminal = vscode.window.createTerminal({ name: cli, cwd: root })
       terminal.show(true)
@@ -770,7 +842,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const instructionForStep = (change: SnapshotChange, stepId: string): string | undefined => {
     const step = stepsForLane(laneOf(change)).find((item) => item.id === stepId)
     // La invocación depende del agente configurado en el proyecto, no del que suponga la extensión.
-    return step ? resolveCommand(step.command, change.slug, provider.snapshotOf(0)?.agent) : undefined
+    return step ? resolveCommand(step.command, change.slug, provider.snapshotOfChange(change)?.agent) : undefined
   }
 
   const mockupGateBlocked = async (change: SnapshotChange): Promise<boolean> => {
@@ -925,12 +997,16 @@ export function activate(context: vscode.ExtensionContext): void {
 
   register('specatlas.validate', async () => {
     await refresh()
-    const snapshot = provider.snapshotOf(0)
-    if (!snapshot) return
-    output.appendLine(`[validate] ${localStamp()} — ${snapshot.summary.errors} errores, ${snapshot.summary.warnings} avisos`)
-    for (const flat of snapshot.diagnostics) output.appendLine(`  ${flat.severity.toUpperCase()} ${flat.code} ${flat.file}:${flat.line} — ${flat.message}`)
+    const snapshots = provider.all()
+    if (snapshots.length === 0) return
+    const errors = snapshots.reduce((total, snapshot) => total + snapshot.summary.errors, 0)
+    const warnings = snapshots.reduce((total, snapshot) => total + snapshot.summary.warnings, 0)
+    output.appendLine(`[validate] ${localStamp()} — ${errors} errores, ${warnings} avisos`)
+    for (const snapshot of snapshots) {
+      for (const flat of snapshot.diagnostics) output.appendLine(`  ${flat.severity.toUpperCase()} ${flat.code} ${flat.file}:${flat.line} — ${flat.message}`)
+    }
     output.show(true)
-    void vscode.window.showInformationMessage(`SpecAtlas: ${snapshot.summary.errors} errores, ${snapshot.summary.warnings} avisos`)
+    void vscode.window.showInformationMessage(`SpecAtlas: ${errors} errores, ${warnings} avisos`)
   })
 
   register('specatlas.doctor', async () => {
@@ -946,7 +1022,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   register('specatlas.trace', async (arg?: unknown) => {
     const change = selectedChange(arg)
-    const snapshot = provider.snapshotOf(0)
+    const snapshot = provider.snapshotOfChange(change)
     if (!change || !snapshot) return
     const result = await traceFor(snapshot.root, change.slug)
     output.appendLine(`[trace] ${change.slug} — ${result.summary.errors} errores, ${result.summary.warnings} avisos`)
@@ -956,7 +1032,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   register('specatlas.waves', async (arg?: unknown) => {
     const change = selectedChange(arg)
-    const snapshot = provider.snapshotOf(0)
+    const snapshot = provider.snapshotOfChange(change)
     if (!change || !snapshot) return
     const fsx = await import('@specatlas/core')
     const changeData = await fsx.loadChange(snapshot.root, change.slug)
@@ -1045,7 +1121,8 @@ export function activate(context: vscode.ExtensionContext): void {
       void vscode.window.showWarningMessage('SpecAtlas: abre una carpeta de proyecto para crear un cambio.')
       return
     }
-    const workspaceSnapshot = provider.snapshotOf(0)
+    // Los dominios conocidos son los del proyecto donde se crea el cambio.
+    const workspaceSnapshot = provider.all().find((snapshot) => snapshot.root === root) ?? provider.snapshotOf(0)
     const knownDomains = [
       ...new Set([
         ...(workspaceSnapshot?.specs.map((spec) => spec.domain) ?? []),
@@ -1725,5 +1802,5 @@ async function traceFor(root: string, slug: string): Promise<{ summary: { errors
 }
 
 function providerSnapshot(provider: AtlasTreeProvider): SnapshotChange[] {
-  return provider.snapshotOf(0)?.changes ?? []
+  return provider.changes()
 }

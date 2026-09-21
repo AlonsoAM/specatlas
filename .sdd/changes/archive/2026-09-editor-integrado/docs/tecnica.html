@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documento técnico — El editor, integrado con el trabajo</title>
+<style>:root {
+  --atlas-accent: #0f766e;
+  --atlas-accent-soft: #ccfbf1;
+  --atlas-bg: #f8fafc;
+  --atlas-card: #ffffff;
+  --atlas-ink: #0f172a;
+  --atlas-muted: #64748b;
+  --atlas-line: #e2e8f0;
+  --atlas-code-bg: #0b1220;
+  --atlas-code-ink: #e2e8f0;
+  --atlas-ok: #15803d;
+  --atlas-warn: #b45309;
+  --atlas-danger: #dc2626;
+  --atlas-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --atlas-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --atlas-radius: 12px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+  --atlas-bg: #0b1220; --atlas-card: #111a2c; --atlas-ink: #e2e8f0; --atlas-muted: #94a3b8; --atlas-line: #1e293b; --atlas-accent: #2dd4bf; --atlas-accent-soft: #134e4a; --atlas-ok: #4ade80; --atlas-warn: #f59e0b;
+}
+}
+
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--atlas-bg); color: var(--atlas-ink); font: 15px/1.65 var(--atlas-font-sans); }
+.atlas-doc { max-width: 900px; margin: 0 auto; padding: 28px 22px 80px; }
+h1, h2, h3, h4 { line-height: 1.25; margin: 1.4em 0 .5em; }
+h1 { font-size: 26px; border-bottom: 1px solid var(--atlas-line); padding-bottom: 10px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; color: var(--atlas-muted); }
+p { margin: .6em 0; }
+a { color: var(--atlas-accent); }
+code { font-family: var(--atlas-font-mono); background: color-mix(in srgb, var(--atlas-line) 55%, transparent); padding: 1px 5px; border-radius: 6px; font-size: 13px; }
+pre { background: var(--atlas-code-bg); color: var(--atlas-code-ink); padding: 14px 16px; border-radius: var(--atlas-radius); overflow: auto; font-size: 13px; line-height: 1.55; }
+pre code { background: transparent; color: inherit; padding: 0; }
+pre .hljs-keyword, pre .hljs-selector-tag, pre .hljs-built_in, pre .hljs-name { color: #7dd3fc; }
+pre .hljs-string, pre .hljs-attr, pre .hljs-template-variable { color: #86efac; }
+pre .hljs-number, pre .hljs-literal { color: #fca5a5; }
+pre .hljs-comment, pre .hljs-quote { color: #94a3b8; font-style: italic; }
+pre .hljs-title, pre .hljs-function, pre .hljs-section { color: #fde68a; }
+pre .hljs-type, pre .hljs-class { color: #c4b5fd; }
+pre .hljs-variable, pre .hljs-params { color: #e2e8f0; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 14px; }
+.table-wrap { overflow-x: auto; margin: 1em 0; }
+.table-wrap table { margin: 0; }
+th, td { border: 1px solid var(--atlas-line); padding: 9px 12px; text-align: left; vertical-align: top; }
+th { background: color-mix(in srgb, var(--atlas-accent-soft) 45%, transparent); }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--atlas-line) 9%, transparent); }
+tbody tr:hover td { background: color-mix(in srgb, var(--atlas-accent) 7%, transparent); }
+th code, td code { white-space: nowrap; }
+blockquote, .callout { border-left: 4px solid var(--atlas-accent); background: color-mix(in srgb, var(--atlas-accent-soft) 35%, transparent); margin: 1em 0; padding: 10px 14px; border-radius: 8px; }
+.callout p { margin: .3em 0; }
+hr { border: 0; border-top: 1px solid var(--atlas-line); margin: 1.8em 0; }
+ul, ol { padding-left: 1.4em; }
+li { margin: .25em 0; }
+ul.checklist { list-style: none; padding-left: .2em; }
+ul.checklist > li.task-item { margin: .2em 0; padding: 3px 0; border: 0; background: transparent; }
+ul.checklist > li.task-item.done { opacity: .7; }
+.task-box { font-size: 14px; margin-right: 6px; }
+.task-title { font-weight: 600; }
+.task-meta { display: block; margin: 2px 0 7px 24px; font-size: 11.5px; color: var(--atlas-muted); }
+.task-flag { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); margin-right: 10px; }
+.evidence-card { border: 1px solid var(--atlas-line); border-left: 4px solid var(--atlas-ok, #15803d); border-radius: 10px; background: color-mix(in srgb, var(--atlas-line) 10%, transparent); padding: 10px 14px; margin: .6em 0; }
+.evidence-card.bad { border-left-color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn { border-left-color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.evidence-card .ec-result { font-weight: 700; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--atlas-ok, #15803d); }
+.evidence-card.bad .ec-result { color: var(--atlas-danger, #f14c4c); }
+.evidence-card.warn .ec-result { color: var(--atlas-warn, #b45309); }
+.evidence-card .ec-method { font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-date { margin-left: auto; font-size: 11px; color: var(--atlas-muted); font-family: var(--atlas-font-mono); }
+.evidence-card .ec-command { margin-top: 6px; }
+.evidence-card .ec-command code { display: block; white-space: pre-wrap; word-break: break-word; padding: 6px 8px; }
+.evidence-card .ec-meta { margin-top: 6px; font-size: 11.5px; color: var(--atlas-muted); }
+.evidence-card .ec-notes { margin: 6px 0 0; color: var(--atlas-muted); font-size: 12.5px; }
+.meta-line { display: flex; flex-wrap: wrap; gap: 6px; margin: .2em 0 .35em; }
+.meta-chip { font-family: var(--atlas-font-mono); font-size: 11.5px; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); background: color-mix(in srgb, var(--atlas-line) 18%, transparent); border-radius: 999px; padding: 2px 9px; }
+.meta-chip b { color: var(--atlas-ink); font-weight: 600; }
+small, .muted { color: var(--atlas-muted); }
+.mermaid-block pre { background: color-mix(in srgb, var(--atlas-accent-soft) 25%, transparent); color: var(--atlas-ink); }
+.diagram-tools { display: flex; gap: 4px; justify-content: flex-end; margin-bottom: 6px; }
+.diagram-tools button { background: transparent; color: var(--atlas-muted); border: 1px solid color-mix(in srgb, var(--atlas-line) 75%, transparent); border-radius: 6px; padding: 2px 9px; font: inherit; line-height: 1.4; cursor: pointer; min-width: 30px; }
+.diagram-tools button:hover { color: var(--atlas-ink); border-color: var(--atlas-ink); }
+.diagram-tools button[data-diagram-fit].active { color: var(--atlas-ink); border-color: var(--atlas-accent); }
+.diagram-tools [data-diagram-level] { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-canvas { display: block; overflow: auto; min-height: 150px; border: 1px solid color-mix(in srgb, var(--atlas-line) 60%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--atlas-card) 60%, transparent); padding: 12px; cursor: grab; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--atlas-ink) 25%, transparent) transparent; }
+.diagram-canvas::-webkit-scrollbar { width: 8px; height: 8px; }
+.diagram-canvas::-webkit-scrollbar-track { background: transparent; }
+.diagram-canvas::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--atlas-ink) 22%, transparent); border-radius: 999px; }
+.diagram-canvas::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--atlas-ink) 38%, transparent); }
+.diagram-canvas.panning { cursor: grabbing; user-select: none; }
+.diagram-canvas pre.mermaid { margin: 0; padding: 0; background: transparent; overflow: visible; }
+.diagram-canvas svg { display: block; margin: 0 auto; }
+.diagram-canvas[data-fit="off"] svg { max-width: none; margin: 0; }
+.mermaid-block.diagram-fullscreen { position: fixed; inset: 0; z-index: 999; margin: 0; padding: 12px; background: var(--atlas-bg); display: flex; flex-direction: column; }
+.mermaid-block.diagram-fullscreen .diagram-canvas { flex: 1; }
+.atlas-toc { border: 1px solid var(--atlas-line); border-radius: var(--atlas-radius); background: var(--atlas-card); padding: 16px 22px; margin: 0 0 26px; }
+.atlas-toc h2 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .1em; color: var(--atlas-muted); }
+.atlas-toc ul { list-style: none; padding: 0; margin: 0; columns: 2; column-gap: 28px; }
+.atlas-toc li { margin: 3px 0; break-inside: avoid; }
+.atlas-toc .toc-h1 { font-weight: 700; margin-top: 10px; }
+.atlas-toc .toc-h2 { padding-left: 14px; }
+.atlas-toc .toc-h3 { padding-left: 28px; font-size: 13px; }
+@media (max-width: 720px) { .atlas-toc ul { columns: 1; } }
+</style>
+</head>
+<body class="">
+<article class="atlas-doc">
+<h1 id="documentacion-tecnica-el-editor-integrado-con-el-trabajo">Documentación técnica — El editor, integrado con el trabajo</h1>
+<blockquote><div class="meta-line"><span class="meta-chip"><b>Cambio:</b> <code>editor-integrado</code></span><span class="meta-chip"><b>Dominio:</b> editor</span><span class="meta-chip"><b>Carril:</b> full</span><span class="meta-chip"><b>Tareas:</b> 6/6</span><span class="meta-chip"><b>Actualizado:</b> 2026-09-21</span></div></blockquote>
+<h2 id="1-resumen-del-cambio">1. Resumen del cambio</h2>
+<p>Este documento describe <strong>El editor, integrado con el trabajo</strong> (cambio <code>editor-integrado</code>), del dominio <strong>editor</strong> y carril <strong>full</strong>. Recoge el porqué, el estado anterior, el enfoque técnico, los diagramas, el mapa de archivos, la trazabilidad completa y la evidencia con la que se dio por terminado.</p>
+<div class="table-wrap"><table><thead><tr><th>Dato</th><th>Valor</th></tr></thead><tbody><tr><td>Requisitos del cambio</td><td>3 (3 nuevos, 0 modificados)</td></tr><tr><td>Escenarios especificados</td><td>13</td></tr><tr><td>Tareas</td><td>6 hechas de 6 · 3 bloque(s)</td></tr><tr><td>Evidencia</td><td>13 / 13 escenarios</td></tr><tr><td>Archivos tocados</td><td>6</td></tr><tr><td>Mockups</td><td>0 pantalla(s)</td></tr><tr><td>Carril y dominio</td><td>full · editor</td></tr></tbody></table></div>
+<h2 id="2-que-es-y-por-que">2. Qué es y por qué</h2>
+<p>Como desarrollador que tiene el editor abierto todo el día, quiero que el panel del flujo esté donde estoy trabajando y me diga el estado de cada artefacto sin abrirlo, para dejar de saltar entre ventanas y de comprobar a mano en qué punto está cada cosa.</p>
+<p>Tres cosas rompen hoy esa continuidad. La primera: abro la especificación de un cambio y el panel sigue mostrando otro, así que las acciones que ofrece no son las de lo que tengo delante. La segunda: cuando la ventana tiene dos carpetas de proyecto, el estado, la salud y el asistente que se abre corresponden solo a la primera, mientras el árbol lista los cambios de todas — veo una cosa y actúo sobre otra. La tercera: el editor ofrece acciones que no puede ejecutar (en un proyecto sin inicializar todas están disponibles y no hacen nada) y un ajuste de idioma que no cambia nada.</p>
+<h2 id="3-que-cambia-en-lenguaje-de-negocio">3. Qué cambia, en lenguaje de negocio</h2>
+<h3 id="req-editor-015-el-panel-lateral-acompana-al-archivo-abierto">REQ-EDITOR-015 — El panel lateral acompaña al archivo abierto</h3>
+<p>Quien trabaja pasa el día en los archivos, no en el panel. Hoy abre la especificación de un cambio y el panel lateral sigue mostrando otro, así que las acciones que ofrece no son las del trabajo que tiene delante. El panel debe seguir al archivo abierto, y los propios archivos deben decir en qué estado están sin necesidad de abrirlos.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-025</code> — al abrir un artefacto de un cambio, ese cambio queda seleccionado y las acciones del panel pasan a ser las suyas.</li><li><code>BR-EDITOR-026</code> — un archivo que no pertenece a ningún cambio no altera la selección vigente.</li><li><code>BR-EDITOR-027</code> — los archivos del flujo muestran su estado junto a su nombre; lo que bloquea el avance se distingue de lo que solo avisa y tiene prioridad sobre la fase.</li><li><code>BR-EDITOR-028</code> — una tarea se marca como hecha desde el propio panel, y el cambio queda escrito en el artefacto de tareas sin alterar el resto de su contenido.</li></ul>
+<p><strong>Escenarios</strong>: 6 · 4 de uso · 1 de estado vacío · 1 de error o aviso.</p>
+<h3 id="req-editor-016-mas-de-una-carpeta-de-proyecto-en-la-misma-ventana">REQ-EDITOR-016 — Más de una carpeta de proyecto en la misma ventana</h3>
+<p>Un equipo abre a la vez el servicio y su cliente, o dos productos que comparten specs. Hoy el editor solo atiende a la primera carpeta: el estado, la salud y el asistente que se abre corresponden a un proyecto mientras el árbol muestra los de todos, así que se ve una cosa y se actúa sobre otra.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-029</code> — el trabajo en curso, la salud y el recuento de hallazgos abarcan todas las carpetas de proyecto abiertas.</li><li><code>BR-EDITOR-030</code> — con más de una carpeta, cada cambio indica a qué proyecto pertenece.</li><li><code>BR-EDITOR-031</code> — cada acción se ejecuta en el proyecto de su cambio, con el asistente que ese proyecto tiene configurado.</li></ul>
+<p><strong>Escenarios</strong>: 4 · 3 de uso · 0 de estado vacío · 1 de error o aviso.</p>
+<h3 id="req-editor-017-el-editor-solo-ofrece-lo-que-puede-hacer">REQ-EDITOR-017 — El editor solo ofrece lo que puede hacer</h3>
+<p>Ofrecer una acción que no va a funcionar cuesta más que no ofrecerla: quien la elige espera un resultado y no recibe nada. Las acciones del editor deben estar disponibles solo cuando tienen sentido, y los ajustes que se ofrecen deben tener efecto.</p>
+<p><strong>Reglas de negocio</strong></p>
+<ul><li><code>BR-EDITOR-032</code> — una acción que necesita un proyecto inicializado no se ofrece mientras no lo haya.</li><li><code>BR-EDITOR-033</code> — una acción que opera sobre un cambio no se ofrece mientras no haya ninguno.</li><li><code>BR-EDITOR-034</code> — los ajustes ofrecidos tienen efecto observable; los que no lo tienen se retiran.</li></ul>
+<p><strong>Escenarios</strong>: 3 · 0 de uso · 3 de estado vacío · 0 de error o aviso.</p>
+<h2 id="4-como-estaba-antes-as-is">4. Cómo estaba antes (AS-IS)</h2>
+<p><code>extension.ts</code> mantenía ocho puntos con <code>snapshotOf(0)</code> / <code>snapshots[0]</code>: barra de estado, badges, vistas Ahora y Salud, el ejecutable del asistente, la instrucción de cada paso y el helper <code>providerSnapshot</code>. El árbol, en cambio, ya recorría todos los snapshots, de ahí la incoherencia entre lo que se ve y lo que se ejecuta.</p>
+<p>Las vistas nuevas (<code>views/now.ts</code>, <code>views/health.ts</code>) recibían un único <code>Snapshot</code>. <code>buildSnapshot</code> se llama una vez por carpeta del workspace y cada snapshot trae su propio <code>agent</code>, <code>drift</code> y <code>diagnostics</code>.</p>
+<p>No había ningún proveedor de decoraciones ni escucha del editor activo; los nodos de tarea del árbol se pintaban con icono pero sin casilla. <code>package.json</code> declaraba 30 comandos sin <code>enablement</code> y el ajuste <code>specatlas.language</code>, que no se lee en ningún punto del código.</p>
+<h2 id="5-enfoque-tecnico-y-decisiones">5. Enfoque técnico y decisiones</h2>
+<p>Mantener la separación que ya funciona: <strong>modelo puro y testeable</strong> en <code>src/views/*</code>, y <code>extension.ts</code> como capa fina de VS Code. Las funciones de vista pasan a aceptar <code>Snapshot | Snapshot[]</code> mediante un normalizador (<code>asList</code>), así el cambio no rompe a los llamadores existentes ni a los tests.</p>
+<p>Un módulo nuevo, <code>views/artefactos.ts</code>, concentra lo que relaciona un archivo con el flujo: a qué cambio pertenece, qué decoración le corresponde y cómo se marca una tarea en el markdown. Las tres cosas son texto puro, así que se prueban sin arrancar el editor.</p>
+<p>Alternativas descartadas:</p>
+<ul><li><strong>Un proveedor de árbol por carpeta</strong>: multiplicaría vistas y rompería el orden por prioridad entre proyectos.</li><li><strong>Reescribir el markdown con un parser completo</strong> para marcar tareas: basta con sustituir el marcador de la línea, que es lo único que cambia y preserva el resto por construcción.</li></ul>
+<h2 id="6-diagramas">6. Diagramas</h2>
+<div class="mermaid-block callout"><pre class="mermaid">flowchart LR
+  E[Editor activo] --&gt; A[changeForFile]
+  A --&gt; S[seleccion del panel]
+  W[.sdd de cada carpeta] --&gt; B[buildSnapshot por carpeta]
+  B --&gt; N[views/now]
+  B --&gt; H[views/health]
+  B --&gt; D[fileBadge]
+  D --&gt; F[Decoracion de archivos]
+  T[Casilla de tarea] --&gt; G[toggleTaskLine]
+  G --&gt; M[tasks.md]</pre><p><small>Diagrama mermaid — visible con la vista previa de Markdown del editor.</small></p></div>
+<h2 id="7-diseno-por-capas-y-componentes">7. Diseño por capas y componentes</h2>
+<div class="table-wrap"><table><thead><tr><th>Módulo</th><th>Responsabilidad</th></tr></thead><tbody><tr><td><code>src/views/artefactos.ts</code></td><td><code>changeForFile</code>, <code>fileBadge</code>, <code>toggleTaskLine</code>, <code>tasksPath</code></td></tr><tr><td><code>src/views/now.ts</code></td><td><code>asList</code>, <code>activeChanges</code>; la vista y la barra de estado aceptan varias carpetas</td></tr><tr><td><code>src/views/health.ts</code></td><td>Agrega diagnósticos y deriva de todas las carpetas</td></tr><tr><td><code>src/extension.ts</code></td><td><code>all()</code>, <code>changes()</code>, <code>snapshotOfChange()</code>; decoraciones, seguimiento del editor y casillas</td></tr><tr><td><code>package.json</code></td><td><code>enablement</code> por comando, contexto <code>specatlas.hasChanges</code>, ajuste sin efecto retirado</td></tr></tbody></table></div>
+<h2 id="8-mapa-de-archivos">8. Mapa de archivos</h2>
+<p>Cada archivo, la tarea que lo tocó y el requisito al que responde.</p>
+<div class="table-wrap"><table><thead><tr><th>Archivo</th><th>Tareas</th><th>Requisitos que cubre</th></tr></thead><tbody><tr><td><code>packages/vscode/package.json</code></td><td>T3.1</td><td>REQ-EDITOR-017</td></tr><tr><td><code>packages/vscode/src/extension.ts</code></td><td>T1.3</td><td>REQ-EDITOR-015</td></tr><tr><td><code>packages/vscode/src/views/artefactos.ts</code></td><td>T1.1</td><td>REQ-EDITOR-015</td></tr><tr><td><code>packages/vscode/src/views/health.ts</code></td><td>T2.1</td><td>REQ-EDITOR-016</td></tr><tr><td><code>packages/vscode/src/views/now.ts</code></td><td>T2.2</td><td>REQ-EDITOR-016</td></tr><tr><td><code>packages/vscode/test/artefactos.test.ts</code></td><td>T1.2</td><td>REQ-EDITOR-015</td></tr></tbody></table></div>
+<h2 id="9-trazabilidad-requisito-escenario-tarea-evidencia">9. Trazabilidad requisito → escenario → tarea → evidencia</h2>
+<p>3 requisito(s) · 13 escenario(s) · 13 con tarea · 13 con evidencia favorable · <strong>0 hueco(s)</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Requisito</th><th>Escenario</th><th>Tareas</th><th>Evidencia</th></tr></thead><tbody><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S1</code> Abrir el artefacto de otro cambio</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S2</code> Abrir un archivo ajeno al flujo</td><td>T1.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S3</code> Un archivo con hallazgos que bloquean</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S4</code> Un archivo sin hallazgos</td><td>T1.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S5</code> Marcar una tarea como hecha</td><td>T1.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-015</td><td><code>REQ-EDITOR-015-S6</code> La tarea ya no está donde se creía</td><td>T1.3</td><td>pass</td></tr><tr><td>REQ-EDITOR-016</td><td><code>REQ-EDITOR-016-S1</code> Dos proyectos con trabajo en curso</td><td>T2.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-016</td><td><code>REQ-EDITOR-016-S2</code> La salud es la del conjunto</td><td>T2.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-016</td><td><code>REQ-EDITOR-016-S3</code> Cada acción en su proyecto</td><td>T2.2</td><td>pass</td></tr><tr><td>REQ-EDITOR-016</td><td><code>REQ-EDITOR-016-S4</code> Una sola carpeta</td><td>T2.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-017</td><td><code>REQ-EDITOR-017-S1</code> Proyecto sin inicializar</td><td>T3.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-017</td><td><code>REQ-EDITOR-017-S2</code> Proyecto sin cambios</td><td>T3.1</td><td>pass</td></tr><tr><td>REQ-EDITOR-017</td><td><code>REQ-EDITOR-017-S3</code> Ajustes sin efecto</td><td>T3.1</td><td>pass</td></tr></tbody></table></div>
+<h2 id="10-pruebas-y-evidencia">10. Pruebas y evidencia</h2>
+<p>13 de 13 escenario(s) con evidencia favorable (13 ejecutable). Registrada por Alonso Anchante entre el 2026-09-21 y el 2026-09-21.</p>
+<div class="table-wrap"><table><thead><tr><th>Escenario</th><th>Qué se comprobó</th><th>Método</th><th>Resultado</th><th>Fecha</th></tr></thead><tbody><tr><td><code>REQ-EDITOR-015-S1</code></td><td>Abrir el artefacto de otro cambio</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-015-S2</code></td><td>Abrir un archivo ajeno al flujo</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-015-S3</code></td><td>Un archivo con hallazgos que bloquean</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-015-S4</code></td><td>Un archivo sin hallazgos</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-015-S5</code></td><td>Marcar una tarea como hecha</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-015-S6</code></td><td>La tarea ya no está donde se creía</td><td>executable</td><td>pass</td><td>2026-09-21 14:44</td></tr><tr><td><code>REQ-EDITOR-016-S1</code></td><td>Dos proyectos con trabajo en curso</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-016-S2</code></td><td>La salud es la del conjunto</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-016-S3</code></td><td>Cada acción en su proyecto</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-016-S4</code></td><td>Una sola carpeta</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-017-S1</code></td><td>Proyecto sin inicializar</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-017-S2</code></td><td>Proyecto sin cambios</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr><tr><td><code>REQ-EDITOR-017-S3</code></td><td>Ajustes sin efecto</td><td>executable</td><td>pass</td><td>2026-09-21 14:45</td></tr></tbody></table></div>
+<h3 id="10-1-como-se-reproduce-la-evidencia">10.1 Cómo se reproduce la evidencia</h3>
+<p>Comandos con los que se obtuvo la evidencia ejecutable:</p>
+<ul><li><code>npx vitest run packages/vscode/test/artefactos.test.ts</code> — 6 escenario(s)</li><li><code>npx vitest run packages/vscode/test/artefactos.test.ts packages/vscode/test/views.test.ts</code> — 4 escenario(s)</li><li><code>npx vitest run packages/vscode/test/contribuciones.test.ts</code> — 3 escenario(s)</li></ul>
+<h2 id="11-riesgos-y-mitigaciones">11. Riesgos y mitigaciones</h2>
+<div class="table-wrap"><table><thead><tr><th>Riesgo</th><th>Mitigación</th></tr></thead><tbody><tr><td>Escribir en el artefacto de tareas desde la casilla pisa una edición en curso</td><td>Se sustituye solo el marcador de esa línea y se aborta si ya no es una tarea</td></tr><tr><td>El seguimiento del editor pelea con la selección manual</td><td>Solo cambia la selección cuando el archivo pertenece a otro cambio</td></tr><tr><td>Las decoraciones se recalculan en cada refresco</td><td>Se emiten en bloque tras el refresco, que ya está antirrebote</td></tr></tbody></table></div>
+<h2 id="12-como-se-revierte">12. Cómo se revierte</h2>
+<p>Revertir el commit: las decoraciones, el seguimiento y las casillas desaparecen, y las vistas vuelven a leer la primera carpeta. No cambia ningún artefacto del flujo, así que no hay estado que migrar.</p>
+<h2 id="13-pendientes-y-deuda-conocida">13. Pendientes y deuda conocida</h2>
+<p>El informe de consistencia del cambio está en <code>analyze.md</code>: explica qué se comprobó antes de dar el cambio por cerrado.</p>
+<h2 id="notas">Notas</h2>
+<p>(Escribe aquí lo que quieras conservar entre regeneraciones.)</p>
+</article>
+</body>
+</html>

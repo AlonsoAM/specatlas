@@ -112,3 +112,21 @@ anchors:
       - packages/vscode/package.json
     updated: 2026-09-21
     source: archive
+  - requirement: REQ-EDITOR-015
+    files:
+      - packages/vscode/src/extension.ts
+      - packages/vscode/src/views/artefactos.ts
+      - packages/vscode/test/artefactos.test.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-016
+    files:
+      - packages/vscode/src/views/health.ts
+      - packages/vscode/src/views/now.ts
+    updated: 2026-09-21
+    source: archive
+  - requirement: REQ-EDITOR-017
+    files:
+      - packages/vscode/package.json
+    updated: 2026-09-21
+    source: archive

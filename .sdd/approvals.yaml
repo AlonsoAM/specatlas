@@ -40,3 +40,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-21 12:49:12 -05:00
     channel: cli
+  - artifact: changes/editor-integrado/spec.md
+    artifact_hash: sha256:9f68e6455e8e432022d96ce34940f8f2e8cd75311c50320273482c51e9b44441
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-21 14:43:05 -05:00
+    channel: cli
