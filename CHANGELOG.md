@@ -4,6 +4,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.33] — 2026-09-21
+
 ### Añadido
 
 - **Las tareas se escriben como salgan**: los metadatos (`Archivos:`, `Cubre:`, `Depende de:`, `Reversión:`, `Infra`) se aceptan como sub-viñetas debajo de la tarea, además del formato `· Clave: valor` en la misma línea. Antes, escribirlas como sub-viñetas producía el mensaje engañoso «el escenario no está cubierto por ninguna tarea»; ahora, si faltan de verdad, la sugerencia nombra los dos formatos.

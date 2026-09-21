@@ -1,6 +1,6 @@
 {
   "name": "specatlas",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "description": "SpecAtlas: kernel determinista de Spec-Driven Development (CLI)",
   "license": "MIT",
   "type": "module",
@@ -9,11 +9,22 @@
     "satlas": "dist/bin.js"
   },
   "main": "dist/bin.js",
-  "files": ["dist", "workflow", "profiles"],
+  "files": [
+    "dist",
+    "workflow",
+    "profiles"
+  ],
   "engines": {
     "node": ">=20"
   },
-  "keywords": ["sdd", "spec-driven-development", "specs", "agents", "cli", "traceability"],
+  "keywords": [
+    "sdd",
+    "spec-driven-development",
+    "specs",
+    "agents",
+    "cli",
+    "traceability"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/AlonsoAM/specatlas.git",

@@ -1,6 +1,6 @@
 {
   "name": "@specatlas/lsp",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Servidor de lenguaje de SpecAtlas: diagnósticos, CodeLens, navegación y quick fixes para specs",
   "license": "MIT",
   "type": "module",
@@ -15,11 +15,19 @@
       "import": "./dist/server.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=20"
   },
-  "keywords": ["lsp", "language-server", "specs", "sdd", "diagnostics"],
+  "keywords": [
+    "lsp",
+    "language-server",
+    "specs",
+    "sdd",
+    "diagnostics"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/AlonsoAM/specatlas.git",
