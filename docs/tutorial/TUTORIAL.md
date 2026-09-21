@@ -640,6 +640,7 @@ integrations:
 | `satlas profile detect|list|create` | Perfiles de stack | No |
 | `satlas adapters [--targets] [--check]` | Compila prompts a agentes | No |
 | `satlas hash <archivo>|--text` | sha256 para evidencia | No |
+| `satlas self-update [--check] [--auto on\|off]` | Actualiza la herramienta (no el proyecto) | No |
 | `satlas watch` | Recomprueba y dice el siguiente paso al cambiar `.sdd/` | No |
 | `satlas next <slug> --run` | Ejecuta la siguiente acción | Parcial |
 | `satlas explain [<código>]` | Qué significa un diagnóstico y cómo se cierra | No |

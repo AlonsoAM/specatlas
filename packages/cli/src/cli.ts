@@ -43,6 +43,7 @@ import { runNext } from './commands/next.js'
 import { runPresentCommand } from './commands/present.js'
 import { runReview } from './commands/review.js'
 import { runRun } from './commands/run.js'
+import { avisoDeActualizacion, runSelfUpdate } from './commands/self-update.js'
 import { runStatus } from './commands/status.js'
 import { runTrace } from './commands/trace.js'
 import { runUpgrade } from './commands/upgrade.js'
@@ -113,6 +114,7 @@ const HANDLERS: Record<string, CommandHandler> = {
   pause: runPause,
   resume: runResume,
   archive: runArchive,
+  'self-update': runSelfUpdate,
   version: async () => ({ exitCode: 0, data: { version: cliVersion() }, diagnostics: [], text: [`specatlas ${cliVersion()}`] }),
   help: (ctx) => runHelp(ctx),
 }
@@ -210,6 +212,11 @@ export async function main(argv: string[]): Promise<number> {
   try {
     const result = await command.handler(ctx)
     printResult(parsed.command, result, json, ctx.language)
+    // El aviso de versión nueva va después del resultado y nunca lo altera.
+    if (parsed.command !== 'self-update' && parsed.command !== 'mcp') {
+      const aviso = await avisoDeActualizacion(json, ctx.cwd)
+      if (aviso.length > 0) process.stdout.write(`${aviso.join('\n')}\n`)
+    }
     return result.exitCode
   } catch (err) {
     if (err instanceof CliError) {

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Propuesta de cambio — Mantener la herramienta al día</title>
+<style>:root { color-scheme: light; --bg:#f4f6fa; --card:#ffffff; --elev:#f7f9fc; --line:#dde3ec; --line-soft:#e8ecf3; --ink:#161c2b; --muted:#5a6577; --faint:#8b94a6; --accent:#2f6fe0; --accent-soft:rgba(47,111,224,.10); --ok:#1e9e4b; --warn:#b57812; --bad:#cf3b45; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --bg:#0d1017; --card:#151a24; --elev:#1b2130; --line:#2a3243; --line-soft:#212938; --ink:#e8ebf1; --muted:#9aa5b5; --faint:#6d7789; --accent:#5b9bff; --accent-soft:rgba(91,155,255,.12); --ok:#46c46a; --warn:#e0a33a; --bad:#f0616a; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+h1,h2,h3,h4,p { margin:0; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+code { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size:.88em; background:var(--elev); border:1px solid var(--line-soft); border-radius:5px; padding:1px 5px; }
+.page { max-width:1180px; margin:0 auto; padding:26px 20px 80px; display:grid; grid-template-columns:230px 1fr; gap:26px; }
+.toc { position:sticky; top:20px; align-self:start; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:14px; }
+.toc h2 { font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--faint); margin-bottom:10px; }
+.toc ol { margin:0; padding-left:18px; color:var(--muted); font-size:13px; display:flex; flex-direction:column; gap:7px; }
+.toc a { color:var(--muted); }
+.toc a:hover { color:var(--ink); }
+.toc .toc-actions { margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+.doc { min-width:0; display:flex; flex-direction:column; gap:22px; }
+section.card { border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden; }
+.card-head { display:flex; flex-wrap:wrap; gap:10px; align-items:baseline; padding:16px 20px; border-bottom:1px solid var(--line-soft); }
+.card-head .num { font-family: ui-monospace, Consolas, monospace; font-size:12px; color:var(--faint); }
+.card-head h2 { font-size:19px; letter-spacing:-.01em; }
+.card-head .sub { color:var(--faint); font-size:12.5px; margin-left:auto; }
+.card-body { padding:18px 20px; }
+.cover { padding:26px 24px; }
+.cover .brand { display:flex; align-items:center; gap:12px; color:var(--accent); }
+.cover .kicker { font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.cover h1 { font-size:30px; line-height:1.15; letter-spacing:-.02em; margin:10px 0 6px; }
+.cover .lead { color:var(--muted); max-width:64ch; }
+.meta-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; border:1px solid var(--line); background:var(--elev); color:var(--muted); font-size:12px; }
+.chip b { color:var(--ink); font-weight:600; }
+.cover-foot { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; }
+.sign-state { border:1px solid var(--warn); background:color-mix(in srgb, var(--warn) 10%, transparent); border-radius:8px; padding:12px 14px; }
+.sign-state.ok { border-color:var(--ok); background:color-mix(in srgb, var(--ok) 10%, transparent); }
+.sign-state.stale { border-color:var(--bad); background:color-mix(in srgb, var(--bad) 10%, transparent); }
+.sign-state .ss-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.sign-state b { display:block; font-size:14.5px; margin:3px 0; }
+.sign-state p { color:var(--muted); font-size:12.5px; }
+.hash-box { border:1px solid var(--line); background:var(--elev); border-radius:8px; padding:12px 14px; }
+.hash-box .hb-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--faint); }
+.hash-box code { display:block; border:0; background:transparent; padding:0; margin-top:6px; word-break:break-all; }
+.callout { border:1px solid var(--line); border-left:4px solid var(--accent); background:var(--elev); border-radius:8px; padding:12px 14px; color:var(--muted); font-size:13px; }
+.callout.warn { border-left-color:var(--warn); background:color-mix(in srgb, var(--warn) 9%, transparent); }
+.callout.bad { border-left-color:var(--bad); background:color-mix(in srgb, var(--bad) 9%, transparent); }
+.callout.ok { border-left-color:var(--ok); background:color-mix(in srgb, var(--ok) 9%, transparent); }
+.req { border-top:1px solid var(--line-soft); padding-top:14px; margin-top:14px; }
+.req:first-of-type { border-top:0; margin-top:0; padding-top:0; }
+.req h3 { font-size:15px; }
+.req .req-id { font-family: ui-monospace, Consolas, monospace; font-size:12.5px; color:var(--accent); }
+.req p { color:var(--muted); font-size:13.5px; margin-top:6px; }
+.req ul { margin:8px 0 0 18px; padding:0; color:var(--muted); font-size:13.5px; }
+.scn { border-left:3px solid var(--accent); background:var(--elev); border-radius:6px; padding:9px 12px; margin-top:10px; }
+.scn b { font-size:13px; }
+.scn .steps { margin-top:5px; color:var(--muted); font-size:13px; }
+.scn .steps span { display:block; }
+.scn .steps b { color:var(--ink); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th, td { border:1px solid var(--line-soft); padding:8px 10px; text-align:left; vertical-align:top; }
+th { background:var(--elev); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+.pill { display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:999px; border:1px solid var(--line); color:var(--muted); }
+.pill.pass { color:var(--ok); border-color:var(--ok); }
+.pill.fail { color:var(--bad); border-color:var(--bad); }
+.pill.pending, .pill.skipped { color:var(--warn); border-color:var(--warn); }
+.mockups { display:grid; gap:18px; }
+.mockup { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:var(--card); }
+.mockup header { padding:10px 14px; border-bottom:1px solid var(--line-soft); font-weight:600; font-size:13.5px; display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.mockup header .btn { min-height:28px; padding:0 10px; font-size:12px; }
+.mockup-body { padding:12px 14px; display:flex; flex-direction:column; gap:4px; color:var(--muted); font-size:12.5px; }
+.mockup-file { font-family: ui-monospace, Consolas, monospace; }
+.mockup iframe { width:100%; height:560px; border:0; background:white; display:block; }
+.mockup.phone iframe { max-width:420px; margin:0 auto; display:block; }
+.grid-shots { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px; margin-top:12px; }
+.grid-shots img { width:100%; border:1px solid var(--line); border-radius:10px; }
+.signature { display:grid; grid-template-columns:1.2fr .8fr; gap:18px; }
+.sign-line { border:1px dashed var(--accent); border-radius:8px; padding:16px; background:var(--accent-soft); }
+.sign-line .sl-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:0 0 6px; margin-bottom:18px; color:var(--muted); font-size:12.5px; }
+.sign-line .sl-row:last-child { border-bottom:0; margin-bottom:0; padding-top:14px; }
+.sign-help { color:var(--muted); font-size:12.5px; }
+.btn { display:inline-flex; align-items:center; gap:7px; min-height:34px; padding:0 14px; border-radius:8px; border:1px solid var(--line); background:var(--elev); color:var(--ink); cursor:pointer; font:inherit; font-size:12.5px; text-decoration:none; }
+.btn.primary { background:var(--accent); border-color:transparent; color:#fff; }
+.footer { color:var(--faint); font-size:11.5px; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:6px; }
+@media (max-width: 1000px) { .page { grid-template-columns:1fr; padding:18px 14px 60px; } .toc { position:static; order:-1; } .cover-foot, .signature { grid-template-columns:1fr; } .cover h1 { font-size:24px; } }
+@media print {
+  @page { size:A4; margin:16mm; }
+  :root { --bg:#fff; --card:#fff; --elev:#fafafa; --line:#ccc; --line-soft:#e2e2e2; --ink:#111; --muted:#444; --faint:#666; --accent:#111; --accent-soft:#f3f3f3; }
+  body { background:#fff; font-size:12px; }
+  .page { display:block; max-width:none; padding:0; }
+  .toc, .btn { display:none !important; }
+  section.card { break-inside:avoid; border-color:#ccc; }
+  .cover { break-after:page; }
+  #mockups { break-before:page; }
+  #firma { break-before:page; }
+  .sign-line { background:#fff; }
+}</style>
+</head>
+<body>
+<div class="page">
+  <aside class="toc" aria-label="Contenido">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#identidad">Identidad del cambio</a></li>
+      <li><a href="#resumen">Resumen de negocio</a></li>
+      <li><a href="#especificacion">Especificación</a></li>
+      <li><a href="#criterios">Criterios de aceptación</a></li>
+      <li><a href="#mockups">Mockups</a></li>
+      <li><a href="#firma">Firma de aprobación</a></li>
+    </ol>
+    <div class="toc-actions">
+      <button type="button" class="btn primary" onclick="window.print()">⎙ Imprimir / Guardar PDF</button>
+      <span style="color:var(--faint);font-size:11.5px">Se imprime desde el propio navegador; sin servicios externos.</span>
+    </div>
+  </aside>
+
+  <main class="doc">
+    <section class="card cover" id="identidad">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2.4 21.6 12 12 21.6 2.4 12z" opacity=".5"></path>
+          <path d="M7.2 14.8 9.8 11l2.6 2.1 4.2-5.8"></path>
+          <circle cx="7.2" cy="14.8" r="1.5" fill="currentColor" stroke="none"></circle>
+          <circle cx="16.6" cy="7.3" r="1.5" fill="currentColor" stroke="none"></circle>
+        </svg>
+        <div>
+          <p class="kicker">SpecAtlas · Propuesta de cambio</p>
+          <p style="color:var(--muted);font-size:12.5px">SpecAtlas</p>
+        </div>
+      </div>
+      <h1>Mantener la herramienta al día</h1>
+      <p class="lead">Esta presentación reúne la propuesta, la especificación y el contrato visual del cambio <b>autoactualizacion</b> para su revisión y firma.</p>
+      <div class="meta-chips">
+        <span class="chip">cambio <b>autoactualizacion</b></span>
+        <span class="chip">carril <b>standard</b></span>
+        <span class="chip">dominio <b>cli</b></span>
+        <span class="chip">requisitos <b>3</b></span>
+        <span class="chip">escenarios <b>14</b></span>
+        <span class="chip">evidencia <b>0/14</b></span>
+        <span class="chip">mockups <b>0</b></span>
+        <span class="chip">Generado <b>2026-09-21 17:09:53 -05:00</b></span>
+      </div>
+      <div class="cover-foot">
+        <div class="sign-state"><span class="ss-label">Firma de aprobación</span><b>Pendiente de aprobación.</b><p>Esta propuesta se aprueba firmando la especificación (huella + autor). Cualquier cambio posterior invalida la firma.</p></div>
+        <div class="hash-box">
+          <span class="hb-label">Huella</span>
+          <code>sha256:2c7bf642f6fa930b2953bb45c99f681168ff5975cc2b21b5c0c080a2a23abfbf</code>
+          <p style="color:var(--muted);font-size:12px;margin-top:8px">La firma se registra con la huella de la especificación y la fecha.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="resumen">
+      <div class="card-head"><span class="num">01</span><h2>Resumen de negocio</h2></div>
+      <div class="card-body"><h1 id="propuesta-mantener-la-herramienta-al-dia">Propuesta — Mantener la herramienta al día</h1>
+<h2 id="por-que">Por qué</h2>
+<p>(problema u oportunidad, en lenguaje de negocio)</p>
+<h2 id="que-cambia">Qué cambia</h2>
+<p>(alcance funcional de la propuesta)</p>
+<h2 id="fuera-de-alcance">Fuera de alcance</h2>
+<p>(lo que explícitamente no se hará)</p>
+<h2 id="como-se-mide-el-exito">Cómo se mide el éxito</h2>
+<p>(indicadores observables)</p></div>
+    </section>
+
+    <section class="card" id="especificacion">
+      <div class="card-head"><span class="num">02</span><h2>Especificación</h2><span class="sub">3 requisito(s) · 14 escenario(s)</span></div>
+      <div class="card-body"><article class="req">
+  <h3><span class="req-id">REQ-CLI-001</span> — La herramienta avisa cuando se queda atrás <span class="pill">agregado</span></h3>
+  <p>Quien usa la herramienta no revisa el registro de paquetes para ver si hay una versión nueva, así que trabaja meses con una versión antigua sin enterarse: sin las correcciones y sin las comprobaciones que se añadieron después. La herramienta debe avisarlo ella misma, sin estorbar y sin ralentizar el trabajo.</p>
+  <ul><li><code>BR-CLI-001</code> — cuando hay una versión más reciente que la instalada, se avisa con la versión disponible y con la forma de actualizarla.</li><li><code>BR-CLI-002</code> — la comprobación se hace como mucho una vez al día y su resultado se recuerda entre ejecuciones.</li><li><code>BR-CLI-003</code> — el aviso nunca altera el resultado de lo que se pidió: ni cambia el veredicto, ni el código de salida, ni aparece en las salidas destinadas a otro programa.</li><li><code>BR-CLI-004</code> — si la comprobación no responde en 2 segundos, se abandona sin avisar y sin error.</li><li><code>BR-CLI-005</code> — en una máquina de integración continua no se comprueba nada.</li></ul>
+  <div class="scn"><b>REQ-CLI-001-S1 — Hay una versión más reciente</b><div class="steps"><span><b>CUANDO</b> se ejecuta cualquier comando con una versión anterior a la publicada</span><span><b>ENTONCES</b> al terminar se indica la versión disponible y cómo actualizarla</span></div></div><div class="scn"><b>REQ-CLI-001-S2 — Ya está al día</b><div class="steps"><span><b>CUANDO</b> la versión instalada es la publicada</span><span><b>ENTONCES</b> no se muestra ningún aviso</span></div></div><div class="scn"><b>REQ-CLI-001-S3 — Ya se comprobó hoy</b><div class="steps"><span><b>CUANDO</b> ya se comprobó en las últimas 24 horas</span><span><b>ENTONCES</b> se reutiliza lo comprobado y no se vuelve a consultar</span></div></div><div class="scn"><b>REQ-CLI-001-S4 — Sin conexión o con el registro lento</b><div class="steps"><span><b>CUANDO</b> el registro de paquetes no responde en 2 segundos</span><span><b>ENTONCES</b> el comando termina con su resultado normal y sin aviso</span></div></div><div class="scn"><b>REQ-CLI-001-S5 — Salida para otro programa</b><div class="steps"><span><b>CUANDO</b> se pide la salida en formato de intercambio o se ejecuta en integración continua</span><span><b>ENTONCES</b> no se comprueba ni se avisa</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-CLI-002</span> — Actualizar con una sola orden <span class="pill">agregado</span></h3>
+  <p>Actualizar hoy exige recordar el gestor con que se instaló la herramienta y su orden exacta. Quien cambia de máquina o de gestor se equivoca, y quien no lo recuerda se queda como está.</p>
+  <ul><li><code>BR-CLI-006</code> — existe una orden que actualiza la herramienta a la versión publicada, sin pedir datos adicionales.</li><li><code>BR-CLI-007</code> — la orden reconoce con qué gestor se instaló la herramienta y usa el suyo.</li><li><code>BR-CLI-008</code> — antes de actualizar se dice qué versión hay y cuál se instalará; al terminar, cuál quedó.</li><li><code>BR-CLI-009</code> — se puede consultar si hay versión nueva sin instalar nada.</li><li><code>BR-CLI-010</code> — si la instalación falla, se explica el motivo y la orden que se puede ejecutar a mano, y la herramienta sigue funcionando con la versión que tenía.</li></ul>
+  <div class="scn"><b>REQ-CLI-002-S1 — Actualizar a la última versión</b><div class="steps"><span><b>CUANDO</b> se pide actualizar con una versión anterior instalada</span><span><b>ENTONCES</b> se instala la publicada con el gestor que corresponde y se informa de la versión resultante</span></div></div><div class="scn"><b>REQ-CLI-002-S2 — Ya está al día</b><div class="steps"><span><b>CUANDO</b> se pide actualizar con la versión publicada ya instalada</span><span><b>ENTONCES</b> se indica que no hay nada que hacer y no se instala nada</span></div></div><div class="scn"><b>REQ-CLI-002-S3 — Consultar sin instalar</b><div class="steps"><span><b>CUANDO</b> se pide solo consultar</span><span><b>ENTONCES</b> se informa de la versión instalada y de la publicada, sin instalar nada</span></div></div><div class="scn"><b>REQ-CLI-002-S4 — La instalación falla</b><div class="steps"><span><b>CUANDO</b> el gestor no puede completar la instalación</span><span><b>ENTONCES</b> se explica el motivo, se ofrece la orden para ejecutarla a mano y la versión instalada sigue funcionando</span></div></div><div class="scn"><b>REQ-CLI-002-S5 — Instalada de una forma que no se puede actualizar sola</b><div class="steps"><span><b>CUANDO</b> la herramienta se ejecuta sin estar instalada de forma permanente</span><span><b>ENTONCES</b> se indica que en ese modo cada ejecución ya usa la última versión y no se instala nada</span></div></div>
+</article><article class="req">
+  <h3><span class="req-id">REQ-CLI-003</span> — Actualización desatendida para quien la quiera <span class="pill">agregado</span></h3>
+  <p>Hay equipos que prefieren no decidir nada: quieren la última versión siempre, sin avisos ni órdenes. Y hay equipos que necesitan lo contrario, porque fijan las versiones de sus herramientas. La herramienta debe permitir ambas cosas, y no cambiar sola sin que alguien lo haya pedido.</p>
+  <ul><li><code>BR-CLI-011</code> — la actualización desatendida está desactivada mientras nadie la active.</li><li><code>BR-CLI-012</code> — con la actualización desatendida activada, al detectar una versión nueva se instala sin preguntar y se informa de lo ocurrido.</li><li><code>BR-CLI-013</code> — la preferencia vale para la persona, no para un proyecto, y se puede consultar y cambiar con una orden.</li><li><code>BR-CLI-014</code> — se puede desactivar por completo la comprobación, incluso el aviso.</li></ul>
+  <div class="scn"><b>REQ-CLI-003-S1 — Por defecto no se actualiza sola</b><div class="steps"><span><b>CUANDO</b> nadie ha activado la actualización desatendida y hay una versión nueva</span><span><b>ENTONCES</b> solo se avisa, sin instalar nada</span></div></div><div class="scn"><b>REQ-CLI-003-S2 — Con la actualización desatendida activada</b><div class="steps"><span><b>CUANDO</b> está activada y se detecta una versión nueva</span><span><b>ENTONCES</b> se instala sin preguntar y se informa de la versión que quedó</span></div></div><div class="scn"><b>REQ-CLI-003-S3 — Consultar y cambiar la preferencia</b><div class="steps"><span><b>CUANDO</b> se consulta la preferencia de actualización</span><span><b>ENTONCES</b> se indica su valor vigente y cómo cambiarlo</span></div></div><div class="scn"><b>REQ-CLI-003-S4 — Comprobación desactivada</b><div class="steps"><span><b>CUANDO</b> la comprobación está desactivada</span><span><b>ENTONCES</b> no se consulta el registro ni se avisa, aunque haya versión nueva</span></div></div>
+</article></div>
+    </section>
+
+    <section class="card" id="criterios">
+      <div class="card-head"><span class="num">03</span><h2>Criterios de aceptación</h2><span class="sub">0/14 con evidencia pass</span></div>
+      <div class="card-body" style="padding:0">
+        <table><thead><tr><th>ID</th><th>Escenario</th><th>Evidencia</th></tr></thead><tbody><tr><td><code>REQ-CLI-001-S1</code></td><td>Hay una versión más reciente</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-001-S2</code></td><td>Ya está al día</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-001-S3</code></td><td>Ya se comprobó hoy</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-001-S4</code></td><td>Sin conexión o con el registro lento</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-001-S5</code></td><td>Salida para otro programa</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-002-S1</code></td><td>Actualizar a la última versión</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-002-S2</code></td><td>Ya está al día</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-002-S3</code></td><td>Consultar sin instalar</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-002-S4</code></td><td>La instalación falla</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-002-S5</code></td><td>Instalada de una forma que no se puede actualizar sola</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-003-S1</code></td><td>Por defecto no se actualiza sola</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-003-S2</code></td><td>Con la actualización desatendida activada</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-003-S3</code></td><td>Consultar y cambiar la preferencia</td><td><span class="pill pending">pendiente</span></td></tr><tr><td><code>REQ-CLI-003-S4</code></td><td>Comprobación desactivada</td><td><span class="pill pending">pendiente</span></td></tr></tbody></table>
+      </div>
+    </section>
+
+    <section class="card" id="mockups">
+      <div class="card-head"><span class="num">04</span><h2>Mockups</h2><span class="sub">0 pantalla(s)</span></div>
+      <div class="card-body"><div class="callout">Este cambio no declara mockups.</div></div>
+    </section>
+
+    <section class="card" id="firma">
+      <div class="card-head"><span class="num">05</span><h2>Firma de aprobación</h2><span class="sub">acto humano · queda auditado</span></div>
+      <div class="card-body">
+        <div class="signature">
+          <div class="sign-line">
+            <div class="sl-row"><span>Nombre de quien aprueba</span><span style="font-family:ui-monospace,Consolas,monospace">____________________</span></div>
+            <div class="sl-row"><span>Fecha de la firma</span><span style="font-family:ui-monospace,Consolas,monospace">____ / ____ / ________</span></div>
+          </div>
+          <div>
+            <p class="sign-help">La firma se registra con la huella de la especificación y la fecha.</p>
+            <p class="sign-help" style="margin-top:8px"><code>satlas approve autoactualizacion --by &quot;&lt;nombre&gt;&quot; --channel presentation</code></p>
+            <p class="sign-help" style="margin-top:10px">La especificación cambió después de firmarse: la firma quedó obsoleta y hay que volver a aprobar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer"><span>SpecAtlas · SpecAtlas · 2026-09-21 17:09:53 -05:00</span><span>sha256:2c7bf642f6fa930b2953bb45c99f681168ff5975cc2b21b5c0c080a2a23abfbf</span></div>
+  </main>
+</div>
+<script>
+(function () {
+  // Mejora progresiva: donde los scripts corren (navegador) el mockup se previsualiza en linea.
+  // Donde no corren (webview con CSP) la tarjeta con el enlace ya es suficiente y nada queda en blanco.
+  // Incrustada en otra pagina (el panel del editor la mete en un iframe) las rutas relativas
+  // no resuelven: se queda la tarjeta con el enlace y no se monta ningun marco en blanco.
+  try { if (window.top !== window.self) return; } catch (error) { return; }
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.mockup[data-mockup]'));
+  cards.forEach(function (card) {
+    var frame = document.createElement('iframe');
+    frame.setAttribute('src', card.getAttribute('data-mockup'));
+    frame.setAttribute('loading', 'lazy');
+    frame.setAttribute('title', card.getAttribute('data-title') || 'mockup');
+    var body = card.querySelector('.mockup-body');
+    if (body) body.style.display = 'none';
+    card.appendChild(frame);
+  });
+})();
+</script>
+</body>
+</html>

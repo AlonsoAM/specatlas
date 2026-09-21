@@ -271,6 +271,22 @@ Se registra como servidor local en el asistente (opencode, Claude Code, Cursor�
 
 Las respuestas son deterministas: salen del mismo núcleo que la terminal, no de un modelo interpretando archivos. Sin proyecto inicializado, la vía responde con la acción recomendada (`satlas init`).
 
+## Mantener la herramienta al día (`satlas self-update`)
+
+```bash
+satlas self-update            # instala la versión publicada
+satlas self-update --check    # consulta sin instalar
+satlas self-update --auto on  # desatendida: instala sola al detectar una versión nueva
+```
+
+Reconoce el gestor con el que se instaló (npm, pnpm, yarn o bun) y usa el suyo; si la herramienta se ejecuta con `npx`, lo dice en vez de instalar nada, porque cada ejecución ya usa la publicada.
+
+Cualquier comando **avisa** cuando te has quedado atrás, como mucho una vez al día y con dos segundos de límite para consultar el registro: sin red no hay aviso, y el aviso nunca cambia el resultado ni el código de salida. Se calla con `--json`, en integración continua, con `SPECATLAS_NO_UPDATE_CHECK=1` y en `satlas mcp`.
+
+La actualización desatendida nace **desactivada** y vive en `~/.specatlas/config.json`: es una preferencia de la persona, no del proyecto.
+
+> No confundir con `satlas upgrade`, que actualiza el **estado del proyecto** (`.sdd/`), no la herramienta.
+
 ## Actualizar el estado del proyecto (`satlas upgrade`)
 
 Los elementos de estado (configuración, cambios, aprobaciones, perfiles y manifiesto de mockups) declaran su versión. Si un proyecto quedó en una versión anterior, `status`, `validate` y `doctor` lo avisan **sin escribir nada**, y `satlas upgrade` lo actualiza:

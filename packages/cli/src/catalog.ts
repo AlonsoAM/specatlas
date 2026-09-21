@@ -43,6 +43,7 @@ export const CATALOG: CommandSpec[] = [
   { name: 'run', description: 'Persiste runs y eventos de ejecución (auditoría y reanudación)', flags: ['phase', 'inputs', 'data', 'slug', 'status', 'json'], usage: 'satlas run start|event|status|show|list' },
   { name: 'hash', description: 'Calcula el sha256 de un archivo o texto (para evidencia)', flags: ['text', 'json'], usage: 'satlas hash <archivo> | satlas hash --text "salida"' },
   { name: 'explain', description: 'Explica un código de diagnóstico: qué significa, por qué importa y cómo se cierra', flags: ['json'], usage: 'satlas explain [<código>]' },
+  { name: 'self-update', description: 'Actualiza la herramienta a la versión publicada (o solo comprueba si la hay)', flags: ['check', 'auto', 'json'], usage: 'satlas self-update [--check] [--auto on|off]' },
   { name: 'version', description: 'Muestra la versión', flags: ['json'], usage: 'satlas version' },
   { name: 'help', description: 'Muestra la ayuda', flags: ['json'], usage: 'satlas help [comando]' },
 ]

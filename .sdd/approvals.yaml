@@ -50,3 +50,8 @@ approvals:
     approved_by: Alonso Anchante
     approved_at: 2026-09-21 16:57:13 -05:00
     channel: cli
+  - artifact: changes/autoactualizacion/spec.md
+    artifact_hash: sha256:2c7bf642f6fa930b2953bb45c99f681168ff5975cc2b21b5c0c080a2a23abfbf
+    approved_by: Alonso Anchante
+    approved_at: 2026-09-21 17:10:43 -05:00
+    channel: cli

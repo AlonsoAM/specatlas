@@ -4,6 +4,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/); v
 
 ## [No publicado]
 
+## [0.1.37] — 2026-09-21
+
+### Añadido
+
+- **`satlas self-update`**: actualiza la herramienta a la versión publicada con el gestor con el que se instaló (npm, pnpm, yarn o bun, reconocido por la ruta del ejecutable). `--check` consulta sin instalar; si la herramienta se ejecuta sin instalar (`npx`), lo dice en vez de instalar nada. Si el gestor falla, explica el motivo, ofrece la orden para ejecutarla a mano y la versión instalada sigue funcionando. El nombre evita confundirlo con `satlas upgrade`, que migra el esquema del proyecto.
+- **Aviso de versión nueva**: cualquier comando avisa al terminar si hay una versión posterior, como mucho una vez al día (caché en `~/.specatlas/update-check.json`) y con dos segundos de límite para consultar el registro. Nunca altera el resultado ni el código de salida, y se calla con `--json`, en integración continua, con `SPECATLAS_NO_UPDATE_CHECK=1` y en `satlas mcp`.
+- **Actualización desatendida opcional**: `satlas self-update --auto on` la activa en `~/.specatlas/config.json` (preferencia de la persona, no del proyecto); nace desactivada y con `--auto off` se vuelve al aviso.
+
 ## [0.1.36] — 2026-09-21
 
 ### Añadido

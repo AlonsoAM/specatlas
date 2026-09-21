@@ -5,6 +5,7 @@
 ## Specs vivas
 
 - `ci` — 5 requisitos
+- `cli` — 3 requisitos
 - `editor` — 21 requisitos
 - `esquema` — 5 requisitos
 - `fases` — 5 requisitos
@@ -25,4 +26,4 @@ _Sin cambios activos._
 
 ## Archivados
 
-14 cambio(s) en `changes/archive/`.
+15 cambio(s) en `changes/archive/`.
